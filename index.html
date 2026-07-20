@@ -238,21 +238,42 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 
 
 @keyframes wobble{0%,100%{transform:rotate(-7deg) scale(1)}50%{transform:rotate(7deg) scale(1.08)}}
-.ctrl-chips{margin-top:8px}
-.chip.ctrl{font-size:11.5px;padding:6px 10px}
-.chip.ctrl.manip{
-  cursor:not-allowed;opacity:.62;background:transparent;
-  border-style:dashed;color:var(--muted);
+/* 통제 변인 고르기 + 값 정하기 */
+.cvars{display:flex;flex-direction:column;gap:8px}
+.cvar{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-1)}
+.cvar.on{border-color:#0ca30c;background:rgba(12,163,12,.06)}
+.cvar.manip{border-style:dashed;background:transparent;
+  display:flex;align-items:center;gap:9px;padding:11px 13px}
+.cv-pick{
+  display:flex;align-items:center;gap:9px;width:100%;padding:11px 13px;
+  border:0;background:transparent;font:inherit;font-size:13px;cursor:pointer;
+  color:var(--text-primary);text-align:left;
 }
-.chip.ctrl.manip:hover{transform:none;border-color:var(--border)}
-.chip.ctrl .tag{
-  font-style:normal;font-size:9.5px;font-weight:800;margin-left:4px;padding:1px 5px;
-  border-radius:5px;background:var(--grid);color:var(--text-secondary);
+.cv-pick:hover{background:var(--page)}
+.cv-box{
+  width:20px;height:20px;flex:none;border-radius:6px;border:2px solid var(--baseline);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;color:#fff;
 }
-.chip.ctrl[aria-pressed="true"]{
-  background:#0ca30c;border-color:#0a8a0a;box-shadow:0 3px 0 #076b07;
+.cvar.on .cv-box{background:#0ca30c;border-color:#0ca30c}
+.cv-em{font-size:17px;flex:none}
+.cv-name{font-weight:650;flex:1;min-width:0}
+.cv-val{
+  font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;
+  padding:3px 10px;border-radius:99px;background:var(--page);color:var(--muted);
 }
-.chip.ctrl[aria-pressed="true"]::after{content:'✓';margin-left:3px;font-weight:900}
+.cvar.on .cv-val{background:#0ca30c;color:#fff}
+.cv-tag{font-size:11px;font-weight:700;color:var(--muted);
+  padding:3px 9px;border-radius:99px;border:1px dashed var(--baseline)}
+.cv-set{padding:2px 13px 12px;border-top:1px dashed rgba(12,163,12,.3)}
+.cv-hint{display:block;font-size:11px;color:var(--text-secondary);margin:9px 0 6px}
+.cv-set input[type=range]{
+  width:100%;height:26px;margin:0;accent-color:#0ca30c;cursor:pointer;
+  -webkit-appearance:auto;appearance:auto;opacity:1;position:static;
+}
+.cv-ticks{display:flex;justify-content:space-between;align-items:center;
+  font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.cv-ticks .rec{font-weight:700;color:#0a8a0a}
 
 .hyp-box{
   padding:11px;border-radius:14px;background:var(--page);
@@ -1590,6 +1611,7 @@ function saveSession(){
       graphed: state.graphed,
       hyp:     state.hyp,
       ctrl:    state.ctrl,
+      ctrlVal: state.ctrlVal,
       badges:  [...state.badges],
       mission: state.mission,
       mode:    state.mode,
@@ -1610,6 +1632,7 @@ function loadSession(){
   state.graphed = s.graphed || { manual:[false,false,false], auto:[true,true,true] };
   state.hyp     = s.hyp     || state.hyp;
   state.ctrl    = s.ctrl    || state.ctrl;
+  state.ctrlVal = s.ctrlVal || state.ctrlVal;
   state.badges  = new Set(s.badges || []);
   state.mission = s.mission || { done:false };
   state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
@@ -1723,6 +1746,8 @@ const PLANS = [
 state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
 state.planPick = null;      // 계획 화면에서 고른 탐구 (null이면 3개 모두 보임)
 state.ctrl = [[], [], []];  // 탐구별로 학생이 고른 통제 변인
+// 학생이 정한 통제값 (기본은 권장값)
+state.ctrlVal = [0,1,2].map(i => ({ light:100, co2:100, temp:25, ...TABS[i].fixed }));
 
 const VAR_EM = { light:'💡', co2:'🫧', temp:'🌡️' };
 
@@ -1777,7 +1802,7 @@ function renderSetup(i){
 
   const steps = [
     `검정말을 <b>깔때기</b>로 덮고, 그 위에 물을 채운 <b>시험관</b>을 거꾸로 씌웁니다.`,
-    `고른 통제 변인을 <b>${p.ctrl}</b> 로 맞추고, 실험 내내 바꾸지 않습니다.`,
+    `통제 변인을 <b>${ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(", ") || "아직 고르지 않음"}</b> 로 맞추고, 실험 내내 바꾸지 않습니다.`,
     `조작 변인인 <b>${cfg.name}</b>를 ${cfg.min}${cfg.unit}부터 ${cfg.max}${cfg.unit}까지 바꿔 가며 실험합니다.`,
     `각 조건에서 <b>10초</b> 동안 깔때기 목을 지나는 <b>기포 수</b>를 셉니다.`,
     `같은 조건에서 <b>3번</b> 반복해 평균을 냅니다. 한 번의 측정에는 오차가 있기 때문입니다.`,
@@ -1792,16 +1817,37 @@ function renderSetup(i){
       </div>
 
       <section class="su-sec">
-        <h4>⚖️ 통제 변인 고르기<small>실험 내내 같게 둘 것을 모두 고르세요</small></h4>
-        <div class="chips ctrl-chips">
+        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small></h4>
+        <div class="cvars">
           ${['light','co2','temp'].map(k => {
             const isManip = k === cfg.key;
             const on = state.ctrl[i].includes(k);
-            return `<button class="chip ctrl ${isManip ? 'manip' : ''}"
-                      ${isManip ? 'disabled' : ''} data-ctrl="${i}-${k}" aria-pressed="${on}">
-                      <span class="em">${VAR_EM[k]}</span>${LABEL[k]}
-                      ${isManip ? '<i class="tag">조작 변인</i>' : ''}
-                    </button>`;
+            const [mn, mx, st] = RANGE[k];
+            const v = state.ctrlVal[i][k];
+            if (isManip) return `
+              <div class="cvar manip">
+                <span class="cv-em">${VAR_EM[k]}</span>
+                <span class="cv-name">${LABEL[k]}</span>
+                <span class="cv-tag">조작 변인 — 내가 바꿀 것</span>
+              </div>`;
+            return `
+              <div class="cvar ${on ? 'on' : ''}">
+                <button class="cv-pick" data-ck="${k}" aria-pressed="${on}">
+                  <span class="cv-box">${on ? '✓' : ''}</span>
+                  <span class="cv-em">${VAR_EM[k]}</span>
+                  <span class="cv-name">${LABEL[k]}</span>
+                  <span class="cv-val">${on ? v + UNIT[k] : '고르기'}</span>
+                </button>
+                ${on ? `
+                <div class="cv-set">
+                  <span class="cv-hint">얼마로 일정하게 둘까요?</span>
+                  <input type="range" data-cv="${k}" min="${mn}" max="${mx}" step="${st}"
+                         value="${v}" aria-label="${LABEL[k]} 통제값">
+                  <div class="cv-ticks"><span>${mn}${UNIT[k]}</span>
+                    <span class="rec">권장 ${TABS[i].fixed[k]}${UNIT[k]}</span>
+                    <span>${mx}${UNIT[k]}</span></div>
+                </div>` : ''}
+              </div>`;
           }).join('')}
         </div>
         <p class="su-why">${cfg.name} 말고 다른 것도 함께 바뀌면,
@@ -1857,14 +1903,28 @@ function renderSetup(i){
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
 
-  $('methodBox').querySelectorAll('[data-ctrl]').forEach(b =>
-    b.addEventListener('click', () => {
-      const [n, k] = b.dataset.ctrl.split('-');
-      const list = state.ctrl[Number(n)];
-      const at = list.indexOf(k);
-      if (at >= 0) list.splice(at, 1); else list.push(k);
-      saveSession(); Sfx.tick(); renderPlan();
-    }));
+  /* 통제 변인 — 이벤트 위임으로 처리한다.
+     매번 다시 그려지는 영역이라 개별 버튼에 거는 것보다 안전하다. */
+  const cvars = $('methodBox').querySelector('.cvars');
+  cvars.addEventListener('click', e => {
+    const btn = e.target.closest('[data-ck]');
+    if (!btn) return;
+    const k = btn.dataset.ck, list = state.ctrl[i];
+    const at = list.indexOf(k);
+    if (at >= 0) list.splice(at, 1); else list.push(k);
+    saveSession(); Sfx.tick(); renderPlan();
+  });
+  // 통제값 슬라이더 — 드래그 중에는 숫자만 갱신하고, 놓을 때 다시 그린다
+  cvars.addEventListener('input', e => {
+    const sl = e.target.closest('[data-cv]');
+    if (!sl) return;
+    const k = sl.dataset.cv, v = Number(sl.value);
+    state.ctrlVal[i][k] = v;
+    const box = sl.closest('.cvar');
+    if (box) box.querySelector('.cv-val').textContent = v + UNIT[k];
+    Sfx.tick();
+  });
+  cvars.addEventListener('change', () => { saveSession(); });
 
   $('pickAgain').addEventListener('click', () => {
     state.planPick = null;
@@ -1890,6 +1950,8 @@ function renderSetup(i){
 }
 
 function openLab(tab){
+  // 학생이 정한 통제값을 실제 실험 조건으로 삼는다
+  ctrlNeed(tab).forEach(k => { state[k] = state.ctrlVal[tab][k]; });
   $('plan').hidden = true;
   document.querySelector('main').hidden = false;
   $('labbar').hidden = false;
@@ -1983,7 +2045,8 @@ function syncControls(){
     const k = box.dataset.ctrl;
     const [mn, mx] = RANGE[k];
     const isCtl = k !== cfg.key;
-    const off   = isCtl && state[k] !== cfg.fixed[k];
+    const target = state.ctrlVal[state.activeTab][k] ?? cfg.fixed[k];
+    const off   = isCtl && state[k] !== target;
     const pct   = (state[k] - mn) / (mx - mn);
 
     box.querySelector('.ctrl-val').textContent = `${state[k]}${UNIT[k]}`;
@@ -1991,7 +2054,7 @@ function syncControls(){
     badge.textContent = isCtl ? '통제 변인' : '조작 변인';
     badge.classList.toggle('ctl', isCtl);
     box.querySelector('.flagbox').innerHTML =
-      off ? `<span class="flag">권장 ${cfg.fixed[k]}${UNIT[k]}</span>` : '';
+      off ? `<span class="flag">통제값 ${target}${UNIT[k]}</span>` : '';
 
     box.querySelector('.fill').style.width  = (pct * 100) + '%';
     // 손잡이가 트랙 밖으로 나가지 않도록 폭(32px)만큼 보정
@@ -2723,7 +2786,8 @@ function renderChart(){
 function switchTab(i){
   if (state.isMeasuring) return;
   state.activeTab = i;
-  Object.assign(state, TABS[i].fixed);
+  // 통제 변인은 학생이 정한 값으로 (안 정했으면 권장값)
+  ctrlNeed(i).forEach(k => { state[k] = state.ctrlVal[i][k] ?? TABS[i].fixed[k]; });
   // 진행 중인 탐구를 머리말에 표시 (탭 대신)
   $('nowEm').textContent    = PLANS[i].em;
   $('nowTitle').textContent = `탐구 ${i + 1} · ${TABS[i].name}`;
@@ -3596,8 +3660,11 @@ $('pngBtn').addEventListener('click', exportPNG);
 
 $('restoreBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
-  Object.assign(state, TABS[state.activeTab].fixed);
+  const i = state.activeTab;
+  ctrlNeed(i).forEach(k => { state[k] = state.ctrlVal[i][k] ?? TABS[i].fixed[k]; });
   renderAll();
+  toast('⚖️', '통제값으로 되돌렸습니다',
+    ctrlNeed(i).map(k => `${LABEL[k]} ${state[k]}${UNIT[k]}`).join(', '));
 });
 
 /* 측정 방식 전환 — 방식마다 데이터·단위가 다르므로 화면 전체를 다시 그린다 */
@@ -3607,7 +3674,8 @@ document.querySelectorAll('.mode').forEach(b =>
     state.mode = b.dataset.mode;
     document.querySelectorAll('.mode').forEach(x =>
       x.setAttribute('aria-selected', String(x.dataset.mode === state.mode)));
-    Object.assign(state, TABS[state.activeTab].fixed);
+    ctrlNeed(state.activeTab).forEach(k => {
+      state[k] = state.ctrlVal[state.activeTab][k] ?? TABS[state.activeTab].fixed[k]; });
     $('tankStatus').textContent = '대기 중';
     saveSession();
     setGas(0);
