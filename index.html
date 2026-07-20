@@ -64,6 +64,9 @@
 }
 
 *{box-sizing:border-box}
+/* hidden 속성이 항상 이기도록. main{display:grid} 같은 규칙이
+   기본 display:none 을 덮어써서 숨김이 동작하지 않는다. */
+[hidden]{display:none!important}
 body{
   margin:0; background:var(--page); color:var(--text-primary);
   font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;
