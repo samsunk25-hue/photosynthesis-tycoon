@@ -2050,6 +2050,9 @@ $('missionBtn').addEventListener('click', () => {
 function checkMission(result){
   const m = MISSIONS.find(x => x.tab === state.activeTab);
   if (!m || state.mission.done) return;
+  // 미션은 '데이터 수집가'를 얻어 열린 뒤부터 유효하다.
+  // 데이터를 모으는 중 우연히 목표값에 닿은 것은 인정하지 않는다.
+  if (!missionUnlocked()) return;
   if (Math.abs(result - m.target) <= m.tol){
     state.mission.done = true;
     renderMission();
