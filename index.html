@@ -86,6 +86,88 @@ main{
 h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .hint{color:var(--muted);font-size:12px;margin:0}
 
+/* =========================================================
+   첫 화면 — 탐구 실험 계획서
+   ========================================================= */
+#plan{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
+#plan[hidden]{display:none}
+.plan-intro{text-align:center;margin:14px 0 22px}
+.plan-intro h2{font-size:22px;margin:0 0 8px;font-weight:750}
+.plan-intro p{margin:0;color:var(--text-secondary);font-size:14px;line-height:1.65}
+.plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){ .plan-grid{grid-template-columns:1fr} }
+
+.plan-card{
+  display:flex;flex-direction:column;gap:12px;
+  background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:18px;
+  transition:border-color .18s, transform .18s;
+}
+.plan-card:hover{border-color:color-mix(in srgb,var(--series-1) 40%,transparent)}
+.plan-card.ready{border-color:var(--series-1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 16%,transparent)}
+.plan-no{
+  display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  color:var(--series-1);
+}
+.plan-no i{
+  font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--series-1);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.plan-card h3{margin:0;font-size:16px;font-weight:700;line-height:1.4}
+.vars{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:12.5px;
+  padding:11px 12px;border-radius:9px;background:var(--page)}
+.vars dt{color:var(--muted);font-weight:600;white-space:nowrap}
+.vars dd{margin:0;color:var(--text-primary)}
+.hyp-title{font-size:12.5px;font-weight:700;margin:2px 0 -4px}
+.hyp-title small{font-weight:500;color:var(--muted);margin-left:5px}
+.hyps{display:flex;flex-direction:column;gap:6px}
+.hyp{
+  display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--text-primary);
+  font:inherit;font-size:12.5px;text-align:left;transition:border-color .15s,background .15s;
+}
+.hyp:hover{border-color:color-mix(in srgb,var(--series-1) 50%,transparent)}
+.hyp .em{font-size:16px;flex:none}
+.hyp[aria-pressed="true"]{
+  border-color:var(--series-1);background:color-mix(in srgb,var(--series-1) 12%,transparent);
+  font-weight:650;
+}
+.plan-go{
+  margin-top:auto;padding:12px;border:0;border-radius:10px;cursor:pointer;
+  background:var(--series-1);color:#fff;font:inherit;font-size:14px;font-weight:700;
+}
+.plan-go:hover{filter:brightness(1.1)}
+.plan-go.dim{background:var(--grid);color:var(--muted)}
+
+/* 실험실 상단 — 계획으로 돌아가기 + 내 가설 */
+.labbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  max-width:1240px;margin:0 auto 4px;padding:0 20px;
+}
+.myhyp{
+  display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-secondary);
+  padding:6px 12px;border-radius:99px;background:var(--surface-1);border:1px solid var(--border);
+}
+.myhyp b{color:var(--text-primary)}
+.myhyp.hit{border-color:rgba(12,163,12,.5);background:rgba(12,163,12,.1);color:#0a5c0a}
+.myhyp.miss{border-color:rgba(250,178,25,.55);background:rgba(250,178,25,.12);color:#8a6a00}
+
+/* ---- 측정 방식 ---- */
+.modes{display:flex;gap:8px;margin-bottom:12px}
+.mode{
+  flex:1;padding:10px 12px;border-radius:11px;cursor:pointer;text-align:left;
+  border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-secondary);
+  font:inherit;transition:border-color .15s,background .15s;
+}
+.mode b{display:block;font-size:13.5px;font-weight:700;color:var(--text-primary)}
+.mode small{display:block;font-size:11.5px;margin-top:1px}
+.mode:hover{border-color:color-mix(in srgb,var(--series-1) 45%,transparent)}
+.mode[aria-selected="true"]{
+  border-color:var(--series-1);
+  background:color-mix(in srgb,var(--series-1) 10%,transparent);
+}
+.mode[aria-selected="true"] b{color:var(--series-1)}
+
 /* ---- tabs ---- */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--page);
   border:1px solid var(--border);border-radius:10px;padding:4px}
@@ -120,6 +202,29 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .warn > div{min-width:0}           /* 글자가 세로로 쪼개지지 않도록 */
 .warn button{margin-top:6px}
 td.mismatch{color:var(--muted)}
+/* 직접 세기 — 잘못 센 값은 빨간색으로 */
+td.wrong{color:#d03b3b;font-weight:700;background:rgba(208,59,59,.09)}
+td.wrong .d{font-style:normal;font-size:10.5px;font-weight:700;margin-left:3px;opacity:.85}
+td.avg.warn{color:#b06a00}
+td.act{text-align:right;padding-right:0}
+.redo{
+  border:1px solid var(--border);background:transparent;color:var(--text-secondary);
+  font:inherit;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;cursor:pointer;
+}
+.redo:hover{color:#fff;background:var(--series-1);border-color:var(--series-1)}
+
+/* 그래프로 변환 */
+.tographs{
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  padding:26px 16px;text-align:center;
+}
+.tographs p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.tographs .go{
+  padding:11px 22px;border:0;border-radius:10px;background:var(--series-1);color:#fff;
+  font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+}
+.tographs .go:hover{filter:brightness(1.1)}
+.tographs .go:disabled{opacity:.45;cursor:not-allowed}
 .flag{
   display:inline-block;margin-left:5px;font-size:10px;font-weight:700;
   color:#b07400;border:1px solid rgba(250,178,25,.6);border-radius:4px;padding:0 4px;
@@ -161,181 +266,254 @@ td.mismatch{color:var(--muted)}
   font-size:11px;font-variant-numeric:tabular-nums;margin-top:2px}
 
 /* =========================================================
-   유리 수조 (Glassmorphism)
+   실험 장치 — 비커 · 깔때기 · 시험관 · 전등
+   교과서의 검정말 광합성 실험 장치를 그대로 옮겼다.
+   기포는 검정말에서 나와 깔때기 목을 하나씩 통과해
+   시험관에 모인다. 목을 지나는 순간이 '세는 지점'이다.
    ========================================================= */
-.tank{
+.rig{
   --lit:1;                                   /* 빛의 세기 0~1 — JS가 설정 */
-  position:relative;height:250px;border-radius:14px;margin-bottom:14px;
-  isolation:isolate;
-  /* 유리 너머로 비치는 배경 */
+  position:relative;height:340px;margin-bottom:14px;border-radius:14px;
+  overflow:hidden;isolation:isolate;
   background:
-    radial-gradient(120% 80% at 50% -10%, rgba(255,240,190,calc(.10 + var(--lit)*.30)) 0%, transparent 60%),
-    linear-gradient(160deg,#123e5e 0%,#0d3350 100%);
-  box-shadow:
-    0 10px 28px rgba(8,30,48,.34),
-    inset 0 1px 0 rgba(255,255,255,.30);
+    radial-gradient(90% 60% at 50% 0%, rgba(255,238,180,calc(.06 + var(--lit)*.26)) 0%, transparent 62%),
+    linear-gradient(180deg,#16283a 0%,#0e1c2a 62%,#0a151f 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
 }
-.scene{position:absolute;inset:0;border-radius:14px;overflow:hidden}
-.water{
-  position:absolute;inset:14px 0 0;
-  background:
-    linear-gradient(180deg,
-      rgba(120,205,240,.34) 0%,
-      rgba(46,140,196,.30) 42%,
-      rgba(12,58,92,.42) 100%);
-  backdrop-filter:blur(1px);
-}
-.surface{                                     /* 수면 — 굴절 하이라이트 */
-  position:absolute;top:12px;left:0;right:0;height:5px;
-  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0));
-  box-shadow:0 0 10px rgba(190,235,255,.45);
-}
-.sand{position:absolute;bottom:0;left:0;right:0;height:26px;
-  background:linear-gradient(180deg,#7a6a51,#463c2e);
-  box-shadow:inset 0 3px 7px rgba(0,0,0,.30)}
-
-/* ---- 유리벽 ---- */
-.glass{position:absolute;inset:0;border-radius:14px;pointer-events:none;overflow:hidden}
-/* 좌우 벽 — 두꺼운 유리라 뒤가 굴절되어 흐려진다 */
-.glass .wall{
-  position:absolute;top:0;bottom:0;width:15px;
-  backdrop-filter:blur(3px) saturate(1.35);
-}
-.glass .wall.l{
-  left:0;border-radius:14px 0 0 14px;
-  background:linear-gradient(90deg,rgba(255,255,255,.42),rgba(255,255,255,.05));
-  box-shadow:inset 1px 0 0 rgba(255,255,255,.55);
-}
-.glass .wall.r{
-  right:0;border-radius:0 14px 14px 0;
-  background:linear-gradient(270deg,rgba(255,255,255,.30),rgba(255,255,255,.04));
-  box-shadow:inset -1px 0 0 rgba(255,255,255,.42);
-}
-.glass .rim{                                  /* 비커 입구 테두리 */
-  position:absolute;top:0;left:0;right:0;height:13px;
-  background:linear-gradient(180deg,rgba(255,255,255,.50),rgba(255,255,255,.06));
-  border-radius:14px 14px 0 0;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 1px 5px rgba(255,255,255,.22);
-  backdrop-filter:blur(2px);
-}
-.glass .base{                                 /* 바닥 유리 두께 */
-  position:absolute;bottom:0;left:0;right:0;height:7px;
-  background:linear-gradient(0deg,rgba(255,255,255,.26),transparent);
-  border-radius:0 0 14px 14px;
-}
-.glass .glare{                                /* 사선 반사광 */
-  position:absolute;border-radius:99px;
-  background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.02));
-  transform:rotate(19deg);filter:blur(.6px);
-}
-.glass .glare.a{top:22px;left:26px;width:15px;height:150px}
-.glass .glare.b{top:34px;left:50px;width:6px;height:88px;opacity:.75}
-/* 유리 외곽선 */
-.tank::after{
-  content:'';position:absolute;inset:0;border-radius:14px;pointer-events:none;
-  border:1px solid rgba(255,255,255,.34);
-  box-shadow:inset 0 0 22px rgba(255,255,255,.13);
+/* 실험대 */
+.rig::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:12px;
+  background:linear-gradient(180deg,#3a4756,#232d38);
+  box-shadow:0 -1px 0 rgba(255,255,255,.10);
 }
 
-/* ---- 조명 ---- */
-.lamp{
-  position:absolute;top:-6px;left:50%;transform:translateX(-50%);
-  width:200px;height:96px;pointer-events:none;z-index:3;
+/* ---- 전등 ---- */
+.lamp{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:150px;height:78px;pointer-events:none;z-index:6}
+.lamp .shade{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:44px solid transparent;border-right:44px solid transparent;
+  border-top:34px solid #8b939b;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));
 }
 .lamp .bulb{
-  position:absolute;top:14px;left:50%;transform:translateX(-50%);
-  width:34px;height:34px;border-radius:50%;
-  background:radial-gradient(circle at 42% 34%,
-    #fffdf2 0%, #fff6cf 32%, #ffe58a 62%, #f7c93f 100%);
-  opacity:calc(.32 + var(--lit)*.68);
+  position:absolute;top:30px;left:50%;transform:translateX(-50%);
+  width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle at 40% 34%,#fffdf2,#ffe58a 60%,#f5c53a);
+  opacity:calc(.3 + var(--lit)*.7);
   box-shadow:
-    0 0 calc(10px + var(--lit)*26px) calc(1px + var(--lit)*7px)  rgba(255,236,160,calc(var(--lit)*.95)),
-    0 0 calc(26px + var(--lit)*62px) calc(4px + var(--lit)*20px) rgba(255,224,120,calc(var(--lit)*.62)),
-    0 0 calc(50px + var(--lit)*120px)calc(8px + var(--lit)*40px) rgba(255,210,80, calc(var(--lit)*.34));
-  filter:drop-shadow(0 0 calc(var(--lit)*16px) rgba(255,240,170,.9));
+    0 0 calc(8px + var(--lit)*22px) calc(1px + var(--lit)*6px) rgba(255,236,160,calc(var(--lit)*.95)),
+    0 0 calc(22px + var(--lit)*54px) calc(3px + var(--lit)*18px) rgba(255,224,120,calc(var(--lit)*.55));
 }
-.lamp .cap{                                   /* 소켓 */
-  position:absolute;top:2px;left:50%;transform:translateX(-50%);
-  width:22px;height:14px;border-radius:4px 4px 2px 2px;
-  background:linear-gradient(180deg,#9aa0a6,#5f656b);
-  box-shadow:0 1px 3px rgba(0,0,0,.4);
+.lamp .bloom{
+  position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  width:170px;height:110px;border-radius:50%;filter:blur(9px);opacity:var(--lit);
+  background:radial-gradient(circle,rgba(255,244,196,.6) 0%,rgba(255,232,150,.22) 40%,transparent 70%);
 }
-.lamp .bloom{                                 /* 눈부심 번짐 */
-  position:absolute;top:-34px;left:50%;transform:translateX(-50%);
-  width:200px;height:140px;border-radius:50%;
-  background:radial-gradient(circle,
-    rgba(255,244,196,.75) 0%, rgba(255,232,150,.34) 34%, rgba(255,220,120,0) 70%);
-  opacity:var(--lit);filter:blur(8px);
-}
-.lamp .flare{                                 /* 렌즈 플레어 십자 */
-  position:absolute;top:31px;left:50%;
-  background:linear-gradient(90deg,transparent,rgba(255,248,214,.85),transparent);
-  opacity:calc(var(--lit)*var(--lit));        /* 밝을 때만 두드러지게 */
-  filter:blur(1.2px);
-}
-.lamp .flare.h{width:190px;height:2.5px;transform:translateX(-50%)}
-.lamp .flare.v{width:2.5px;height:74px;transform:translate(-50%,-36%);
-  background:linear-gradient(180deg,transparent,rgba(255,248,214,.7),transparent)}
-/* 빛기둥 — 아래로 갈수록 넓게 퍼져 수조 안 수초 전체를 비춘다 */
+/* 빛기둥 — 비커 전체를 덮는다 */
 .beam{
-  position:absolute;top:16px;left:0;right:0;bottom:0;
+  position:absolute;top:52px;left:0;right:0;bottom:12px;z-index:1;pointer-events:none;
   background:linear-gradient(180deg,
-    rgba(255,244,200,calc(var(--lit)*.44)) 0%,
-    rgba(255,241,190,calc(var(--lit)*.32)) 40%,
-    rgba(255,238,178,calc(var(--lit)*.24)) 100%);
-  /* 수초는 좌우 26~76%에 서 있다. 줄기 꼭대기 높이에서도 전부 덮이도록
-     시작 폭을 넓히고 아래로 크게 퍼뜨린다. */
-  clip-path:polygon(28% 0%, 72% 0%, 126% 100%, -26% 100%);
-  filter:blur(8px);
-}
-/* 수초가 서 있는 영역 전체를 감싸는 확산광 */
-.beam::before{
-  content:'';position:absolute;left:8%;right:8%;bottom:18px;height:62%;border-radius:46% 46% 30% 30%;
-  background:radial-gradient(ellipse at 50% 78%,
-    rgba(255,246,205,calc(var(--lit)*.30)) 0%, transparent 74%);
-  filter:blur(10px);
-}
-/* 바닥에 맺히는 光斑 — 빛이 수초 아래까지 닿았음을 보여준다 */
-.beam::after{
-  content:'';position:absolute;left:0;right:0;bottom:12px;height:34px;border-radius:50%;
-  background:radial-gradient(ellipse,rgba(255,246,205,calc(var(--lit)*.46)) 0%,transparent 76%);
+    rgba(255,244,200,calc(var(--lit)*.34)) 0%,
+    rgba(255,240,185,calc(var(--lit)*.20)) 60%,
+    rgba(255,236,170,calc(var(--lit)*.10)) 100%);
+  clip-path:polygon(40% 0%, 60% 0%, 96% 100%, 4% 100%);
   filter:blur(6px);
 }
 
-/* ---- 수초 · 기포 ---- */
+/* ---- 비커 ---- */
+.beaker{position:absolute;left:13%;right:13%;top:96px;bottom:12px;z-index:2}
+.beaker .water{
+  position:absolute;left:0;right:0;top:22px;bottom:0;border-radius:0 0 12px 12px;
+  background:linear-gradient(180deg,
+    rgba(126,206,240,.34) 0%, rgba(58,146,198,.30) 45%, rgba(20,72,112,.40) 100%);
+  backdrop-filter:blur(1px);
+}
+.beaker .surface{
+  position:absolute;left:0;right:0;top:20px;height:5px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),transparent);
+  box-shadow:0 0 9px rgba(190,235,255,.45);
+}
+.beaker .wall{position:absolute;top:0;bottom:0;width:13px;backdrop-filter:blur(2.5px) saturate(1.3)}
+.beaker .wall.l{left:0;border-radius:0 0 0 12px;
+  background:linear-gradient(90deg,rgba(255,255,255,.40),rgba(255,255,255,.05));
+  box-shadow:inset 1px 0 0 rgba(255,255,255,.55)}
+.beaker .wall.r{right:0;border-radius:0 0 12px 0;
+  background:linear-gradient(270deg,rgba(255,255,255,.30),rgba(255,255,255,.04));
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.42)}
+.beaker .rim{
+  position:absolute;top:0;left:-4px;right:-4px;height:9px;border-radius:5px;
+  background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.12));
+  box-shadow:0 1px 5px rgba(255,255,255,.25);
+}
+.beaker .glare{
+  position:absolute;top:34px;left:22px;width:11px;height:130px;border-radius:99px;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),transparent);
+  transform:rotate(7deg);filter:blur(.5px);
+}
+.beaker::after{                              /* 유리 외곽 */
+  content:'';position:absolute;inset:0;border-radius:0 0 12px 12px;
+  border:1.5px solid rgba(255,255,255,.34);border-top:0;
+}
+
+/* ---- 깔때기 (거꾸로: 넓은 입구가 아래) ---- */
+.funnel{
+  position:absolute;left:27%;right:27%;top:216px;height:88px;z-index:4;pointer-events:none;
+  background:linear-gradient(180deg,rgba(226,244,255,.30),rgba(180,220,245,.14));
+  border-left:1.5px solid rgba(255,255,255,.55);
+  border-right:1.5px solid rgba(255,255,255,.55);
+  clip-path:polygon(43% 0%, 57% 0%, 100% 100%, 0% 100%);
+}
+.funnel::after{                              /* 깔때기 목 */
+  content:'';position:absolute;left:50%;top:-46px;transform:translateX(-50%);
+  width:15px;height:48px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,.42),rgba(214,238,252,.20) 45%,rgba(255,255,255,.34));
+  box-shadow:inset 1px 0 0 rgba(255,255,255,.6), inset -1px 0 0 rgba(255,255,255,.45);
+}
+
+/* ---- 시험관 (거꾸로) — 모인 산소가 여기 쌓인다 ---- */
+.tube{position:absolute;left:50%;top:118px;transform:translateX(-50%);
+  width:46px;height:104px;z-index:5;pointer-events:none}
+.tube .tglass{
+  position:absolute;inset:0;border-radius:12px 12px 3px 3px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,.34) 0%, rgba(210,236,252,.12) 40%, rgba(255,255,255,.26) 100%);
+  border:1.5px solid rgba(255,255,255,.55);border-bottom:0;
+  backdrop-filter:blur(1.5px);
+}
+.tube .gas{                                  /* 모인 산소 — 위에서부터 찬다 */
+  position:absolute;left:3px;right:3px;top:3px;height:0;border-radius:9px 9px 2px 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(214,240,255,.72));
+  box-shadow:inset 0 -2px 5px rgba(120,180,215,.4);
+  transition:height .45s cubic-bezier(.3,1.2,.5,1);
+}
+.tube .ticks{                                /* 눈금 */
+  position:absolute;left:3px;right:3px;top:3px;bottom:6px;
+  background:repeating-linear-gradient(180deg,
+    transparent 0 15px, rgba(255,255,255,.55) 15px 16px);
+}
+
+/* ---- 온도계 ---- */
+.thermo{position:absolute;right:6%;top:120px;width:12px;height:170px;z-index:6}
+.thermo .tglass,.thermo::before{
+  content:'';position:absolute;inset:0;border-radius:99px;
+  background:rgba(255,255,255,.20);border:1px solid rgba(255,255,255,.45);
+}
+.thermo .col{
+  position:absolute;left:3px;right:3px;bottom:6px;height:0;border-radius:99px;
+  background:linear-gradient(180deg,#ff6b5a,#d0342b);transition:height .35s ease;
+}
+.thermo .bulb2{
+  position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:radial-gradient(circle at 36% 32%,#ff8a7a,#c62a22);
+  box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+
+/* ---- 검정말 ---- */
+#plants{position:absolute;left:0;right:0;top:0;bottom:0;z-index:3;pointer-events:none}
 .plant{
-  --tilt:0deg;                                 /* 고온 시 시드는 기울기 — JS가 설정 */
-  --amp:4.5deg;                                /* 흔들림 폭 */
-  position:absolute;bottom:18px;
-  transform-origin:bottom center;
+  --tilt:0deg; --amp:4.5deg;
+  position:absolute;bottom:34px;transform-origin:bottom center;
   animation:sway 4.5s ease-in-out infinite;
   filter:drop-shadow(0 1px 2px rgba(0,20,10,.45));
 }
 .plant svg{display:block;overflow:visible}
-/* 기울기와 흔들림을 함께 적용해, 시들어도 계속 흔들리게 한다 */
 @keyframes sway{
   0%,100%{transform:rotate(calc(var(--tilt) - var(--amp)))}
   50%    {transform:rotate(calc(var(--tilt) + var(--amp)))}
 }
-/* 산소 분자(O₂) 모형 — 원자 두 개가 맞붙은 한 쌍 */
-.bubble{position:absolute;animation:rise linear infinite}
+
+/* ---- 기포 (산소 분자 O₂) ---- */
+#bubbles{position:absolute;inset:0;z-index:7}
+.bubble{
+  position:absolute;pointer-events:none;
+  animation:rise linear forwards;
+}
+.bubble.countable{pointer-events:auto;cursor:pointer}
 .bubble::before,.bubble::after{
   content:'';position:absolute;top:0;width:100%;height:100%;border-radius:50%;
   background:radial-gradient(circle at 32% 28%,
-    rgba(255,255,255,.97) 0%, rgba(226,242,255,.9) 42%, rgba(150,200,238,.82) 100%);
-  box-shadow:inset -1.5px -2px 3px rgba(20,60,90,.28), 0 0 3px rgba(255,255,255,.5);
+    rgba(255,255,255,.98) 0%, rgba(226,242,255,.92) 42%, rgba(150,200,238,.85) 100%);
+  box-shadow:inset -1.5px -2px 3px rgba(20,60,90,.28), 0 0 4px rgba(255,255,255,.6);
 }
 .bubble::before{left:-34%}
 .bubble::after {left: 34%}
-/* 수면으로 갈수록 수압이 낮아져 기포가 팽창한다 — 약 10배까지 부풀어 확실히 보이도록 */
+/* 검정말 → 깔때기 목 → 시험관. 위로 갈수록 수압이 낮아져 부푼다. */
 @keyframes rise{
-  0%  {transform:translateY(0)      translateX(0)    scale(.30);opacity:0}
-  10% {opacity:.95}
-  35% {transform:translateY(-72px)  translateX(5px)  scale(1.00)}
-  70% {transform:translateY(-144px) translateX(-4px) scale(1.95)}
-  88% {opacity:.92}
-  100%{transform:translateY(-205px) translateX(8px)  scale(3.10);opacity:0}
+  0%  {transform:translate(var(--dx,0), 0)     scale(.55);opacity:0}
+  12% {opacity:1}
+  46% {transform:translate(0, -74px)           scale(1.05)}
+  100%{transform:translate(0, var(--dy,-186px)) scale(1.5);opacity:1}
 }
+/* 클릭해서 셌을 때 */
+.bubble.popped{animation:pop .32s ease-out forwards}
+@keyframes pop{
+  0%  {transform:translate(0,-90px) scale(1.2);opacity:1}
+  100%{transform:translate(0,-96px) scale(2.3);opacity:0}
+}
+/* 놓친 기포 — 목을 그냥 지나감 */
+.bubble.missed::before,.bubble.missed::after{
+  background:radial-gradient(circle at 32% 28%,
+    rgba(255,220,220,.95) 0%, rgba(255,170,170,.9) 45%, rgba(226,88,88,.85) 100%);
+}
+
+/* 세는 지점 표시 */
+.zone{
+  position:absolute;left:50%;top:170px;transform:translateX(-50%);
+  width:54px;height:56px;border-radius:10px;z-index:6;pointer-events:none;
+  border:2px dashed rgba(255,236,140,.8);opacity:0;transition:opacity .3s;
+}
+.zone.on{opacity:1;animation:zonePulse 1.4s ease-in-out infinite}
+@keyframes zonePulse{50%{border-color:rgba(255,255,255,.95)}}
+
+/* 클릭 카운터 */
+.counter{
+  position:absolute;left:12px;top:12px;z-index:9;
+  display:flex;align-items:baseline;gap:5px;padding:8px 14px;border-radius:12px;
+  background:rgba(8,28,44,.72);border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(6px);color:#fff;
+}
+.counter[hidden]{display:none}
+.counter b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.counter small{font-size:11px;opacity:.85}
+.counter.hit b{animation:bump .22s ease-out}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.35);color:#7ee8a2}100%{transform:scale(1)}}
+
+.tank-status{
+  position:absolute;left:12px;bottom:22px;z-index:9;font-size:12px;font-weight:600;
+  color:#fff;background:rgba(8,28,44,.5);padding:4px 10px;border-radius:7px;
+  border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);
+}
+.tank-status.hot{background:rgba(160,30,30,.62);border-color:rgba(255,140,140,.5)}
+
+/* ---- 마스코트 ---- */
+.mascot{
+  position:absolute;left:22%;bottom:44px;z-index:8;transform:translateX(-50%);
+  pointer-events:none;
+}
+.mascot .face{display:block;font-size:26px;line-height:1;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-7px) rotate(4deg)}}
+.mascot.happy .face{animation:bounce .7s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-11px) scale(1.14)}}
+.mascot.hot .face{animation:shiver .28s linear infinite}
+@keyframes shiver{0%,100%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+.mascot.gasp .face{animation:gasp 1s ease-in-out infinite}
+@keyframes gasp{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+.mascot .zzz{position:absolute;top:-6px;left:22px;display:none}
+.mascot.sleep .zzz{display:block}
+.mascot.sleep .face{animation:bob 5s ease-in-out infinite}
+.mascot .zzz i{position:absolute;font-style:normal;font-weight:800;color:#dff1ff;font-size:12px;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);opacity:0;animation:zzz 3s ease-out infinite}
+.mascot .zzz i:nth-child(2){animation-delay:1s;font-size:14px}
+.mascot .zzz i:nth-child(3){animation-delay:2s;font-size:16px}
+@keyframes zzz{
+  0%  {opacity:0;transform:translate(0,0) scale(.6)}
+  25% {opacity:.95}
+  100%{opacity:0;transform:translate(18px,-30px) scale(1.25)}
+}
+
 /* ---- 🌈 피버 타임 ---- */
 .bubble.fever::before,.bubble.fever::after{
   background:radial-gradient(circle at 32% 28%,
@@ -346,14 +524,12 @@ td.mismatch{color:var(--muted)}
   animation:hue 1.1s linear infinite;
 }
 @keyframes hue{to{filter:hue-rotate(360deg)}}
-.tank.fever{
+.rig.fever{
   box-shadow:0 10px 28px rgba(8,30,48,.34), inset 0 1px 0 rgba(255,255,255,.30),
              0 0 0 3px rgba(255,255,255,.5), 0 0 34px 6px rgba(255,180,255,.55);
   animation:feverGlow 1.5s ease-in-out infinite;
 }
-@keyframes feverGlow{50%{box-shadow:0 10px 28px rgba(8,30,48,.34),
-  inset 0 1px 0 rgba(255,255,255,.30), 0 0 0 3px rgba(255,255,255,.62),
-  0 0 52px 12px rgba(140,220,255,.7)}}
+@keyframes feverGlow{50%{box-shadow:0 0 0 3px rgba(255,255,255,.62), 0 0 52px 12px rgba(140,220,255,.7)}}
 .fever-tag{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;
   padding:9px 18px;border-radius:99px;font-size:15px;font-weight:800;letter-spacing:.02em;
@@ -373,7 +549,7 @@ td.mismatch{color:var(--muted)}
 }
 #danger.on{opacity:1;animation:pulseRed 1s ease-in-out infinite}
 @keyframes pulseRed{50%{opacity:.42}}
-.tank.danger .water{
+.rig.danger .water{
   background:linear-gradient(180deg,rgba(255,150,140,.30) 0%,
     rgba(196,80,70,.30) 42%,rgba(92,26,26,.44) 100%);
 }
@@ -640,7 +816,7 @@ td.mismatch{color:var(--muted)}
 .btn-ghost:hover{color:var(--text-primary)}
 .progress{height:3px;background:var(--grid);border-radius:2px;margin-top:9px;overflow:hidden}
 .progress span{display:block;height:100%;width:0;background:var(--series-1);border-radius:2px}
-.progress.run span{animation:fill 4s linear forwards}
+.progress.run span{animation:fill var(--dur,4s) linear forwards}
 @keyframes fill{to{width:100%}}
 
 /* ---- table ---- */
@@ -808,7 +984,7 @@ td.pending{color:var(--muted)}
   main > section:first-child > .card:first-child{display:grid;
     grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:0 20px;align-items:start}
   main > section:first-child > .card:first-child > .tabs{grid-column:1 / -1}
-  main > section:first-child > .card:first-child > .tank{margin-bottom:0}
+  main > section:first-child > .card:first-child > .rig{margin-bottom:0}
   main > section:first-child > .card:first-child > #condWarn{grid-column:1 / -1}
 }
 /* 터치: 히트 영역을 손가락 크기로 */
@@ -831,7 +1007,7 @@ td.pending{color:var(--muted)}
   h1{font-size:17px}
   .card{padding:14px}
   .head-row{flex-wrap:wrap;gap:8px}
-  .tank{height:210px}
+  .rig{height:300px}
 }
 .head-btns{display:flex;gap:6px;flex-wrap:wrap}
 </style>
@@ -874,44 +1050,93 @@ td.pending{color:var(--muted)}
   <span class="cap">모든 탐구를 완주했어요!</span>
 </div>
 
-<main>
+<!-- ===== 첫 화면: 탐구 실험 계획서 ===== -->
+<section id="plan">
+  <div class="plan-intro">
+    <h2>탐구 실험 계획서</h2>
+    <p>검정말에 빛을 비추면 산소가 발생합니다. 어떤 조건에서 광합성이 가장 활발할까요?<br>
+       세 가지 탐구 중 하나를 골라, <b>실험 전에 결과를 예상</b>해 보고 시작하세요.</p>
+  </div>
+  <div class="plan-grid" id="planGrid"></div>
+</section>
+
+<div class="labbar" id="labbar" hidden>
+  <button class="btn-ghost" id="backPlan">← 실험 계획서</button>
+  <span class="myhyp" id="myHyp" hidden></span>
+</div>
+
+<main hidden>
   <!-- ============ LEFT ============ -->
   <section>
     <div class="card">
+      <!-- 측정 방식 -->
+      <div class="modes" role="tablist">
+        <button class="mode" role="tab" data-mode="manual" aria-selected="true">
+          <b>🫧 직접 세기</b><small>기포를 눈으로 세어 기록</small>
+        </button>
+        <button class="mode" role="tab" data-mode="auto" aria-selected="false">
+          <b>⚡ 자동 측정</b><small>장치가 대신 세어 줌</small>
+        </button>
+      </div>
+
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="0" aria-selected="true">탐구 1 · 빛의 세기</button>
         <button class="tab" role="tab" data-tab="1" aria-selected="false">탐구 2 · CO₂ 농도</button>
         <button class="tab" role="tab" data-tab="2" aria-selected="false">탐구 3 · 온도</button>
       </div>
 
-      <div class="tank" id="tank">
-        <!-- 유리 안쪽 장면 -->
-        <div class="scene">
-          <div class="water"></div>
-          <div class="beam"></div>
-          <div id="plants"></div>
-          <div class="mascot" id="mascot">
-            <span class="face" id="mascotFace">🙂</span>
-            <span class="zzz" id="mascotZzz"><i>z</i><i>z</i><i>z</i></span>
-          </div>
-          <div id="bubbles"></div>
-          <div class="surface"></div>
-          <div class="sand"></div>
-        </div>
-        <!-- 유리 -->
-        <div class="glass" aria-hidden="true">
-          <span class="wall l"></span><span class="wall r"></span>
-          <span class="rim"></span><span class="base"></span>
-          <span class="glare a"></span><span class="glare b"></span>
-        </div>
-        <!-- 조명 -->
+      <!-- 실제 교과서 실험 장치: 비커 + 깔때기 + 시험관 + 전등 -->
+      <div class="rig" id="tank">
+        <div class="beam" aria-hidden="true"></div>
+
+        <!-- 전등 -->
         <div class="lamp" aria-hidden="true">
           <span class="bloom"></span>
-          <span class="flare h"></span><span class="flare v"></span>
+          <span class="shade"></span>
           <span class="bulb"></span>
-          <span class="cap"></span>
         </div>
+
+        <!-- 비커 -->
+        <div class="beaker" aria-hidden="true">
+          <span class="water"></span>
+          <span class="surface"></span>
+          <span class="wall l"></span><span class="wall r"></span>
+          <span class="rim"></span>
+          <span class="glare"></span>
+        </div>
+
+        <!-- 시험관 (거꾸로) — 모인 산소가 눈금으로 보인다 -->
+        <div class="tube" aria-hidden="true">
+          <span class="gas" id="gasCol"></span>
+          <span class="ticks"></span>
+          <span class="tglass"></span>
+        </div>
+
+        <!-- 깔때기 + 검정말 -->
+        <div class="funnel" aria-hidden="true"></div>
+        <div id="plants"></div>
+
+        <!-- 세는 지점: 깔때기 목 -->
+        <div class="zone" id="zone" aria-hidden="true"></div>
+        <!-- 기포 (세기 대상) -->
+        <div id="bubbles"></div>
+
+        <!-- 온도계 -->
+        <div class="thermo" aria-hidden="true">
+          <span class="col" id="thermoCol"></span>
+          <span class="bulb2"></span>
+        </div>
+
+        <!-- 마스코트 -->
+        <div class="mascot" id="mascot">
+          <span class="face" id="mascotFace">🙂</span>
+          <span class="zzz"><i>z</i><i>z</i><i>z</i></span>
+        </div>
+
         <div class="tank-status" id="tankStatus">대기 중</div>
+        <div class="counter" id="counter" hidden>
+          <b id="counterNum">0</b><small>기포</small>
+        </div>
       </div>
 
       <div class="ctrl-head">
@@ -959,6 +1184,7 @@ td.pending{color:var(--muted)}
       </div>
       <div class="chart-wrap">
         <svg id="chart" viewBox="0 0 460 280" role="img" aria-labelledby="chartTitle"></svg>
+        <div id="graphGate" hidden></div>
         <div class="tip" id="tip"></div>
       </div>
       <p class="hint" style="margin-top:8px">3회 측정이 완료된 조건만 그래프에 표시됩니다.</p>
@@ -1097,11 +1323,11 @@ window.dispatchEvent(new Event('cloud-ready'));
    탐구 설정 — 조작 변인 1개, 나머지는 통제 변인으로 고정
 ----------------------------------------------------------------*/
 const TABS = [
-  // Y축은 세 탐구 모두 0~2.4로 통일 — 탐구 간 크기 비교가 가능하고,
-  // 노이즈 포함 최대치(탐구1·2 = 2.21, 탐구3 = 2.28)도 잘리지 않는다.
-  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:30}, yMax:2.4 },
-  { key:'co2',   name:'CO₂ 농도',  unit:'%',  min:0, max:100, step:10, fixed:{light:100, temp:30}, yMax:2.4 },
-  { key:'temp',  name:'온도',      unit:'°C', min:0, max:50,  step:1,  fixed:{light:100, co2:100}, yMax:2.4 },
+  // 통제 온도는 실험실에서 유지 가능한 실온 25°C (교과서 표준).
+  // Y축 상한은 측정 방식(MODES)이 정한다 — 탐구 3종이 같은 축을 써서 비교할 수 있다.
+  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:25} },
+  { key:'co2',   name:'CO₂ 농도',  unit:'%',  min:0, max:100, step:10, fixed:{light:100, temp:25} },
+  { key:'temp',  name:'온도',      unit:'°C', min:0, max:50,  step:1,  fixed:{light:100, co2:100} },
 ];
 const LABEL = { light:'빛의 세기', co2:'CO₂ 농도', temp:'온도' };
 const UNIT  = { light:'%', co2:'%', temp:'°C' };
@@ -1110,13 +1336,23 @@ const RANGE = { light:[0,100,10], co2:[0,100,10], temp:[0,50,1] };
 /* ---------------------------------------------------------------
    상태
 ----------------------------------------------------------------*/
+const MEASURE_MS = 20000;      // 직접 세기 — 실제로 20초를 센다
+const AUTO_MS    = 5000;       // 자동 측정 — 20초 측정을 압축해 보여준다
+
 const state = {
+  mode: 'manual',              // 'manual'(직접 세기) | 'auto'(자동 측정)
   activeTab: 0,
   light: 100, co2: 100, temp: 25,
-  experiments: [ {}, {}, {} ],   // 탭별 { 조작변인값: [측정값…] }
+  // 측정 방식마다 데이터를 따로 보관한다 (세는 방법이 다르므로 섞으면 안 된다)
+  data: { manual: [ {}, {}, {} ], auto: [ {}, {}, {} ] },
+  graphed: { manual: [false, false, false], auto: [true, true, true] },
   isMeasuring: false,
-  stableNoise: true,   // 저신호 구간에서 절대오차가 신호를 덮으므로 기본 ON (아래 measure() 주석 참고)
+  stableNoise: true,
 };
+
+/* 현재 방식·탭의 저장소 */
+const store = () => state.data[state.mode][state.activeTab];
+const isManual = () => state.mode === 'manual';
 
 /* ---------------------------------------------------------------
    산소 생성량 모델  (PRD 3.2)
@@ -1131,24 +1367,162 @@ const fT = t => t <= 35
   ? Math.pow(Math.sin(Math.PI / 2 * t / 35), 1.2)
   : Math.max(0, 1 - (t - 35) / 10);
 
-function baseRate(light, co2, temp){
-  return 2.5 * Math.min(fL(light), fC(co2)) * fT(temp);   // 최소량의 법칙
+/* 측정 방식별 설정.
+   두 방식은 같은 광합성 모델을 쓰되 재는 양이 다르다.
+   - 직접 세기: 20초간 발생한 기포 수. 계수 34.5는 최적 조건에서
+     20초당 30개(분당 90개) — 실제 검정말 실험값이자 눈으로 셀 수 있는 속도.
+   - 자동 측정: 모인 산소의 부피(ml/분). 최적 조건에서 2.17 ml/분. */
+const MODES = {
+  manual: { k:34.5, unit:'개',    yLabel:'20초간 기포 수 (개)',    yMax:32,  dec:0, ms:20000 },
+  auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:5000  },
+};
+const M = () => MODES[state.mode];
+
+function baseRate(light, co2, temp, k){
+  return (k ?? M().k) * Math.min(fL(light), fC(co2)) * fT(temp);   // 최소량의 법칙
 }
 function measure(light, co2, temp){
   if (light === 0 || co2 === 0) return 0;
+  const cfg = M();
   const base = baseRate(light, co2, temp);
-  // 기본은 PRD 명세대로 절대 오차 ±0.1. 저신호 구간에서는 오차가 신호를
-  // 압도하므로(예: 10°C에서 오차 비중 56%) 비례 오차 모드를 함께 제공한다.
   const noise = state.stableNoise
     ? base * (Math.random() * 0.1 - 0.05)
-    : Math.random() * 0.2 - 0.1;
-  return Math.round(Math.max(0, base + noise) * 100) / 100;
+    : (Math.random() * 2 - 1) * cfg.k * 0.04;
+  const v = Math.max(0, base + noise);
+  // 기포는 정수, 부피는 소수 2자리
+  return cfg.dec === 0 ? Math.round(v) : Math.round(v * 100) / 100;
 }
+const fmt = v => v.toFixed(M().dec);
 
 /* ---------------------------------------------------------------
    조작부 렌더
 ----------------------------------------------------------------*/
 const $ = id => document.getElementById(id);
+
+/* ---------------------------------------------------------------
+   📋 탐구 실험 계획서 — 첫 화면
+   실험 전에 결과를 예상(가설)하게 한 뒤 시작한다.
+----------------------------------------------------------------*/
+const PLANS = [
+  { q:'빛의 세기가 셀수록 광합성이 활발해질까?',
+    manip:'빛의 세기 (0 ~ 100%)',
+    ctrl :'CO₂ 농도 100%, 온도 25°C',
+    dep  :'발생한 산소의 양',
+    hyps:[
+      { em:'📈', t:'빛이 셀수록 계속 늘어난다' },
+      { em:'📊', t:'늘어나다가 어느 지점부터 일정해진다' },
+      { em:'➡️', t:'빛과 관계없이 일정하다' },
+      { em:'📉', t:'빛이 셀수록 오히려 줄어든다' },
+    ], answer:1,
+    why:'빛이 약할 때는 빛이 부족해 광합성이 제한되지만, 어느 세기를 넘으면 CO₂ 등 다른 요인이 한계가 되어 더 늘지 않습니다. (포화 현상)' },
+
+  { q:'이산화 탄소가 많을수록 광합성이 활발해질까?',
+    manip:'CO₂ 농도 (0 ~ 100%)',
+    ctrl :'빛의 세기 100%, 온도 25°C',
+    dep  :'발생한 산소의 양',
+    hyps:[
+      { em:'📈', t:'CO₂가 많을수록 계속 늘어난다' },
+      { em:'📊', t:'늘어나다가 어느 지점부터 일정해진다' },
+      { em:'➡️', t:'CO₂와 관계없이 일정하다' },
+      { em:'📉', t:'CO₂가 많을수록 오히려 줄어든다' },
+    ], answer:1,
+    why:'CO₂도 빛과 마찬가지로 포화 곡선을 그립니다. 부족할 때는 크게 늘지만, 충분해지면 다른 요인이 한계가 됩니다.' },
+
+  { q:'온도가 높을수록 광합성이 활발해질까?',
+    manip:'온도 (0 ~ 50°C)',
+    ctrl :'빛의 세기 100%, CO₂ 농도 100%',
+    dep  :'발생한 산소의 양',
+    hyps:[
+      { em:'📈', t:'온도가 높을수록 계속 늘어난다' },
+      { em:'🔺', t:'어느 온도까지 늘다가 그 뒤엔 급히 줄어든다' },
+      { em:'➡️', t:'온도와 관계없이 일정하다' },
+      { em:'📉', t:'온도가 높을수록 계속 줄어든다' },
+    ], answer:1,
+    why:'광합성은 효소가 하는 일입니다. 35°C 부근까지는 활발해지지만, 그보다 뜨거워지면 효소가 변성되어 급격히 멈춥니다.' },
+];
+
+state.hyp = [null, null, null];          // 탐구별로 고른 가설
+
+function renderPlan(){
+  $('planGrid').innerHTML = PLANS.map((p, i) => `
+    <div class="plan-card ${state.hyp[i] !== null ? 'ready' : ''}" data-card="${i}">
+      <span class="plan-no"><i>${i + 1}</i>탐구 ${i + 1} · ${TABS[i].name}</span>
+      <h3>${p.q}</h3>
+      <dl class="vars">
+        <dt>조작 변인</dt><dd>${p.manip}</dd>
+        <dt>통제 변인</dt><dd>${p.ctrl}</dd>
+        <dt>종속 변인</dt><dd>${p.dep}</dd>
+      </dl>
+      <p class="hyp-title">나의 가설<small>결과를 예상해 보세요</small></p>
+      <div class="hyps">
+        ${p.hyps.map((h, k) => `
+          <button class="hyp" data-h="${i}-${k}"
+                  aria-pressed="${state.hyp[i] === k}">
+            <span class="em">${h.em}</span>${h.t}
+          </button>`).join('')}
+      </div>
+      <button class="plan-go ${state.hyp[i] === null ? 'dim' : ''}" data-go="${i}">
+        ${state.hyp[i] === null ? '가설을 먼저 골라 주세요' : `탐구 ${i + 1} 시작하기 →`}
+      </button>
+    </div>`).join('');
+
+  $('planGrid').querySelectorAll('[data-h]').forEach(b =>
+    b.addEventListener('click', () => {
+      const [i, k] = b.dataset.h.split('-').map(Number);
+      state.hyp[i] = state.hyp[i] === k ? null : k;   // 다시 누르면 해제
+      Sfx.tick();
+      renderPlan();
+    }));
+
+  $('planGrid').querySelectorAll('[data-go]').forEach(b =>
+    b.addEventListener('click', () => {
+      const i = Number(b.dataset.go);
+      if (state.hyp[i] === null){
+        toast('🤔', '가설을 먼저 골라 주세요', '결과를 예상해 보는 것도 탐구의 한 단계입니다.');
+        b.closest('.plan-card').querySelector('.hyps').scrollIntoView({ behavior:'smooth', block:'center' });
+        return;
+      }
+      openLab(i);
+    }));
+}
+
+function openLab(tab){
+  $('plan').hidden = true;
+  document.querySelector('main').hidden = false;
+  $('labbar').hidden = false;
+  switchTab(tab);
+  scrollTo({ top:0, behavior:'smooth' });
+}
+
+function backToPlan(){
+  if (state.isMeasuring) return;
+  document.querySelector('main').hidden = true;
+  $('labbar').hidden = true;
+  $('plan').hidden = false;
+  renderPlan();
+  scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* 실험실 상단에 내가 고른 가설을 보여준다.
+   그래프를 그린 뒤에는 맞았는지도 알려준다. */
+function renderMyHyp(){
+  const i = state.activeTab, k = state.hyp[i];
+  const el = $('myHyp');
+  if (k === null){ el.hidden = true; return; }
+  el.hidden = false;
+  const p = PLANS[i];
+  const graphed = state.graphed[state.mode][i];
+  const done = graphed && rows().filter(r => r.avg !== null && r.cond === condSig()).length >= 4;
+  el.className = 'myhyp' + (done ? (k === p.answer ? ' hit' : ' miss') : '');
+  el.innerHTML = done
+    ? (k === p.answer
+        ? `✅ 가설 적중! <b>${p.hyps[k].t}</b>`
+        : `🔍 예상과 달랐어요 — 내 가설: <b>${p.hyps[k].t}</b>`)
+    : `🎯 나의 가설: <b>${p.hyps[k].t}</b>`;
+  el.title = done ? p.why : '실험을 마치면 가설이 맞았는지 확인할 수 있습니다.';
+}
+
+$('backPlan').addEventListener('click', backToPlan);
 
 const ICON  = { light:'☀️', co2:'💨', temp:'🌡️' };
 const THEME = { light:['#f6cd63','#eda100'], co2:['#63d3ac','#1baf7a'], temp:['#f59b72','#eb6834'] };
@@ -1254,8 +1628,8 @@ function renderCondWarn(){
       </div>
     </div>`;
   $('dropStale').addEventListener('click', () => {
-    const store = state.experiments[state.activeTab];
-    Object.keys(store).forEach(k => { if (store[k].cond !== cur) delete store[k]; });
+    const st = store();
+    Object.keys(st).forEach(k => { if (st[k].cond !== cur) delete st[k]; });
     renderCondWarn(); renderTable(); renderChart(); renderHint();
   });
 }
@@ -1361,26 +1735,60 @@ function renderTank(){
   renderMascot();
 }
 
-function renderBubbles(rate){
-  const box = $('bubbles');
-  box.innerHTML = '';
-  if (rate <= 0) return;
+/* 기포 하나를 만들어 검정말 → 깔때기 목 → 시험관으로 올려보낸다.
+   countable=true 이면 학생이 클릭해서 셀 수 있다. */
+let bubbleTimers = [];
+function spawnBubble({ countable, fever, onPass, onCount }){
+  const b = document.createElement('div');
+  b.className = 'bubble' + (countable ? ' countable' : '') + (fever ? ' fever' : '');
+  const size = (fever ? 3.6 : 3.2) + Math.random() * 2;
+  b.style.width = b.style.height = size + 'px';
+  b.style.left = '50%';
+  b.style.bottom = '48px';
+  b.style.setProperty('--dx', (Math.random() * 46 - 23).toFixed(0) + 'px');  // 깔때기 안에서 흩어진 시작 위치
+  b.style.setProperty('--dy', '-196px');
+  const dur = fever ? 1.1 : 2.4;
+  b.style.animationDuration = dur + 's';
+  if (fever) b.style.setProperty('--hue', Math.round(Math.random() * 360));
+
+  let counted = false;
+  if (countable){
+    b.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (counted) return;
+      counted = true;
+      b.classList.remove('countable');
+      b.classList.add('popped');
+      onCount && onCount();
+    }, { passive:false });
+  }
+
+  $('bubbles').appendChild(b);
+  const t = setTimeout(() => {
+    if (!counted && countable) b.classList.add('missed');
+    onPass && onPass(counted);
+    setTimeout(() => b.remove(), 260);
+  }, dur * 1000);
+  bubbleTimers.push(t);
+  return b;
+}
+
+function clearBubbles(){
+  bubbleTimers.forEach(clearTimeout);
+  bubbleTimers = [];
+  $('bubbles').innerHTML = '';
+}
+
+/* 자동 모드 — 보여주기용 기포를 n개 흘려보낸다 */
+function renderBubbles(n){
+  clearBubbles();
+  if (n <= 0) return;
   const fever = isFever();
-  // 피버 타임에는 훨씬 많이, 훨씬 빠르게
-  const n   = fever ? 60 : Math.min(30, Math.round(rate / 2.4 * 30));
-  const dur = fever ? 0.85 : 3.4 - Math.min(rate / 2.4, 1) * 2.0;
-  for (let i = 0; i < n; i++){
-    const b = document.createElement('div');
-    b.className = 'bubble' + (fever ? ' fever' : '');
-    // 시작 지름 — 상승하며 3.1배까지 부푼다
-    const size = (fever ? 3.4 : 2.8) + Math.random() * 2.4;
-    b.style.width = b.style.height = size + 'px';
-    b.style.left = (fever ? 16 + Math.random() * 68 : 24 + Math.random() * 52) + '%';
-    b.style.bottom = (28 + Math.random() * 60) + 'px';
-    b.style.animationDuration = (dur + Math.random() * (fever ? 0.3 : 0.9)) + 's';
-    b.style.animationDelay = (Math.random() * (fever ? 0.8 : 2.2)) + 's';
-    if (fever) b.style.setProperty('--hue', Math.round(Math.random() * 360));
-    box.appendChild(b);
+  const total = fever ? Math.max(n, 34) : n;
+  const gap = MEASURE_MS / Math.max(total, 1);
+  for (let i = 0; i < total; i++){
+    const t = setTimeout(() => spawnBubble({ countable:false, fever }), i * gap + Math.random() * gap * 0.5);
+    bubbleTimers.push(t);
   }
 }
 
@@ -1390,7 +1798,7 @@ const slotKey = (x, cond) => `${cond}|${x}`;
 /* 현재 조작 변인값 + 현재 통제 조건에서의 측정 기록 */
 function currentSlot(){
   const cfg = TABS[state.activeTab];
-  return state.experiments[state.activeTab][slotKey(state[cfg.key], condSig())] || null;
+  return store()[slotKey(state[cfg.key], condSig())] || null;
 }
 
 function renderHint(){
@@ -1426,20 +1834,58 @@ function startMeasure(){
     return;
   }
 
-  const result = measure(state.light, state.co2, state.temp);
+  const actual  = measure(state.light, state.co2, state.temp);
+  const manual  = isManual();
+  const dur     = M().ms;
+  // 직접 세기에서는 실제로 흘려보낼 기포 수가 곧 정답이다
+  const emitted = manual ? actual : 0;
+  let counted = 0, passed = 0;
 
   state.isMeasuring = true;
   const btn = $('measureBtn');
   btn.disabled = true;
   btn.classList.remove('busy'); void btn.offsetWidth; btn.classList.add('busy');
-  $('measureLabel').innerHTML = `<span class="spinner"></span>산소 발생량 측정 중…`;
+  $('measureLabel').innerHTML = manual
+    ? `<span class="spinner"></span>기포를 클릭해 세세요`
+    : `<span class="spinner"></span>산소 발생량 측정 중…`;
   $('resetBtn').disabled = true;
   syncControls();
-  $('tankStatus').textContent = '측정 중…';
-  $('measureHint').textContent = '4초간 발생하는 기포를 관찰하세요.';
+  $('tankStatus').textContent = manual ? '기포를 놓치지 마세요!' : '측정 중…';
+  $('measureHint').textContent = manual
+    ? '깔때기 목을 지나는 기포를 하나씩 눌러 세어 주세요. 놓치면 오차가 생깁니다.'
+    : '장치가 20초간 모인 산소의 부피를 측정합니다.';
+
   const bar = $('progress');
-  bar.classList.remove('run'); void bar.offsetWidth; bar.classList.add('run');
-  renderBubbles(result);
+  bar.classList.remove('run'); void bar.offsetWidth;
+  bar.style.setProperty('--dur', dur + 'ms');
+  bar.classList.add('run');
+
+  if (manual){
+    $('counter').hidden = false;
+    $('counterNum').textContent = '0';
+    $('zone').classList.add('on');
+    clearBubbles();
+    const gap = dur / Math.max(emitted, 1);
+    for (let i = 0; i < emitted; i++){
+      const t = setTimeout(() => spawnBubble({
+        countable: true,
+        fever: isFever(),
+        onCount: () => {
+          counted++;
+          $('counterNum').textContent = counted;
+          const c = $('counter');
+          c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit');
+          Sfx.bloop(1 + Math.random() * 0.3, 0.12);
+          setGas(counted / Math.max(emitted, 1));
+        },
+        onPass: () => { passed++; },
+      }), i * gap * 0.85 + Math.random() * gap * 0.3);
+      bubbleTimers.push(t);
+    }
+  } else {
+    renderBubbles(Math.round(actual / 2.4 * 26));   // 부피에 비례한 보여주기용 기포
+    setGas(Math.min(1, actual / 2.4));
+  }
 
   // 🌈 피버 타임
   const fever = isFever();
@@ -1452,33 +1898,55 @@ function startMeasure(){
     Sfx.fever();
     award('fever');
   }
-  Sfx.bubbleLoop(fever ? 3.2 : result);
+  if (!manual) Sfx.bubbleLoop(fever ? 3.2 : actual);
 
   setTimeout(() => {
-    const x = state[cfg.key];
+    const recorded = manual ? counted : actual;    // 직접 세기는 '학생이 센 값'을 기록한다
+    const x   = state[cfg.key];
     const sig = condSig();
-    const store = state.experiments[state.activeTab];
+    const st  = store();
     // 통제 조건까지 키에 포함해야 조건을 바꿔도 기존 측정이 지워지지 않는다
     const key = slotKey(x, sig);
-    if (!store[key]) store[key] = { x, m: [], cond: sig };
-    store[key].m.push(result);                 // 3회 도달 시 startMeasure에서 이미 차단됨
+    if (!st[key]) st[key] = { x, m: [], actual: [], cond: sig };
+    st[key].m.push(recorded);
+    st[key].actual.push(actual);                   // 채점용 실제값
+
+    if (manual) state.graphed[state.mode][state.activeTab] = false;   // 그래프 갱신 필요
 
     state.isMeasuring = false;
     btn.classList.remove('busy');
     $('resetBtn').disabled = false;
-    $('tankStatus').textContent = `측정값 ${result.toFixed(2)} ml/분`;
+    $('counter').hidden = true;
+    $('zone').classList.remove('on');
+
+    const miss = manual ? actual - counted : 0;
+    $('tankStatus').textContent = manual
+      ? (miss === 0 ? `정확! ${counted}개 모두 셌어요` : `${counted}개 셈 (실제 ${actual}개)`)
+      : `측정값 ${fmt(actual)} ${M().unit}`;
+
     bar.classList.remove('run');
-    $('bubbles').innerHTML = '';
+    clearBubbles();
     const tag = document.getElementById('feverTag');
     if (tag) tag.remove();
     syncControls();
     renderCondWarn(); renderTable(); renderChart(); renderHint();
 
+    if (manual){
+      if (miss === 0) toast('🎯', '정확하게 셌습니다!', `${counted}개 — 오차 없이 기록했습니다.`, true);
+      else toast('⚠️', `${Math.abs(miss)}개 차이`,
+        `${counted}개로 셌지만 실제는 ${actual}개였습니다. 표에서 <b>다시 세기</b>를 누를 수 있어요.`);
+    }
+
     if (state.temp >= 50) award('mad');              // 🧪 매드 사이언티스트
-    checkMission(result);
+    checkMission(actual);
     checkBadges();
     renderMission();                                 // 잠금 안내의 남은 개수 갱신
-  }, 4000);
+  }, dur);
+}
+
+/* 시험관에 모인 산소 기둥 (0~1) */
+function setGas(frac){
+  $('gasCol').style.height = Math.max(0, Math.min(1, frac)) * 92 + 'px';
 }
 
 /* ---------------------------------------------------------------
@@ -1486,7 +1954,7 @@ function startMeasure(){
 ----------------------------------------------------------------*/
 function rows(){
   const cur = condSig();
-  return Object.values(state.experiments[state.activeTab])
+  return Object.values(store())
     .map(({ x, m, cond }) => ({
       x, m, cond,
       avg: m.length === 3 ? m.reduce((s,v) => s+v, 0) / 3 : null,
@@ -1525,25 +1993,53 @@ function renderTable(){
     return;
   }
   const cur = condSig();
+  const manual = isManual();
+
   $('tableWrap').innerHTML = `
     <table>
       <thead><tr>
-        <th>${cfg.name} (${cfg.unit})</th><th>1회</th><th>2회</th><th>3회</th><th>평균 (ml/분)</th>
+        <th>${cfg.name} (${cfg.unit})</th><th>1회</th><th>2회</th><th>3회</th>
+        <th>평균 (${M().unit})</th>${manual ? '<th></th>' : ''}
       </tr></thead>
       <tbody>${data.map(r => {
         const bad = r.cond !== cur;
+        const hasErr = manual && (r.actual || []).some((a, i) => a !== r.m[i]);
         return `
         <tr title="${bad ? condText(r.cond) + ' 조건에서 측정' : ''}">
           <td class="${bad ? 'mismatch' : ''}">${r.x}${bad ? '<span class="flag">다른 조건</span>' : ''}</td>
-          ${[0,1,2].map(i => r.m[i] === undefined
-              ? `<td class="pending">–</td>`
-              : `<td class="${bad ? 'mismatch' : ''}">${r.m[i].toFixed(2)}</td>`).join('')}
+          ${[0,1,2].map(i => {
+            if (r.m[i] === undefined) return `<td class="pending">–</td>`;
+            // 직접 세기 — 실제 발생 수와 다르면 빨간색으로 표시하고 차이를 알려준다
+            const a = (r.actual || [])[i];
+            const wrong = manual && a !== undefined && a !== r.m[i];
+            const diff = wrong ? r.m[i] - a : 0;
+            return `<td class="${bad ? 'mismatch' : ''} ${wrong ? 'wrong' : ''}"
+                       title="${wrong ? `실제 ${a}개 — ${diff > 0 ? '더 셈' : '놓침'} ${Math.abs(diff)}개` : ''}"
+                    >${fmt(r.m[i])}${wrong ? `<i class="d">${diff > 0 ? '+' : '−'}${Math.abs(diff)}</i>` : ''}</td>`;
+          }).join('')}
           ${r.avg === null
               ? `<td class="pending">–</td>`
-              : `<td class="${bad ? 'mismatch' : 'avg'}">${r.avg.toFixed(2)}</td>`}
+              : `<td class="${bad ? 'mismatch' : (hasErr ? 'avg warn' : 'avg')}">${fmt(r.avg)}</td>`}
+          ${manual ? `<td class="act"><button class="redo" data-redo="${esc(slotKey(r.x, r.cond))}"
+                        title="이 조건을 지우고 다시 셉니다">다시 세기</button></td>` : ''}
         </tr>`; }).join('')}
       </tbody>
     </table>`;
+
+  // 다시 세기 — 해당 조건의 기록만 지우고 그 조건으로 슬라이더를 맞춰 준다
+  $('tableWrap').querySelectorAll('[data-redo]').forEach(b =>
+    b.addEventListener('click', () => {
+      if (state.isMeasuring) return;
+      const key = b.dataset.redo;
+      const rec = store()[key];
+      if (!rec) return;
+      delete store()[key];
+      state[cfg.key] = rec.x;                       // 그 조건으로 되돌린다
+      state.graphed[state.mode][state.activeTab] = false;
+      renderAll();
+      toast('🔄', '다시 셀 준비가 됐습니다',
+        `${cfg.name} ${rec.x}${cfg.unit} 조건의 기록을 지웠습니다. 측정하기를 눌러 주세요.`);
+    }));
 }
 
 /* ---------------------------------------------------------------
@@ -1592,7 +2088,39 @@ function renderChart(){
   const cur  = condSig();
   // 3회 완료 + 현재 통제 조건에서 측정한 데이터만 그린다
   const pts  = rows().filter(r => r.avg !== null && r.cond === cur);
-  const yMax = cfg.yMax;
+
+  // 직접 세기 모드에서는 '그래프로 변환'을 눌러야 그려진다
+  const chart = $('chart'), gate = $('graphGate');
+  if (isManual() && !state.graphed.manual[state.activeTab]){
+    chart.style.display = 'none';
+    gate.hidden = false;
+    gate.innerHTML = `
+      <div class="tographs">
+        <svg width="52" height="46" viewBox="0 0 72 64" fill="none" aria-hidden="true">
+          <path d="M8 52 L26 34 L42 42 L62 14" stroke="var(--grid)" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+          <circle cx="8" cy="52" r="4" fill="var(--grid)"/>
+          <circle cx="26" cy="34" r="4" fill="var(--grid)"/>
+          <circle cx="42" cy="42" r="4" fill="var(--grid)"/>
+          <circle cx="62" cy="14" r="4" fill="var(--grid)"/>
+        </svg>
+        <button class="go" id="toGraph" ${pts.length ? '' : 'disabled'}>표를 그래프로 변환</button>
+        <p>${pts.length
+              ? `3회 측정을 마친 조건 <b>${pts.length}개</b>를 그래프로 그립니다.`
+              : '한 조건에서 3회 측정을 마치면 변환할 수 있습니다.'}</p>
+      </div>`;
+    const go = document.getElementById('toGraph');
+    if (go) go.addEventListener('click', () => {
+      state.graphed.manual[state.activeTab] = true;
+      renderChart();
+      Sfx.fanfare();
+    });
+    $('chartTitle').textContent = `${cfg.name}에 따른 ${isManual() ? '기포 수' : '산소 발생량'}`;
+    return;
+  }
+  chart.style.display = '';
+  gate.hidden = true;
+  const yMax = M().yMax;
   const sx = v => PAD.l + (v - cfg.min) / (cfg.max - cfg.min) * PW;
   const sy = v => PAD.t + PH - (v / yMax) * PH;
 
@@ -1622,7 +2150,7 @@ function renderChart(){
   s += `<text x="${PAD.l+PW/2}" y="${H-6}" text-anchor="middle" font-size="11.5"
           fill="var(--text-secondary)">${cfg.name} (${cfg.unit})</text>`;
   s += `<text x="14" y="${PAD.t+PH/2}" text-anchor="middle" font-size="11.5"
-          fill="var(--text-secondary)" transform="rotate(-90 14 ${PAD.t+PH/2})">산소 생성량 (ml/분)</text>`;
+          fill="var(--text-secondary)" transform="rotate(-90 14 ${PAD.t+PH/2})">${M().yLabel}</text>`;
 
   if (!pts.length){
     const cx = PAD.l + PW/2, cy = PAD.t + PH/2;
@@ -1653,12 +2181,12 @@ function renderChart(){
     ends.forEach(p => {
       s += `<text x="${sx(p.x)}" y="${sy(p.avg)-11}" text-anchor="middle" font-size="11"
               font-weight="650" fill="var(--text-primary)"
-              style="font-variant-numeric:tabular-nums">${p.avg.toFixed(2)}</text>`;
+              style="font-variant-numeric:tabular-nums">${fmt(p.avg)}</text>`;
     });
     // 히트 타깃 (마크보다 크게)
     pts.forEach(p => {
       s += `<circle cx="${sx(p.x)}" cy="${sy(p.avg)}" r="16" fill="transparent"
-              data-x="${p.x}" data-y="${p.avg.toFixed(2)}" class="hit" style="cursor:pointer"/>`;
+              data-x="${p.x}" data-y="${fmt(p.avg)}" class="hit" style="cursor:pointer"/>`;
     });
   }
 
@@ -1671,7 +2199,7 @@ function renderChart(){
     h.addEventListener('mouseenter', e => {
       const r = svg.getBoundingClientRect();
       const scale = r.width / W;
-      tip.innerHTML = `${cfg.name} ${h.dataset.x}${cfg.unit}<br><b>${h.dataset.y}</b> ml/분`;
+      tip.innerHTML = `${cfg.name} ${h.dataset.x}${cfg.unit}<br><b>${h.dataset.y}</b> ${M().unit}`;
       tip.classList.add('on');
       tip.style.left = (Number(h.getAttribute('cx')) * scale - tip.offsetWidth/2) + 'px';
       tip.style.top  = (Number(h.getAttribute('cy')) * scale - tip.offsetHeight - 12) + 'px';
@@ -1695,7 +2223,7 @@ function switchTab(i){
 
 function renderAll(){
   renderControls(); renderTank(); renderCondWarn();
-  renderTable(); renderChart(); renderHint(); renderMission();
+  renderTable(); renderChart(); renderHint(); renderMission(); renderMyHyp();
 }
 
 /* ---------------------------------------------------------------
@@ -1973,9 +2501,9 @@ function award(id){
 
 /* 탭별 완성 개수 (3회 완료 + 같은 통제 조건) */
 function completedCount(tab){
-  const store = state.experiments[tab];
+  const st = state.data[state.mode][tab];
   const byCond = {};
-  Object.values(store).forEach(({ m, cond }) => {
+  Object.values(st).forEach(({ m, cond }) => {
     if (m.length === 3) byCond[cond] = (byCond[cond] || 0) + 1;
   });
   return Math.max(0, ...Object.values(byCond), 0);
@@ -2488,11 +3016,11 @@ function exportCSV(){
     [q('조작 변인'), q(cfg.name)],
     [q('측정 오차 모드'), q(state.stableNoise ? '비례 오차 ±5%' : '절대 오차 ±0.1')],
     [],
-    [q(`${cfg.name} (${cfg.unit})`), q('1회'), q('2회'), q('3회'), q('평균 (ml/분)'), q('통제 변인')],
+    [q(`${cfg.name} (${cfg.unit})`), q('1회'), q('2회'), q('3회'), q(`평균 (${M().unit})`), q('통제 변인')],
     ...data.map(r => [
       r.x,
-      ...[0,1,2].map(i => r.m[i] === undefined ? '' : r.m[i].toFixed(2)),
-      r.avg === null ? '' : r.avg.toFixed(2),
+      ...[0,1,2].map(i => r.m[i] === undefined ? '' : fmt(r.m[i])),
+      r.avg === null ? '' : fmt(r.avg),
       q(condText(r.cond)),
     ]),
   ].map(row => row.join(',')).join('\r\n');
@@ -2561,11 +3089,26 @@ $('restoreBtn').addEventListener('click', () => {
 document.querySelectorAll('.tab').forEach(t =>
   t.addEventListener('click', () => switchTab(Number(t.dataset.tab))));
 
+/* 측정 방식 전환 — 방식마다 데이터·단위가 다르므로 화면 전체를 다시 그린다 */
+document.querySelectorAll('.mode').forEach(b =>
+  b.addEventListener('click', () => {
+    if (state.isMeasuring || state.mode === b.dataset.mode) return;
+    state.mode = b.dataset.mode;
+    document.querySelectorAll('.mode').forEach(x =>
+      x.setAttribute('aria-selected', String(x.dataset.mode === state.mode)));
+    Object.assign(state, TABS[state.activeTab].fixed);
+    $('tankStatus').textContent = '대기 중';
+    setGas(0);
+    clearBubbles();
+    renderAll();
+  }));
+
 $('measureBtn').addEventListener('click', startMeasure);
 
 $('resetBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
-  state.experiments[state.activeTab] = {};
+  state.data[state.mode][state.activeTab] = {};
+  state.graphed[state.mode][state.activeTab] = !isManual();
   $('tankStatus').textContent = '대기 중';
   renderCondWarn(); renderTable(); renderChart(); renderHint();
 });
@@ -2573,6 +3116,7 @@ $('resetBtn').addEventListener('click', () => {
 $('stableNoise').addEventListener('change', e => { state.stableNoise = e.target.checked; });
 
 renderShelf();
+renderPlan();
 switchTab(0);
 
 // Firebase 모듈이 준비되면 공유 명단을 켠다 (실패하면 로컬 저장으로 동작)
