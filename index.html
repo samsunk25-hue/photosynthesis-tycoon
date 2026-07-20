@@ -98,46 +98,109 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 @media (max-width:900px){ .plan-grid{grid-template-columns:1fr} }
 
 .plan-card{
-  display:flex;flex-direction:column;gap:12px;
-  background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:18px;
-  transition:border-color .18s, transform .18s;
+  --hue:210;
+  position:relative;display:flex;flex-direction:column;gap:11px;
+  background:
+    linear-gradient(180deg, hsl(var(--hue) 92% 96% / .85) 0%, var(--surface-1) 34%);
+  border:2px solid hsl(var(--hue) 70% 84%);
+  border-radius:22px;padding:18px 17px 17px;
+  box-shadow:0 4px 0 hsl(var(--hue) 60% 88%), 0 10px 22px rgba(0,0,0,.06);
+  transition:transform .2s cubic-bezier(.2,1.4,.4,1), box-shadow .2s, border-color .2s;
 }
-.plan-card:hover{border-color:color-mix(in srgb,var(--series-1) 40%,transparent)}
-.plan-card.ready{border-color:var(--series-1);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 16%,transparent)}
-.plan-no{
-  display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
-  color:var(--series-1);
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .plan-card{
+    background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .8) 0%, var(--surface-1) 36%);
+    border-color:hsl(var(--hue) 40% 34%);
+    box-shadow:0 4px 0 hsl(var(--hue) 40% 24%), 0 10px 22px rgba(0,0,0,.3);
+  }
 }
-.plan-no i{
-  font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--series-1);
-  color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;
+:root[data-theme="dark"] .plan-card{
+  background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .8) 0%, var(--surface-1) 36%);
+  border-color:hsl(var(--hue) 40% 34%);
+  box-shadow:0 4px 0 hsl(var(--hue) 40% 24%), 0 10px 22px rgba(0,0,0,.3);
 }
-.plan-card h3{margin:0;font-size:16px;font-weight:700;line-height:1.4}
-.vars{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:12.5px;
-  padding:11px 12px;border-radius:9px;background:var(--page)}
-.vars dt{color:var(--muted);font-weight:600;white-space:nowrap}
-.vars dd{margin:0;color:var(--text-primary)}
-.hyp-title{font-size:12.5px;font-weight:700;margin:2px 0 -4px}
-.hyp-title small{font-weight:500;color:var(--muted);margin-left:5px}
-.hyps{display:flex;flex-direction:column;gap:6px}
-.hyp{
-  display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;
-  border:1.5px solid var(--border);background:transparent;color:var(--text-primary);
-  font:inherit;font-size:12.5px;text-align:left;transition:border-color .15s,background .15s;
+.plan-card:hover{transform:translateY(-4px)}
+.plan-card.ready{
+  border-color:hsl(var(--hue) 78% 58%);
+  box-shadow:0 4px 0 hsl(var(--hue) 78% 62%), 0 12px 26px hsl(var(--hue) 60% 50% / .22);
 }
-.hyp:hover{border-color:color-mix(in srgb,var(--series-1) 50%,transparent)}
-.hyp .em{font-size:16px;flex:none}
-.hyp[aria-pressed="true"]{
-  border-color:var(--series-1);background:color-mix(in srgb,var(--series-1) 12%,transparent);
-  font-weight:650;
+
+.pc-top{display:flex;align-items:center;gap:10px}
+.pc-em{
+  font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));
+  animation:wobble 3.4s ease-in-out infinite;
 }
+@keyframes wobble{0%,100%{transform:rotate(-7deg) scale(1)}50%{transform:rotate(7deg) scale(1.08)}}
+.plan-card:nth-child(2) .pc-em{animation-delay:.5s}
+.plan-card:nth-child(3) .pc-em{animation-delay:1s}
+.pc-no{
+  padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:800;
+  background:hsl(var(--hue) 80% 55%);color:#fff;
+}
+.plan-card h3{margin:0;font-size:15.5px;font-weight:750;line-height:1.45}
+.pc-ctrl{
+  font-size:11.5px;color:var(--text-secondary);padding:8px 11px;border-radius:11px;
+  background:hsl(var(--hue) 60% 96% / .7);border:1px dashed hsl(var(--hue) 55% 78%);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .pc-ctrl{
+    background:hsl(var(--hue) 30% 22% / .5);border-color:hsl(var(--hue) 30% 40%)}
+}
+:root[data-theme="dark"] .pc-ctrl{
+  background:hsl(var(--hue) 30% 22% / .5);border-color:hsl(var(--hue) 30% 40%)}
+.pc-ctrl b{color:var(--text-primary);margin-right:5px}
+
+.hyp-box{
+  padding:12px;border-radius:14px;background:var(--page);
+  border:1.5px solid var(--border);display:flex;flex-direction:column;gap:9px;
+}
+.hyp-title{margin:0;font-size:12.5px;font-weight:800}
+.hyp-line{display:flex;flex-direction:column;gap:6px}
+.hyp-fix{font-size:12px;font-weight:700;color:var(--text-secondary)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:99px;
+  border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);
+  font:inherit;font-size:12px;font-weight:600;cursor:pointer;
+  transition:transform .14s cubic-bezier(.2,1.6,.4,1), border-color .14s, background .14s;
+}
+.chip .em{font-size:14px}
+.chip:hover{transform:translateY(-2px) scale(1.03);
+  border-color:hsl(var(--hue) 70% 62%)}
+.chip[aria-pressed="true"]{
+  background:hsl(var(--hue) 80% 55%);border-color:hsl(var(--hue) 80% 48%);
+  color:#fff;font-weight:750;
+  box-shadow:0 3px 0 hsl(var(--hue) 80% 42%);
+}
+.hyp-said{
+  margin:2px 0 0;font-size:12.5px;line-height:1.5;text-align:center;
+  padding:9px 10px;border-radius:11px;color:var(--muted);
+  background:transparent;border:1.5px dashed var(--border);
+}
+.hyp-said.on{
+  color:var(--text-primary);font-weight:700;
+  background:hsl(var(--hue) 85% 95%);border:1.5px solid hsl(var(--hue) 70% 70%);
+  animation:saidPop .35s cubic-bezier(.2,1.6,.4,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .hyp-said.on{
+    background:hsl(var(--hue) 40% 24%);border-color:hsl(var(--hue) 45% 44%)}
+}
+:root[data-theme="dark"] .hyp-said.on{
+  background:hsl(var(--hue) 40% 24%);border-color:hsl(var(--hue) 45% 44%)}
+@keyframes saidPop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
+
 .plan-go{
-  margin-top:auto;padding:12px;border:0;border-radius:10px;cursor:pointer;
-  background:var(--series-1);color:#fff;font:inherit;font-size:14px;font-weight:700;
+  margin-top:auto;padding:13px;border:0;border-radius:14px;cursor:pointer;
+  background:hsl(var(--hue) 80% 52%);color:#fff;font:inherit;font-size:14.5px;font-weight:800;
+  box-shadow:0 4px 0 hsl(var(--hue) 80% 40%);
+  transition:transform .12s, box-shadow .12s, filter .15s;
 }
-.plan-go:hover{filter:brightness(1.1)}
-.plan-go.dim{background:var(--grid);color:var(--muted)}
+.plan-go:hover{filter:brightness(1.06);transform:translateY(-2px);
+  box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
+.plan-go:active{transform:translateY(2px);box-shadow:0 2px 0 hsl(var(--hue) 80% 40%)}
+.plan-go.dim{background:var(--grid);color:var(--muted);box-shadow:0 4px 0 var(--baseline)}
+.plan-go.dim:hover{transform:none;filter:none;box-shadow:0 4px 0 var(--baseline)}
 
 /* 실험실 상단 — 계획으로 돌아가기 + 내 가설 */
 .labbar{
@@ -475,6 +538,7 @@ td.act{text-align:right;padding-right:0}
   backdrop-filter:blur(6px);color:#fff;
 }
 .counter[hidden]{display:none}
+.counter b.secret{visibility:hidden}
 .counter b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
 .counter small{font-size:11px;opacity:.85}
 .counter.hit b{animation:bump .22s ease-out}
@@ -1035,7 +1099,7 @@ td.pending{color:var(--muted)}
       </label>
     </div>
   </div>
-  <div class="shelf">
+  <div class="shelf" id="shelfWrap" hidden>
     <div class="shelf-badges" id="shelf"></div>
     <button class="mission-btn" id="missionBtn">
       <span aria-hidden="true">🎯</span><span id="missionBtnText">히든 미션</span>
@@ -1135,7 +1199,7 @@ td.pending{color:var(--muted)}
 
         <div class="tank-status" id="tankStatus">대기 중</div>
         <div class="counter" id="counter" hidden>
-          <b id="counterNum">0</b><small>기포</small>
+          <b id="counterNum">0</b><small id="counterLabel">기포를 세는 중…</small>
         </div>
       </div>
 
@@ -1192,7 +1256,7 @@ td.pending{color:var(--muted)}
   </section>
 </main>
 
-<section class="hall">
+<section class="hall" id="hall" hidden>
   <div class="card">
     <div class="head-row">
       <h2>🏅 히든 미션 성공자</h2>
@@ -1404,82 +1468,122 @@ const $ = id => document.getElementById(id);
    실험 전에 결과를 예상(가설)하게 한 뒤 시작한다.
 ----------------------------------------------------------------*/
 const PLANS = [
-  { q:'빛의 세기가 셀수록 광합성이 활발해질까?',
-    manip:'빛의 세기 (0 ~ 100%)',
-    ctrl :'CO₂ 농도 100%, 온도 25°C',
-    dep  :'발생한 산소의 양',
-    hyps:[
-      { em:'📈', t:'빛이 셀수록 계속 늘어난다' },
-      { em:'📊', t:'늘어나다가 어느 지점부터 일정해진다' },
-      { em:'➡️', t:'빛과 관계없이 일정하다' },
-      { em:'📉', t:'빛이 셀수록 오히려 줄어든다' },
-    ], answer:1,
-    why:'빛이 약할 때는 빛이 부족해 광합성이 제한되지만, 어느 세기를 넘으면 CO₂ 등 다른 요인이 한계가 되어 더 늘지 않습니다. (포화 현상)' },
+  { em:'💡', hue:42,
+    q:'빛의 세기가 셀수록 광합성이 활발해질까?',
+    ctrl:'CO₂ 농도 100%, 온도 25°C',
+    // 조작 변인을 어떻게 할 것인가
+    ops:[{ em:'🔆', t:'세게 하면' }, { em:'🌙', t:'약하게 하면' }],
+    // 그러면 종속 변인은 어떻게 되는가
+    deps:[
+      { em:'📈', t:'계속 늘어난다' },
+      { em:'📊', t:'늘다가 일정해진다' },
+      { em:'➡️', t:'변하지 않는다' },
+      { em:'📉', t:'줄어든다' },
+    ],
+    answer:{ op:0, dep:1 },
+    why:'빛이 약할 때는 빛이 부족해 광합성이 제한되지만, 어느 세기를 넘으면 CO₂ 같은 다른 요인이 한계가 되어 더 늘지 않습니다. 이를 <b>포화</b>라고 합니다.' },
 
-  { q:'이산화 탄소가 많을수록 광합성이 활발해질까?',
-    manip:'CO₂ 농도 (0 ~ 100%)',
-    ctrl :'빛의 세기 100%, 온도 25°C',
-    dep  :'발생한 산소의 양',
-    hyps:[
-      { em:'📈', t:'CO₂가 많을수록 계속 늘어난다' },
-      { em:'📊', t:'늘어나다가 어느 지점부터 일정해진다' },
-      { em:'➡️', t:'CO₂와 관계없이 일정하다' },
-      { em:'📉', t:'CO₂가 많을수록 오히려 줄어든다' },
-    ], answer:1,
-    why:'CO₂도 빛과 마찬가지로 포화 곡선을 그립니다. 부족할 때는 크게 늘지만, 충분해지면 다른 요인이 한계가 됩니다.' },
+  { em:'🫧', hue:158,
+    q:'이산화 탄소가 많을수록 광합성이 활발해질까?',
+    ctrl:'빛의 세기 100%, 온도 25°C',
+    ops:[{ em:'⬆️', t:'많게 하면' }, { em:'⬇️', t:'적게 하면' }],
+    deps:[
+      { em:'📈', t:'계속 늘어난다' },
+      { em:'📊', t:'늘다가 일정해진다' },
+      { em:'➡️', t:'변하지 않는다' },
+      { em:'📉', t:'줄어든다' },
+    ],
+    answer:{ op:0, dep:1 },
+    why:'CO₂도 빛과 마찬가지로 <b>포화 곡선</b>을 그립니다. 부족할 때는 크게 늘지만, 충분해지면 다른 요인이 한계가 됩니다.' },
 
-  { q:'온도가 높을수록 광합성이 활발해질까?',
-    manip:'온도 (0 ~ 50°C)',
-    ctrl :'빛의 세기 100%, CO₂ 농도 100%',
-    dep  :'발생한 산소의 양',
-    hyps:[
-      { em:'📈', t:'온도가 높을수록 계속 늘어난다' },
-      { em:'🔺', t:'어느 온도까지 늘다가 그 뒤엔 급히 줄어든다' },
-      { em:'➡️', t:'온도와 관계없이 일정하다' },
-      { em:'📉', t:'온도가 높을수록 계속 줄어든다' },
-    ], answer:1,
-    why:'광합성은 효소가 하는 일입니다. 35°C 부근까지는 활발해지지만, 그보다 뜨거워지면 효소가 변성되어 급격히 멈춥니다.' },
+  { em:'🌡️', hue:16,
+    q:'온도가 높을수록 광합성이 활발해질까?',
+    ctrl:'빛의 세기 100%, CO₂ 농도 100%',
+    ops:[{ em:'🔥', t:'높이면' }, { em:'❄️', t:'낮추면' }],
+    deps:[
+      { em:'📈', t:'계속 늘어난다' },
+      { em:'🔺', t:'늘다가 급히 줄어든다' },
+      { em:'➡️', t:'변하지 않는다' },
+      { em:'📉', t:'계속 줄어든다' },
+    ],
+    answer:{ op:0, dep:1 },
+    why:'광합성은 <b>효소</b>가 하는 일입니다. 35°C 부근까지는 활발해지지만, 그보다 뜨거워지면 효소가 변성되어 급격히 멈춥니다.' },
 ];
 
-state.hyp = [null, null, null];          // 탐구별로 고른 가설
+state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
+const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
+
+/* 고른 가설을 한 문장으로 */
+function hypText(i){
+  const h = state.hyp[i], p = PLANS[i];
+  if (!hypReady(i)) return '';
+  return `${TABS[i].name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}`;
+}
 
 function renderPlan(){
-  $('planGrid').innerHTML = PLANS.map((p, i) => `
-    <div class="plan-card ${state.hyp[i] !== null ? 'ready' : ''}" data-card="${i}">
-      <span class="plan-no"><i>${i + 1}</i>탐구 ${i + 1} · ${TABS[i].name}</span>
-      <h3>${p.q}</h3>
-      <dl class="vars">
-        <dt>조작 변인</dt><dd>${p.manip}</dd>
-        <dt>통제 변인</dt><dd>${p.ctrl}</dd>
-        <dt>종속 변인</dt><dd>${p.dep}</dd>
-      </dl>
-      <p class="hyp-title">나의 가설<small>결과를 예상해 보세요</small></p>
-      <div class="hyps">
-        ${p.hyps.map((h, k) => `
-          <button class="hyp" data-h="${i}-${k}"
-                  aria-pressed="${state.hyp[i] === k}">
-            <span class="em">${h.em}</span>${h.t}
-          </button>`).join('')}
+  $('planGrid').innerHTML = PLANS.map((p, i) => {
+    const h = state.hyp[i], ready = hypReady(i);
+    return `
+    <div class="plan-card ${ready ? 'ready' : ''}" style="--hue:${p.hue}">
+      <div class="pc-top">
+        <span class="pc-em">${p.em}</span>
+        <span class="pc-no">탐구 ${i + 1}</span>
       </div>
-      <button class="plan-go ${state.hyp[i] === null ? 'dim' : ''}" data-go="${i}">
-        ${state.hyp[i] === null ? '가설을 먼저 골라 주세요' : `탐구 ${i + 1} 시작하기 →`}
-      </button>
-    </div>`).join('');
+      <h3>${p.q}</h3>
 
-  $('planGrid').querySelectorAll('[data-h]').forEach(b =>
-    b.addEventListener('click', () => {
-      const [i, k] = b.dataset.h.split('-').map(Number);
-      state.hyp[i] = state.hyp[i] === k ? null : k;   // 다시 누르면 해제
-      Sfx.tick();
-      renderPlan();
-    }));
+      <div class="pc-ctrl"><b>같게 할 것</b> ${p.ctrl}</div>
+
+      <div class="hyp-box">
+        <p class="hyp-title">🎯 나의 가설 만들기</p>
+
+        <div class="hyp-line">
+          <span class="hyp-fix">${TABS[i].name}를</span>
+          <div class="chips">
+            ${p.ops.map((o, k) => `
+              <button class="chip" data-op="${i}-${k}" aria-pressed="${h.op === k}">
+                <span class="em">${o.em}</span>${o.t}
+              </button>`).join('')}
+          </div>
+        </div>
+
+        <div class="hyp-line">
+          <span class="hyp-fix">산소 발생량은</span>
+          <div class="chips">
+            ${p.deps.map((d, k) => `
+              <button class="chip" data-dep="${i}-${k}" aria-pressed="${h.dep === k}">
+                <span class="em">${d.em}</span>${d.t}
+              </button>`).join('')}
+          </div>
+        </div>
+
+        <p class="hyp-said ${ready ? 'on' : ''}">
+          ${ready ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
+        </p>
+      </div>
+
+      <button class="plan-go ${ready ? '' : 'dim'}" data-go="${i}">
+        ${ready ? `탐구 ${i + 1} 시작하기 →` : '가설을 완성해 주세요'}
+      </button>
+    </div>`; }).join('');
+
+  const pick = (sel, field) =>
+    $('planGrid').querySelectorAll(sel).forEach(b =>
+      b.addEventListener('click', () => {
+        const [i, k] = b.dataset[field].split('-').map(Number);
+        state.hyp[i][field] = state.hyp[i][field] === k ? null : k;
+        Sfx.tick();
+        renderPlan();
+      }));
+  pick('[data-op]', 'op');
+  pick('[data-dep]', 'dep');
 
   $('planGrid').querySelectorAll('[data-go]').forEach(b =>
     b.addEventListener('click', () => {
       const i = Number(b.dataset.go);
-      if (state.hyp[i] === null){
-        toast('🤔', '가설을 먼저 골라 주세요', '결과를 예상해 보는 것도 탐구의 한 단계입니다.');
-        b.closest('.plan-card').querySelector('.hyps').scrollIntoView({ behavior:'smooth', block:'center' });
+      if (!hypReady(i)){
+        toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
+        b.closest('.plan-card').querySelector('.hyp-box')
+         .scrollIntoView({ behavior:'smooth', block:'center' });
         return;
       }
       openLab(i);
@@ -1490,6 +1594,8 @@ function openLab(tab){
   $('plan').hidden = true;
   document.querySelector('main').hidden = false;
   $('labbar').hidden = false;
+  $('hall').hidden = false;
+  $('shelfWrap').hidden = false;
   switchTab(tab);
   scrollTo({ top:0, behavior:'smooth' });
 }
@@ -1498,6 +1604,8 @@ function backToPlan(){
   if (state.isMeasuring) return;
   document.querySelector('main').hidden = true;
   $('labbar').hidden = true;
+  $('hall').hidden = true;
+  $('shelfWrap').hidden = true;
   $('plan').hidden = false;
   renderPlan();
   scrollTo({ top:0, behavior:'smooth' });
@@ -1506,20 +1614,20 @@ function backToPlan(){
 /* 실험실 상단에 내가 고른 가설을 보여준다.
    그래프를 그린 뒤에는 맞았는지도 알려준다. */
 function renderMyHyp(){
-  const i = state.activeTab, k = state.hyp[i];
+  const i = state.activeTab;
   const el = $('myHyp');
-  if (k === null){ el.hidden = true; return; }
+  if (!hypReady(i)){ el.hidden = true; return; }
   el.hidden = false;
-  const p = PLANS[i];
+  const p = PLANS[i], h = state.hyp[i];
   const graphed = state.graphed[state.mode][i];
   const done = graphed && rows().filter(r => r.avg !== null && r.cond === condSig()).length >= 4;
-  el.className = 'myhyp' + (done ? (k === p.answer ? ' hit' : ' miss') : '');
+  const hit  = h.op === p.answer.op && h.dep === p.answer.dep;
+  el.className = 'myhyp' + (done ? (hit ? ' hit' : ' miss') : '');
   el.innerHTML = done
-    ? (k === p.answer
-        ? `✅ 가설 적중! <b>${p.hyps[k].t}</b>`
-        : `🔍 예상과 달랐어요 — 내 가설: <b>${p.hyps[k].t}</b>`)
-    : `🎯 나의 가설: <b>${p.hyps[k].t}</b>`;
-  el.title = done ? p.why : '실험을 마치면 가설이 맞았는지 확인할 수 있습니다.';
+    ? (hit ? `✅ 가설 적중! <b>${hypText(i)}</b>`
+           : `🔍 예상과 달랐어요 — 내 가설: <b>${hypText(i)}</b>`)
+    : `🎯 나의 가설: <b>${hypText(i)}</b>`;
+  el.title = done ? p.why.replace(/<\/?b>/g, '') : '실험을 마치면 가설이 맞았는지 확인할 수 있습니다.';
 }
 
 $('backPlan').addEventListener('click', backToPlan);
@@ -1861,25 +1969,20 @@ function startMeasure(){
   bar.classList.add('run');
 
   if (manual){
+    // 기포는 눈으로 세기만 한다. 다 흘러간 뒤에 몇 개였는지 적는다.
     $('counter').hidden = false;
     $('counterNum').textContent = '0';
+    $('counterNum').classList.add('secret');     // 진행 중에는 정답을 숨긴다
     $('zone').classList.add('on');
     clearBubbles();
     const gap = dur / Math.max(emitted, 1);
     for (let i = 0; i < emitted; i++){
-      const t = setTimeout(() => spawnBubble({
-        countable: true,
-        fever: isFever(),
-        onCount: () => {
-          counted++;
-          $('counterNum').textContent = counted;
-          const c = $('counter');
-          c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit');
-          Sfx.bloop(1 + Math.random() * 0.3, 0.12);
-          setGas(counted / Math.max(emitted, 1));
-        },
-        onPass: () => { passed++; },
-      }), i * gap * 0.85 + Math.random() * gap * 0.3);
+      const t = setTimeout(() => {
+        spawnBubble({ countable:false, fever:isFever() });
+        passed++;
+        setGas(passed / Math.max(emitted, 1));
+        Sfx.bloop(0.95 + Math.random() * 0.25, 0.09);
+      }, i * gap * 0.9 + Math.random() * gap * 0.25);
       bubbleTimers.push(t);
     }
   } else {
@@ -1901,7 +2004,23 @@ function startMeasure(){
   if (!manual) Sfx.bubbleLoop(fever ? 3.2 : actual);
 
   setTimeout(() => {
-    const recorded = manual ? counted : actual;    // 직접 세기는 '학생이 센 값'을 기록한다
+    if (manual){
+      // 다 흘러간 뒤 학생이 센 수를 직접 적는다
+      state.isMeasuring = false;
+      btn.classList.remove('busy');
+      $('resetBtn').disabled = false;
+      $('counter').hidden = true;
+      $('zone').classList.remove('on');
+      bar.classList.remove('run');
+      clearBubbles();
+      const tg = document.getElementById('feverTag');
+      if (tg) tg.remove();
+      syncControls();
+      $('tankStatus').textContent = '몇 개였나요?';
+      askCount(actual, cfg);
+      return;
+    }
+    const recorded = actual;
     const x   = state[cfg.key];
     const sig = condSig();
     const st  = store();
@@ -1947,6 +2066,51 @@ function startMeasure(){
 /* 시험관에 모인 산소 기둥 (0~1) */
 function setGas(frac){
   $('gasCol').style.height = Math.max(0, Math.min(1, frac)) * 92 + 'px';
+}
+
+/* 직접 세기 — 학생이 센 기포 수를 입력받아 기록한다 */
+function askCount(actual, cfg){
+  openPrompt('🫧 기포는 몇 개였나요?',
+    `${cfg.name} <b>${state[cfg.key]}${cfg.unit}</b> 조건에서 20초 동안 센 기포 수를 적어 주세요.`,
+    { placeholder:'예) 24', okText:'기록하기', cancelText:'이번 측정 버리기',
+      maxlength:3, numeric:true,
+      rule:'숫자만 입력하세요 (0 ~ 99)',
+      handler: v => {
+        const n = Number(String(v).trim());
+        if (!String(v).trim() || !Number.isFinite(n)) return '숫자를 입력해 주세요.';
+        if (!Number.isInteger(n) || n < 0 || n > 99) return '0에서 99 사이의 정수를 입력해 주세요.';
+        recordCount(n, actual, cfg);
+        return null;
+      } });
+}
+
+function recordCount(counted, actual, cfg){
+  const x = state[cfg.key], sig = condSig(), st = store();
+  const key = slotKey(x, sig);
+  if (!st[key]) st[key] = { x, m: [], actual: [], cond: sig };
+  st[key].m.push(counted);
+  st[key].actual.push(actual);
+  state.graphed.manual[state.activeTab] = false;    // 그래프 갱신 필요
+
+  const miss = actual - counted;
+  $('tankStatus').textContent = miss === 0
+    ? `정확! ${counted}개 맞았어요`
+    : `${counted}개로 셌어요 (실제 ${actual}개)`;
+
+  renderCondWarn(); renderTable(); renderChart(); renderHint(); renderMyHyp();
+
+  if (miss === 0){
+    toast('🎯', '정확하게 셌습니다!', `${counted}개 — 오차 없이 기록했습니다.`, true);
+    Sfx.fanfare();
+  } else {
+    toast('⚠️', `${Math.abs(miss)}개 차이`,
+      `${counted}개로 셌지만 실제는 <b>${actual}개</b>였습니다. 표에서 <b>다시 세기</b>를 누를 수 있어요.`);
+  }
+
+  if (state.temp >= 50) award('mad');
+  checkMission(actual);
+  checkBadges();
+  renderMission();
 }
 
 /* ---------------------------------------------------------------
@@ -2662,13 +2826,14 @@ function openModal(title, html, wide){
 
 /* 입력을 받는 팝업 — handler가 문자열을 반환하면 오류로 표시하고 닫지 않는다 */
 function openPrompt(title, html, { placeholder, okText = '확인', cancelText = '건너뛰기',
-                                   handler, rule, maxlength = 5, second }){
+                                   handler, rule, maxlength = 5, second, numeric }){
   openModal(title, html);
   const input = $('modalInput');
   input.value = '';
   input.placeholder = placeholder || '';
   input.maxLength = maxlength;
-  input.type = second ? 'email' : 'text';
+  input.type = numeric ? 'number' : (second ? 'email' : 'text');
+  input.inputMode = numeric ? 'numeric' : 'text';
   const pw = $('modalInput2');
   pw.value = '';
   pw.hidden = !second;                               // 비밀번호 칸은 로그인일 때만
