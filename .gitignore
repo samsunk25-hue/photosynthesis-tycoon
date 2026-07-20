@@ -1,0 +1,16 @@
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 편집기
+.vscode/
+.idea/
+*.swp
+
+# 도구 설정
+.claude/
+
+# 임시 파일
+*.tmp
+*.log

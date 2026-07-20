@@ -1,0 +1,19 @@
+{
+  "name": "산소 팡팡! 광합성 타이쿤",
+  "short_name": "광합성 타이쿤",
+  "description": "빛의 세기·이산화 탄소 농도·온도를 조절하며 검정말의 산소 발생량을 측정하는 가상 실험 시뮬레이션.",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a2740",
+  "theme_color": "#15507a",
+  "categories": ["education", "science"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
