@@ -2271,24 +2271,31 @@ function renderTable(){
               ? `<td class="pending">–</td>`
               : `<td class="${bad ? 'mismatch' : (hasErr ? 'avg warn' : 'avg')}">${fmt(r.avg)}</td>`}
           ${manual ? `<td class="act"><button class="redo" data-redo="${esc(slotKey(r.x, r.cond))}"
-                        title="이 조건을 지우고 다시 셉니다">다시 세기</button></td>` : ''}
+                        title="${r.m.length}회차 기록을 지우고 다시 셉니다">${r.m.length}회차 다시 세기</button></td>` : ''}
         </tr>`; }).join('')}
       </tbody>
     </table>`;
 
-  // 다시 세기 — 해당 조건의 기록만 지우고 그 조건으로 슬라이더를 맞춰 준다
+  // 다시 세기 — 마지막 회차 하나만 지운다 (앞선 기록은 남긴다)
   $('tableWrap').querySelectorAll('[data-redo]').forEach(b =>
     b.addEventListener('click', () => {
       if (state.isMeasuring) return;
       const key = b.dataset.redo;
       const rec = store()[key];
-      if (!rec) return;
-      delete store()[key];
-      state[cfg.key] = rec.x;                       // 그 조건으로 되돌린다
+      if (!rec || !rec.m.length) return;
+
+      const nth = rec.m.length;                     // 몇 회차를 지우는지
+      const removed = rec.m.pop();
+      rec.actual.pop();
+      const x = rec.x;
+      if (!rec.m.length) delete store()[key];       // 다 지워지면 행 자체를 없앤다
+
+      state[cfg.key] = x;                           // 그 조건으로 슬라이더를 맞춰 준다
       state.graphed[state.mode][state.activeTab] = false;
       renderAll();
-      toast('🔄', '다시 셀 준비가 됐습니다',
-        `${cfg.name} ${rec.x}${cfg.unit} 조건의 기록을 지웠습니다. 측정하기를 눌러 주세요.`);
+      toast('🔄', `${nth}회차를 지웠습니다`,
+        `${cfg.name} ${x}${cfg.unit} 조건의 ${nth}회차(${fmt(removed)}${M().unit})를 지웠습니다. ` +
+        `측정하기를 눌러 다시 세어 보세요.`);
     }));
 }
 
