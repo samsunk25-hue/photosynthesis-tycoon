@@ -893,7 +893,7 @@ td.act{text-align:right;padding-right:0}
   border:1px solid var(--border);font-size:12px;font-weight:550;border-radius:7px;cursor:pointer;
 }
 .btn-ghost:hover{color:var(--text-primary)}
-.progress{height:3px;background:var(--grid);border-radius:2px;margin-top:9px;overflow:hidden}
+.progress{height:4px;background:var(--grid);border-radius:2px;margin:9px 0 16px;overflow:hidden}
 .progress span{display:block;height:100%;width:0;background:var(--series-1);border-radius:2px}
 .progress.run span{animation:fill var(--dur,4s) linear forwards}
 @keyframes fill{to{width:100%}}
@@ -1220,6 +1220,12 @@ td.pending{color:var(--muted)}
         </div>
       </div>
 
+      <button class="btn" id="measureBtn">
+        <span class="wave"></span>
+        <span class="label" id="measureLabel">산소 생성량 측정하기</span>
+      </button>
+      <div class="progress" id="progress"><span></span></div>
+
       <div class="ctrl-head">
         <h2>환경 요인 설정</h2>
         <button class="btn-ghost" id="restoreBtn">권장 통제값으로 되돌리기</button>
@@ -1229,11 +1235,6 @@ td.pending{color:var(--muted)}
     </div>
 
     <div class="card">
-      <button class="btn" id="measureBtn">
-        <span class="wave"></span>
-        <span class="label" id="measureLabel">산소 생성량 측정하기</span>
-      </button>
-      <div class="progress" id="progress"><span></span></div>
       <p class="hint" style="margin-top:9px" id="measureHint">같은 조건에서 3회 측정하면 평균이 계산되어 그래프에 표시됩니다.</p>
       <label class="opt">
         <input type="checkbox" id="stableNoise" checked>
@@ -1971,13 +1972,13 @@ function startMeasure(){
   btn.disabled = true;
   btn.classList.remove('busy'); void btn.offsetWidth; btn.classList.add('busy');
   $('measureLabel').innerHTML = manual
-    ? `<span class="spinner"></span>기포를 클릭해 세세요`
+    ? `<span class="spinner"></span>기포를 세는 중… (${dur/1000}초)`
     : `<span class="spinner"></span>산소 발생량 측정 중…`;
   $('resetBtn').disabled = true;
   syncControls();
-  $('tankStatus').textContent = manual ? '기포를 놓치지 마세요!' : '측정 중…';
+  $('tankStatus').textContent = manual ? '기포를 세어 보세요 👀' : '측정 중…';
   $('measureHint').textContent = manual
-    ? '깔때기 목을 지나는 기포를 하나씩 눌러 세어 주세요. 놓치면 오차가 생깁니다.'
+    ? '깔때기 목을 지나가는 기포를 눈으로 세어 주세요. 끝나면 몇 개였는지 적습니다.'
     : '장치가 20초간 모인 산소의 부피를 측정합니다.';
 
   const bar = $('progress');
