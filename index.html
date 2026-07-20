@@ -222,9 +222,12 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .backbtn:active{transform:translateY(2px);
   box-shadow:0 1px 0 color-mix(in srgb,var(--series-1) 65%,#000)}
 .myhyp{
-  display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-secondary);
-  padding:9px 15px;border-radius:99px;background:var(--surface-1);border:1.5px solid var(--border);
+  display:flex;align-items:center;gap:9px;font-size:17px;font-weight:600;
+  color:var(--text-secondary);line-height:1.4;
+  padding:11px 18px;border-radius:14px;background:var(--surface-1);border:1.5px solid var(--border);
 }
+.myhyp b{font-weight:800}
+@media (max-width:700px){ .myhyp{font-size:15px;padding:10px 14px} }
 
 /* 진행 중인 탐구 표시 (탭 대신) */
 .now{
@@ -472,21 +475,36 @@ td.act{text-align:right;padding-right:0}
 }
 
 /* ---- 온도계 ---- */
-.thermo{position:absolute;right:6%;top:120px;width:12px;height:170px;z-index:6}
-.thermo .tglass,.thermo::before{
+.thermo{position:absolute;right:5.5%;top:118px;width:14px;height:168px;z-index:6}
+.thermo::before{                              /* 유리관 */
   content:'';position:absolute;inset:0;border-radius:99px;
-  background:rgba(255,255,255,.20);border:1px solid rgba(255,255,255,.45);
+  background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.5);
 }
-.thermo .col{
-  position:absolute;left:3px;right:3px;bottom:6px;height:0;border-radius:99px;
-  background:linear-gradient(180deg,#ff6b5a,#d0342b);transition:height .35s ease;
+.thermo::after{                               /* 눈금 */
+  content:'';position:absolute;left:2px;right:5px;top:8px;bottom:14px;
+  background:repeating-linear-gradient(180deg,
+    rgba(255,255,255,.6) 0 1px, transparent 1px 16px);
+}
+.thermo .col{                                 /* 붉은 액체 — 온도에 따라 차오른다 */
+  position:absolute;left:4px;right:4px;bottom:8px;height:0;border-radius:99px 99px 0 0;
+  background:linear-gradient(180deg,#ff7a68,#d0342b);
+  transition:height .4s cubic-bezier(.3,1.1,.5,1);
 }
 .thermo .bulb2{
-  position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
-  width:18px;height:18px;border-radius:50%;
+  position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+  width:19px;height:19px;border-radius:50%;
   background:radial-gradient(circle at 36% 32%,#ff8a7a,#c62a22);
-  box-shadow:0 1px 3px rgba(0,0,0,.4);
+  box-shadow:0 1px 3px rgba(0,0,0,.45), 0 0 0 1.5px rgba(255,255,255,.35);
 }
+.thermo .val{                                 /* 현재 온도 표시 */
+  position:absolute;right:20px;bottom:-2px;white-space:nowrap;
+  font-size:11.5px;font-weight:700;color:#fff;
+  background:rgba(8,28,44,.6);border:1px solid rgba(255,255,255,.25);
+  padding:2px 7px;border-radius:6px;backdrop-filter:blur(4px);
+  font-variant-numeric:tabular-nums;
+}
+.thermo.hot .col{background:linear-gradient(180deg,#ff4d3d,#a81c14)}
+.thermo.hot .val{background:rgba(160,30,30,.75);border-color:rgba(255,150,150,.5)}
 
 /* ---- 검정말 ---- */
 #plants{position:absolute;left:0;right:0;top:0;bottom:0;z-index:3;pointer-events:none}
@@ -1203,9 +1221,10 @@ td.pending{color:var(--muted)}
         <div id="bubbles"></div>
 
         <!-- 온도계 -->
-        <div class="thermo" aria-hidden="true">
+        <div class="thermo" id="thermo" aria-hidden="true">
           <span class="col" id="thermoCol"></span>
           <span class="bulb2"></span>
+          <span class="val" id="thermoVal">25°C</span>
         </div>
 
         <!-- 마스코트 -->
@@ -1820,6 +1839,11 @@ function renderTank(){
   const tank = $('tank');
   // 빛의 세기는 CSS 변수 하나로 전구·번짐·플레어·빛기둥을 함께 구동한다
   tank.style.setProperty('--lit', (state.light / 100).toFixed(3));
+
+  // 온도계 — 0~50°C 를 관 높이에 대응시킨다
+  $('thermoCol').style.height = (state.temp / 50 * 146) + 'px';
+  $('thermoVal').textContent  = `${state.temp}°C`;
+  $('thermo').classList.toggle('hot', state.temp >= 40);
 
   // 40°C 이상 — 효소 변성 경고
   const hot = state.temp >= 40;
