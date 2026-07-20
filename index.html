@@ -125,60 +125,94 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 /* =========================================================
    첫 화면 — 탐구 실험 계획서
    ========================================================= */
-#plan{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
+#plan{max-width:1240px;margin:0 auto;padding:4px 20px 40px}
 #plan[hidden]{display:none}
-.plan-intro{text-align:center;margin:14px 0 22px}
-.plan-intro h2{font-size:22px;margin:0 0 8px;font-weight:750}
-.plan-intro p{margin:0;color:var(--text-secondary);font-size:14px;line-height:1.65}
-/* 머리 이미지 — 공유 미리보기(OG)와 같은 그림 */
-.hero{
-  display:block;width:100%;height:auto;max-width:920px;margin:10px auto 0;
-  border-radius:18px;border:1px solid var(--border);
-  box-shadow:0 8px 26px rgba(0,0,0,.14);
+/* 머리 이미지를 옆에 두어 세로 공간을 아낀다 — 계획서가 한 화면에 들어오도록 */
+.plan-intro{
+  display:flex;align-items:center;gap:18px;
+  max-width:820px;margin:8px auto 18px;
 }
-@media (max-width:520px){ .hero{border-radius:12px} }
+.intro-txt{min-width:0}
+.plan-intro h2{font-size:20px;margin:0 0 6px;font-weight:750}
+.plan-intro p{margin:0;color:var(--text-secondary);font-size:13.5px;line-height:1.6}
+@media (max-width:640px){
+  .plan-intro{flex-direction:column;text-align:center;gap:12px;margin-bottom:14px}
+}
+/* 머리 이미지 — 공유 미리보기(OG)와 같은 그림. 원본의 1/4 크기로 줄였다. */
+.hero{
+  display:block;width:280px;height:auto;flex:none;
+  border-radius:14px;border:1px solid var(--border);
+  box-shadow:0 5px 16px rgba(0,0,0,.14);
+}
+@media (max-width:640px){ .hero{width:230px;border-radius:12px} }
 
 .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media (max-width:900px){ .plan-grid{grid-template-columns:1fr} }
 /* 하나를 고르면 그 카드만 남기고 옆에 실험 방법을 띄운다 */
 .plan-grid.focused{grid-template-columns:minmax(0,1fr);max-width:520px;margin:0 auto}
-.plan-picked{
-  margin-top:auto;padding:12px;border-radius:14px;text-align:center;
-  font-size:13.5px;font-weight:800;color:#0a5c0a;
-  background:rgba(12,163,12,.13);border:1.5px solid rgba(12,163,12,.45);
-}
 
-/* 실험 방법 */
-#methodBox{max-width:520px;margin:16px auto 0}
-.method{
+/* --- 1단계: 탐구 주제 카드 --- */
+.topic{
   --hue:210;
-  display:flex;flex-direction:column;gap:13px;padding:20px 18px;border-radius:22px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:9px;
+  padding:22px 20px;border-radius:22px;cursor:pointer;text-align:left;font:inherit;
+  background:linear-gradient(180deg, hsl(var(--hue) 92% 96% / .9) 0%, var(--surface-1) 42%);
+  border:2px solid hsl(var(--hue) 70% 84%);
+  box-shadow:0 4px 0 hsl(var(--hue) 60% 88%), 0 10px 22px rgba(0,0,0,.06);
+  transition:transform .2s cubic-bezier(.2,1.4,.4,1), box-shadow .2s;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .topic{
+    background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .85) 0%, var(--surface-1) 44%);
+    border-color:hsl(var(--hue) 40% 34%);box-shadow:0 4px 0 hsl(var(--hue) 40% 24%)}
+}
+:root[data-theme="dark"] .topic{
+  background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .85) 0%, var(--surface-1) 44%);
+  border-color:hsl(var(--hue) 40% 34%);box-shadow:0 4px 0 hsl(var(--hue) 40% 24%)}
+.topic:hover{transform:translateY(-5px);
+  box-shadow:0 8px 0 hsl(var(--hue) 60% 84%), 0 14px 28px rgba(0,0,0,.1)}
+.topic:active{transform:translateY(1px)}
+.topic.done{border-color:#0ca30c;box-shadow:0 4px 0 #0a8a0a}
+.tp-em{font-size:38px;line-height:1;animation:wobble 3.4s ease-in-out infinite}
+.topic:nth-child(2) .tp-em{animation-delay:.5s}
+.topic:nth-child(3) .tp-em{animation-delay:1s}
+.tp-no{padding:4px 12px;border-radius:99px;font-size:11.5px;font-weight:800;
+  background:hsl(var(--hue) 80% 55%);color:#fff}
+.topic.done .tp-no{background:#0ca30c}
+.tp-q{font-size:16px;font-weight:750;line-height:1.45;color:var(--text-primary)}
+.tp-go{margin-top:4px;font-size:13px;font-weight:800;color:hsl(var(--hue) 75% 45%)}
+.topic.done .tp-go{color:#0a8a0a}
+
+/* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
+#methodBox{max-width:560px;margin:0 auto}
+.setup{
+  --hue:210;
+  display:flex;flex-direction:column;gap:16px;padding:20px 18px;border-radius:22px;
   background:var(--surface-1);border:2px solid hsl(var(--hue) 70% 80%);
   box-shadow:0 4px 0 hsl(var(--hue) 60% 86%), 0 10px 24px rgba(0,0,0,.07);
   animation:methodIn .35s cubic-bezier(.2,1.3,.4,1) both;
 }
-@keyframes methodIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-color-scheme: dark){
-  :root:where(:not([data-theme="light"])) .method{
-    border-color:hsl(var(--hue) 40% 36%);box-shadow:0 4px 0 hsl(var(--hue) 40% 26%)}
-}
-:root[data-theme="dark"] .method{
+  :root:where(:not([data-theme="light"])) .setup{
+  }
+:root[data-theme="dark"] .setup{
   border-color:hsl(var(--hue) 40% 36%);box-shadow:0 4px 0 hsl(var(--hue) 40% 26%)}
-.m-head{display:flex;align-items:center;gap:11px}
-.m-em{font-size:26px;animation:wobble 3.4s ease-in-out infinite}
-.m-head b{display:block;font-size:16px;font-weight:800}
-.m-head small{display:block;font-size:12px;color:var(--muted)}
-.m-hyp{
-  padding:11px 13px;border-radius:12px;font-size:12.5px;line-height:1.6;
-  background:hsl(var(--hue) 80% 96%);border:1.5px solid hsl(var(--hue) 65% 78%);
-}
-@media (prefers-color-scheme: dark){
-  :root:where(:not([data-theme="light"])) .m-hyp{
-    background:hsl(var(--hue) 35% 22%);border-color:hsl(var(--hue) 40% 42%)}
-}
-:root[data-theme="dark"] .m-hyp{
-  background:hsl(var(--hue) 35% 22%);border-color:hsl(var(--hue) 40% 42%)}
-.m-hyp b{font-size:13.5px}
+.su-head{display:flex;align-items:center;gap:12px}
+.su-em{font-size:32px;animation:wobble 3.4s ease-in-out infinite}
+.su-no{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;
+  background:hsl(var(--hue) 80% 55%);color:#fff;margin-bottom:4px}
+.su-head b{display:block;font-size:15.5px;font-weight:750;line-height:1.4}
+.su-sec{display:flex;flex-direction:column;gap:9px;padding-top:14px;
+  border-top:1.5px dashed var(--grid)}
+.su-sec h4{margin:0;font-size:13.5px;font-weight:800}
+.su-sec h4 small{font-weight:500;color:var(--muted);margin-left:6px;font-size:11.5px}
+.su-why{margin:0;font-size:11.5px;line-height:1.55;color:var(--text-secondary);
+  padding:9px 11px;border-radius:10px;
+  background:rgba(250,178,25,.12);border:1px solid rgba(250,178,25,.4)}
+.m-go.dim{background:var(--grid);color:var(--muted);box-shadow:0 4px 0 var(--baseline)}
+.m-go.dim:hover{transform:none;filter:none;box-shadow:0 4px 0 var(--baseline)}
+@keyframes methodIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  border-color:hsl(var(--hue) 40% 36%);box-shadow:0 4px 0 hsl(var(--hue) 40% 26%)}
 .m-steps{margin:0;padding:0;list-style:none;counter-reset:ms;display:flex;
   flex-direction:column;gap:9px}
 .m-steps li{
@@ -191,12 +225,6 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   width:22px;height:22px;border-radius:50%;background:hsl(var(--hue) 80% 55%);color:#fff;
   font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;
 }
-.m-warn{
-  padding:11px 13px;border-radius:12px;font-size:12.5px;line-height:1.6;
-  color:var(--text-secondary);
-  background:rgba(250,178,25,.12);border:1.5px solid rgba(250,178,25,.45);
-}
-.m-warn b{display:block;color:var(--text-primary);margin-bottom:3px}
 .m-btns{display:flex;gap:9px;align-items:center}
 .m-btns .btn-ghost{flex:none;min-height:46px}
 .m-go{
@@ -206,64 +234,28 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   transition:transform .12s, box-shadow .12s, filter .15s;
 }
 .m-go:hover{filter:brightness(1.07);transform:translateY(-2px);
-  box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
 .m-go:active{transform:translateY(2px);box-shadow:0 2px 0 hsl(var(--hue) 80% 40%)}
 
-.plan-card{
-  --hue:210;
-  position:relative;display:flex;flex-direction:column;gap:11px;
-  background:
-    linear-gradient(180deg, hsl(var(--hue) 92% 96% / .85) 0%, var(--surface-1) 34%);
-  border:2px solid hsl(var(--hue) 70% 84%);
-  border-radius:22px;padding:18px 17px 17px;
-  box-shadow:0 4px 0 hsl(var(--hue) 60% 88%), 0 10px 22px rgba(0,0,0,.06);
-  transition:transform .2s cubic-bezier(.2,1.4,.4,1), box-shadow .2s, border-color .2s;
-}
-@media (prefers-color-scheme: dark){
-  :root:where(:not([data-theme="light"])) .plan-card{
-    background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .8) 0%, var(--surface-1) 36%);
-    border-color:hsl(var(--hue) 40% 34%);
-    box-shadow:0 4px 0 hsl(var(--hue) 40% 24%), 0 10px 22px rgba(0,0,0,.3);
-  }
-}
-:root[data-theme="dark"] .plan-card{
-  background:linear-gradient(180deg, hsl(var(--hue) 40% 20% / .8) 0%, var(--surface-1) 36%);
-  border-color:hsl(var(--hue) 40% 34%);
-  box-shadow:0 4px 0 hsl(var(--hue) 40% 24%), 0 10px 22px rgba(0,0,0,.3);
-}
-.plan-card:hover{transform:translateY(-4px)}
-.plan-card.ready{
-  border-color:hsl(var(--hue) 78% 58%);
-  box-shadow:0 4px 0 hsl(var(--hue) 78% 62%), 0 12px 26px hsl(var(--hue) 60% 50% / .22);
-}
 
-.pc-top{display:flex;align-items:center;gap:10px}
-.pc-em{
-  font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));
-  animation:wobble 3.4s ease-in-out infinite;
-}
 @keyframes wobble{0%,100%{transform:rotate(-7deg) scale(1)}50%{transform:rotate(7deg) scale(1.08)}}
-.plan-card:nth-child(2) .pc-em{animation-delay:.5s}
-.plan-card:nth-child(3) .pc-em{animation-delay:1s}
-.pc-no{
-  padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:800;
-  background:hsl(var(--hue) 80% 55%);color:#fff;
+.ctrl-chips{margin-top:8px}
+.chip.ctrl{font-size:11.5px;padding:6px 10px}
+.chip.ctrl.manip{
+  cursor:not-allowed;opacity:.62;background:transparent;
+  border-style:dashed;color:var(--muted);
 }
-.plan-card h3{margin:0;font-size:15.5px;font-weight:750;line-height:1.45}
-.pc-ctrl{
-  font-size:11.5px;color:var(--text-secondary);padding:8px 11px;border-radius:11px;
-  background:hsl(var(--hue) 60% 96% / .7);border:1px dashed hsl(var(--hue) 55% 78%);
+.chip.ctrl.manip:hover{transform:none;border-color:var(--border)}
+.chip.ctrl .tag{
+  font-style:normal;font-size:9.5px;font-weight:800;margin-left:4px;padding:1px 5px;
+  border-radius:5px;background:var(--grid);color:var(--text-secondary);
 }
-@media (prefers-color-scheme: dark){
-  :root:where(:not([data-theme="light"])) .pc-ctrl{
-    background:hsl(var(--hue) 30% 22% / .5);border-color:hsl(var(--hue) 30% 40%)}
+.chip.ctrl[aria-pressed="true"]{
+  background:#0ca30c;border-color:#0a8a0a;box-shadow:0 3px 0 #076b07;
 }
-:root[data-theme="dark"] .pc-ctrl{
-  background:hsl(var(--hue) 30% 22% / .5);border-color:hsl(var(--hue) 30% 40%)}
-.pc-ctrl b{color:var(--text-primary);margin-right:5px}
+.chip.ctrl[aria-pressed="true"]::after{content:'✓';margin-left:3px;font-weight:900}
 
 .hyp-box{
-  padding:12px;border-radius:14px;background:var(--page);
+  padding:11px;border-radius:14px;background:var(--page);
   border:1.5px solid var(--border);display:flex;flex-direction:column;gap:9px;
 }
 .hyp-title{margin:0;font-size:12.5px;font-weight:800}
@@ -302,17 +294,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   background:hsl(var(--hue) 40% 24%);border-color:hsl(var(--hue) 45% 44%)}
 @keyframes saidPop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
 
-.plan-go{
-  margin-top:auto;padding:13px;border:0;border-radius:14px;cursor:pointer;
-  background:hsl(var(--hue) 80% 52%);color:#fff;font:inherit;font-size:14.5px;font-weight:800;
-  box-shadow:0 4px 0 hsl(var(--hue) 80% 40%);
-  transition:transform .12s, box-shadow .12s, filter .15s;
-}
-.plan-go:hover{filter:brightness(1.06);transform:translateY(-2px);
   box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
-.plan-go:active{transform:translateY(2px);box-shadow:0 2px 0 hsl(var(--hue) 80% 40%)}
-.plan-go.dim{background:var(--grid);color:var(--muted);box-shadow:0 4px 0 var(--baseline)}
-.plan-go.dim:hover{transform:none;filter:none;box-shadow:0 4px 0 var(--baseline)}
 
 /* 실험실 상단 — 내 가설(왼쪽) + 계획서로 돌아가기(오른쪽) */
 .labbar{
@@ -1278,12 +1260,14 @@ td.pending{color:var(--muted)}
 
 <!-- ===== 첫 화면: 탐구 실험 계획서 ===== -->
 <section id="plan">
-  <img class="hero" src="./photosynthesis_og.jpg" width="1200" height="630"
-       alt="수조 속 검정말에 전등을 비추면 산소 기포가 발생하는 실험 장치">
   <div class="plan-intro">
-    <h2>탐구 실험 계획서</h2>
-    <p>검정말에 빛을 비추면 산소가 발생합니다. 어떤 조건에서 광합성이 가장 활발할까요?<br>
-       세 가지 탐구 중 하나를 골라, <b>실험 전에 결과를 예상</b>해 보고 시작하세요.</p>
+    <img class="hero" src="./photosynthesis_og.jpg" width="1200" height="630"
+         alt="수조 속 검정말에 전등을 비추면 산소 기포가 발생하는 실험 장치">
+    <div class="intro-txt">
+      <h2>탐구 실험 계획서</h2>
+      <p>검정말에 빛을 비추면 산소가 발생합니다. 어떤 조건에서 광합성이 가장 활발할까요?
+         세 가지 탐구 중 하나를 골라, <b>실험 전에 결과를 예상</b>해 보고 시작하세요.</p>
+    </div>
   </div>
   <div class="plan-grid" id="planGrid"></div>
   <div id="methodBox" hidden></div>
@@ -1605,6 +1589,7 @@ function saveSession(){
       data:    state.data,
       graphed: state.graphed,
       hyp:     state.hyp,
+      ctrl:    state.ctrl,
       badges:  [...state.badges],
       mission: state.mission,
       mode:    state.mode,
@@ -1624,6 +1609,7 @@ function loadSession(){
   state.data    = s.data;
   state.graphed = s.graphed || { manual:[false,false,false], auto:[true,true,true] };
   state.hyp     = s.hyp     || state.hyp;
+  state.ctrl    = s.ctrl    || state.ctrl;
   state.badges  = new Set(s.badges || []);
   state.mission = s.mission || { done:false };
   state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
@@ -1736,7 +1722,15 @@ const PLANS = [
 
 state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
 state.planPick = null;      // 계획 화면에서 고른 탐구 (null이면 3개 모두 보임)
+state.ctrl = [[], [], []];  // 탐구별로 학생이 고른 통제 변인
+
+const VAR_EM = { light:'💡', co2:'🫧', temp:'🌡️' };
+
+/* 통제 변인을 바르게 골랐는가 — 조작 변인을 뺀 나머지 둘을 모두 골라야 한다 */
+function ctrlNeed(i){ return ['light','co2','temp'].filter(k => k !== TABS[i].key); }
+function ctrlReady(i){ return ctrlNeed(i).every(k => state.ctrl[i].includes(k)); }
 const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
+const planReady = i => hypReady(i) && ctrlReady(i);
 
 /* 고른 가설을 한 문장으로 */
 function hypText(i){
@@ -1747,26 +1741,77 @@ function hypText(i){
 
 function renderPlan(){
   const pick = state.planPick;
-  $('planGrid').classList.toggle('focused', pick !== null);
+  $('planGrid').hidden  = pick !== null;
   $('methodBox').hidden = pick === null;
+  if (pick === null) renderTopics();
+  else               renderSetup(pick);
+}
+
+/* --- 1단계: 탐구 주제만 보여준다 --- */
+function renderTopics(){
   $('planGrid').innerHTML = PLANS.map((p, i) => {
-    if (pick !== null && i !== pick) return '';
-    const h = state.hyp[i], ready = hypReady(i);
+    const done = planReady(i);
     return `
-    <div class="plan-card ${ready ? 'ready' : ''}" style="--hue:${p.hue}">
-      <div class="pc-top">
-        <span class="pc-em">${p.em}</span>
-        <span class="pc-no">탐구 ${i + 1}</span>
+    <button class="topic ${done ? 'done' : ''}" data-topic="${i}" style="--hue:${p.hue}">
+      <span class="tp-em">${p.em}</span>
+      <span class="tp-no">탐구 ${i + 1}</span>
+      <span class="tp-q">${p.q}</span>
+      <span class="tp-go">${done ? '이어서 하기 →' : '선택하기 →'}</span>
+    </button>`;
+  }).join('');
+
+  $('planGrid').querySelectorAll('[data-topic]').forEach(b =>
+    b.addEventListener('click', () => {
+      state.planPick = Number(b.dataset.topic);
+      Sfx.tick();
+      saveSession();
+      renderPlan();
+      scrollTo({ top:0, behavior:'smooth' });
+    }));
+}
+
+/* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
+function renderSetup(i){
+  const p = PLANS[i], cfg = TABS[i], h = state.hyp[i];
+  const ready = planReady(i);
+
+  const steps = [
+    `검정말을 <b>깔때기</b>로 덮고, 그 위에 물을 채운 <b>시험관</b>을 거꾸로 씌웁니다.`,
+    `고른 통제 변인을 <b>${p.ctrl}</b> 로 맞추고, 실험 내내 바꾸지 않습니다.`,
+    `조작 변인인 <b>${cfg.name}</b>를 ${cfg.min}${cfg.unit}부터 ${cfg.max}${cfg.unit}까지 바꿔 가며 실험합니다.`,
+    `각 조건에서 <b>10초</b> 동안 깔때기 목을 지나는 <b>기포 수</b>를 셉니다.`,
+    `같은 조건에서 <b>3번</b> 반복해 평균을 냅니다. 한 번의 측정에는 오차가 있기 때문입니다.`,
+    `조건을 <b>5가지 이상</b> 모아 표를 채운 뒤, <b>그래프</b>로 바꿔 관계를 확인합니다.`,
+  ];
+
+  $('methodBox').innerHTML = `
+    <div class="setup" style="--hue:${p.hue}">
+      <div class="su-head">
+        <span class="su-em">${p.em}</span>
+        <div><span class="su-no">탐구 ${i + 1} · ${cfg.name}</span><b>${p.q}</b></div>
       </div>
-      <h3>${p.q}</h3>
 
-      <div class="pc-ctrl"><b>같게 할 것</b> ${p.ctrl}</div>
+      <section class="su-sec">
+        <h4>⚖️ 통제 변인 고르기<small>실험 내내 같게 둘 것을 모두 고르세요</small></h4>
+        <div class="chips ctrl-chips">
+          ${['light','co2','temp'].map(k => {
+            const isManip = k === cfg.key;
+            const on = state.ctrl[i].includes(k);
+            return `<button class="chip ctrl ${isManip ? 'manip' : ''}"
+                      ${isManip ? 'disabled' : ''} data-ctrl="${i}-${k}" aria-pressed="${on}">
+                      <span class="em">${VAR_EM[k]}</span>${LABEL[k]}
+                      ${isManip ? '<i class="tag">조작 변인</i>' : ''}
+                    </button>`;
+          }).join('')}
+        </div>
+        <p class="su-why">${cfg.name} 말고 다른 것도 함께 바뀌면,
+          결과가 무엇 때문인지 알 수 없습니다.</p>
+      </section>
 
-      <div class="hyp-box">
-        <p class="hyp-title">🎯 나의 가설 만들기</p>
-
+      <section class="su-sec">
+        <h4>🎯 가설 만들기<small>결과를 예상해 보세요</small></h4>
         <div class="hyp-line">
-          <span class="hyp-fix">${TABS[i].name}를</span>
+          <span class="hyp-fix">${cfg.name}를</span>
           <div class="chips">
             ${p.ops.map((o, k) => `
               <button class="chip" data-op="${i}-${k}" aria-pressed="${h.op === k}">
@@ -1774,7 +1819,6 @@ function renderPlan(){
               </button>`).join('')}
           </div>
         </div>
-
         <div class="hyp-line">
           <span class="hyp-fix">산소 발생량은</span>
           <div class="chips">
@@ -1784,87 +1828,65 @@ function renderPlan(){
               </button>`).join('')}
           </div>
         </div>
-
-        <p class="hyp-said ${ready ? 'on' : ''}">
-          ${ready ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
+        <p class="hyp-said ${hypReady(i) ? 'on' : ''}">
+          ${hypReady(i) ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
         </p>
-      </div>
+      </section>
 
-      ${pick === i
-        ? '<div class="plan-picked">✅ 이 탐구를 선택했어요</div>'
-        : `<button class="plan-go ${ready ? '' : 'dim'}" data-go="${i}">${
-            ready ? `탐구 ${i + 1} 시작하기 →` : '가설을 완성해 주세요'}</button>`}
-    </div>`; }).join('');
+      <section class="su-sec">
+        <h4>🔬 실험 방법</h4>
+        <ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>
+      </section>
+
+      <div class="m-btns">
+        <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
+        <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
+          ${ready ? '실험 시작하기 →'
+                  : (!ctrlReady(i) ? '통제 변인을 골라 주세요' : '가설을 완성해 주세요')}
+        </button>
+      </div>
+    </div>`;
 
   const bindChip = (sel, field) =>
-    $('planGrid').querySelectorAll(sel).forEach(b =>
+    $('methodBox').querySelectorAll(sel).forEach(b =>
       b.addEventListener('click', () => {
-        const [i, k] = b.dataset[field].split('-').map(Number);
-        state.hyp[i][field] = state.hyp[i][field] === k ? null : k;
-        saveSession();
-        Sfx.tick();
-        renderPlan();
+        const [n, k] = b.dataset[field].split('-').map(Number);
+        state.hyp[n][field] = state.hyp[n][field] === k ? null : k;
+        saveSession(); Sfx.tick(); renderPlan();
       }));
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
 
-  $('planGrid').querySelectorAll('[data-go]').forEach(b =>
+  $('methodBox').querySelectorAll('[data-ctrl]').forEach(b =>
     b.addEventListener('click', () => {
-      const i = Number(b.dataset.go);
-      if (!hypReady(i)){
-        toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
-        b.closest('.plan-card').querySelector('.hyp-box')
-         .scrollIntoView({ behavior:'smooth', block:'center' });
-        return;
-      }
-      state.planPick = i;            // 고른 탐구만 남기고 실험 방법을 보여준다
-      renderPlan();
-      scrollTo({ top:0, behavior:'smooth' });
+      const [n, k] = b.dataset.ctrl.split('-');
+      const list = state.ctrl[Number(n)];
+      const at = list.indexOf(k);
+      if (at >= 0) list.splice(at, 1); else list.push(k);
+      saveSession(); Sfx.tick(); renderPlan();
     }));
-
-  if (state.planPick !== null) renderMethod(state.planPick);
-}
-
-/* 고른 탐구의 실험 방법 — 다른 탐구는 감추고 그 자리에 띄운다 */
-function renderMethod(i){
-  const p = PLANS[i], cfg = TABS[i];
-  const steps = [
-    `검정말을 <b>깔때기</b>로 덮고, 그 위에 물을 채운 <b>시험관</b>을 거꾸로 씌웁니다.`,
-    `통제 변인을 <b>${p.ctrl}</b> 로 맞춥니다. 실험 내내 바꾸지 않습니다.`,
-    `조작 변인인 <b>${cfg.name}</b>를 ${cfg.min}${cfg.unit}부터 ${cfg.max}${cfg.unit}까지 바꿔 가며 실험합니다.`,
-    `각 조건에서 <b>10초</b> 동안 깔때기 목을 지나는 <b>기포 수</b>를 셉니다.`,
-    `같은 조건에서 <b>3번</b> 반복해 평균을 냅니다. 한 번의 측정에는 오차가 있기 때문입니다.`,
-    `조건을 <b>5가지 이상</b> 모아 표를 채운 뒤, <b>그래프</b>로 바꿔 관계를 확인합니다.`,
-  ];
-
-  $('methodBox').innerHTML = `
-    <div class="method" style="--hue:${p.hue}">
-      <div class="m-head">
-        <span class="m-em">🔬</span>
-        <div><b>실험 방법</b><small>탐구 ${i + 1} · ${cfg.name}</small></div>
-      </div>
-
-      <div class="m-hyp">🎯 나의 가설<br><b>“${hypText(i)} 것이다!”</b></div>
-
-      <ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>
-
-      <div class="m-warn">
-        <b>⚖️ 왜 다른 조건을 똑같이 둘까요?</b>
-        ${cfg.name} 말고 다른 것도 함께 바뀌면, 결과가 무엇 때문인지 알 수 없습니다.
-      </div>
-
-      <div class="m-btns">
-        <button class="btn-ghost" id="pickAgain">← 다른 탐구 고르기</button>
-        <button class="m-go" id="goLab">실험 시작하기 →</button>
-      </div>
-    </div>`;
 
   $('pickAgain').addEventListener('click', () => {
     state.planPick = null;
+    saveSession();
     renderPlan();
     scrollTo({ top:0, behavior:'smooth' });
   });
-  $('goLab').addEventListener('click', () => openLab(i));
+
+  $('goLab').addEventListener('click', () => {
+    if (!ctrlReady(i)){
+      const miss = ctrlNeed(i).filter(k => !state.ctrl[i].includes(k)).map(k => LABEL[k]);
+      toast('⚖️', '통제 변인을 모두 골라 주세요',
+        `조작 변인인 <b>${cfg.name}</b> 말고 나머지는 실험 내내 같게 두어야 합니다. ` +
+        `아직 <b>${miss.join(', ')}</b>을(를) 고르지 않았어요.`);
+      return;
+    }
+    if (!hypReady(i)){
+      toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
+      return;
+    }
+    openLab(i);
+  });
 }
 
 function openLab(tab){
