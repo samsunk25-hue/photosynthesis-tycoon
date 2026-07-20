@@ -234,6 +234,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   transition:transform .12s, box-shadow .12s, filter .15s;
 }
 .m-go:hover{filter:brightness(1.07);transform:translateY(-2px);
+  box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
 .m-go:active{transform:translateY(2px);box-shadow:0 2px 0 hsl(var(--hue) 80% 40%)}
 
 
@@ -314,8 +315,6 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 :root[data-theme="dark"] .hyp-said.on{
   background:hsl(var(--hue) 40% 24%);border-color:hsl(var(--hue) 45% 44%)}
 @keyframes saidPop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
-
-  box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
 
 /* 실험실 상단 — 내 가설(왼쪽) + 계획서로 돌아가기(오른쪽) */
 .labbar{
@@ -455,6 +454,16 @@ td.act{text-align:right;padding-right:0}
 }
 .slider input:disabled{cursor:not-allowed}
 .slider.off .thumb,.slider.off .fill{opacity:.45}
+/* 통제 변인 — 계획서에서 정한 값으로 잠겨 있다 */
+.ctrl.locked{opacity:.78}
+.ctrl.locked .slider{pointer-events:none}
+.ctrl.locked .track{background:var(--grid)}
+.ctrl.locked .thumb{border-color:var(--baseline);box-shadow:none}
+.lockflag{
+  display:inline-block;margin-left:5px;font-size:10px;font-weight:700;
+  color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:0 5px;
+  vertical-align:1px;
+}
 .ticks{display:flex;justify-content:space-between;color:var(--muted);
   font-size:11px;font-variant-numeric:tabular-nums;margin-top:2px}
 
@@ -1386,7 +1395,7 @@ td.pending{color:var(--muted)}
 
       <div class="ctrl-head">
         <h2>환경 요인 설정</h2>
-        <button class="btn-ghost" id="restoreBtn">권장 통제값으로 되돌리기</button>
+        <button class="btn-ghost" id="restoreBtn">⚖️ 통제 변인 바꾸기</button>
       </div>
       <div id="controls"></div>
       <div id="condWarn"></div>
@@ -2054,16 +2063,18 @@ function syncControls(){
     badge.textContent = isCtl ? '통제 변인' : '조작 변인';
     badge.classList.toggle('ctl', isCtl);
     box.querySelector('.flagbox').innerHTML =
-      off ? `<span class="flag">통제값 ${target}${UNIT[k]}</span>` : '';
+      isCtl ? '<span class="lockflag">🔒 고정</span>' : '';
 
     box.querySelector('.fill').style.width  = (pct * 100) + '%';
     // 손잡이가 트랙 밖으로 나가지 않도록 폭(32px)만큼 보정
     box.querySelector('.thumb').style.left  = `calc(${pct * 100}% + ${16 - pct * 32}px)`;
 
     const input = box.querySelector('input');
-    input.disabled = state.isMeasuring;
+    // 통제 변인은 계획서에서 정한 값으로 잠근다 — 실험 도중 바꾸면 변인 통제가 깨진다
+    input.disabled = state.isMeasuring || isCtl;
     if (Number(input.value) !== state[k]) input.value = state[k];
-    box.querySelector('.slider').classList.toggle('off', state.isMeasuring);
+    box.querySelector('.slider').classList.toggle('off', state.isMeasuring || isCtl);
+    box.classList.toggle('locked', isCtl);
   });
 }
 
@@ -3661,10 +3672,15 @@ $('pngBtn').addEventListener('click', exportPNG);
 $('restoreBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
   const i = state.activeTab;
-  ctrlNeed(i).forEach(k => { state[k] = state.ctrlVal[i][k] ?? TABS[i].fixed[k]; });
-  renderAll();
-  toast('⚖️', '통제값으로 되돌렸습니다',
-    ctrlNeed(i).map(k => `${LABEL[k]} ${state[k]}${UNIT[k]}`).join(', '));
+  const now = ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', ');
+  openModal('⚖️ 통제 변인을 바꾸시겠어요?',
+    `지금 통제값은 <b>${now}</b> 입니다.<br><br>
+     실험 도중에는 바꿀 수 없습니다. 통제 변인이 중간에 바뀌면
+     결과가 무엇 때문인지 알 수 없기 때문입니다.<br><br>
+     <span style="color:var(--muted)">바꾸려면 <b>실험 계획서</b>로 돌아가세요.
+     지금까지 측정한 기록은 그대로 남습니다.</span>`);
+  $('modalOk').textContent = '계획서로 이동';
+  onSubmit = () => { backToPlan(); return null; };
 });
 
 /* 측정 방식 전환 — 방식마다 데이터·단위가 다르므로 화면 전체를 다시 그린다 */
