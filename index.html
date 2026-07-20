@@ -74,6 +74,39 @@ body{
 }
 header{padding:20px 20px 0;max-width:1240px;margin:0 auto}
 h1{font-size:19px;margin:0 0 2px;font-weight:650}
+
+/* 제목 로고 */
+.logo{
+  position:relative;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;
+  font-size:26px;font-weight:900;letter-spacing:-.5px;line-height:1.2;
+  margin:0 0 4px;padding-right:6px;
+}
+.logo .t1{color:#2aa8d6}
+.logo .t2{
+  background:linear-gradient(100deg,#ffb020,#ff6b3d 55%,#ff3d81);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:pang 2.6s ease-in-out infinite;transform-origin:center;display:inline-block;
+}
+@keyframes pang{0%,100%{transform:scale(1) rotate(-2deg)}
+                45%{transform:scale(1.14) rotate(3deg)}}
+.logo .t3{color:var(--text-primary)}
+.logo .leaf{font-size:22px;display:inline-block;animation:wobble 3.4s ease-in-out infinite}
+.logo .bub{
+  position:absolute;font-size:13px;opacity:.85;pointer-events:none;
+  animation:logoBub 3.6s ease-in-out infinite;
+}
+.logo .b1{left:-4px;top:-10px}
+.logo .b2{left:34px;top:-14px;font-size:10px;animation-delay:1.3s}
+@keyframes logoBub{
+  0%  {transform:translateY(6px) scale(.7);opacity:0}
+  30% {opacity:.9}
+  100%{transform:translateY(-14px) scale(1.15);opacity:0}
+}
+@media (max-width:520px){ .logo{font-size:21px} .logo .leaf{font-size:18px} }
+@media (prefers-reduced-motion:reduce){
+  .logo .t2,.logo .leaf,.logo .bub{animation:none}
+  .logo .bub{opacity:.7}
+}
 .sub{color:var(--text-secondary);font-size:13px;margin:0}
 main{
   max-width:1240px;margin:0 auto;padding:16px 20px 48px;
@@ -97,8 +130,84 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .plan-intro{text-align:center;margin:14px 0 22px}
 .plan-intro h2{font-size:22px;margin:0 0 8px;font-weight:750}
 .plan-intro p{margin:0;color:var(--text-secondary);font-size:14px;line-height:1.65}
+/* 머리 이미지 — 공유 미리보기(OG)와 같은 그림 */
+.hero{
+  display:block;width:100%;height:auto;max-width:920px;margin:10px auto 0;
+  border-radius:18px;border:1px solid var(--border);
+  box-shadow:0 8px 26px rgba(0,0,0,.14);
+}
+@media (max-width:520px){ .hero{border-radius:12px} }
+
 .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media (max-width:900px){ .plan-grid{grid-template-columns:1fr} }
+/* 하나를 고르면 그 카드만 남기고 옆에 실험 방법을 띄운다 */
+.plan-grid.focused{grid-template-columns:minmax(0,1fr);max-width:520px;margin:0 auto}
+.plan-picked{
+  margin-top:auto;padding:12px;border-radius:14px;text-align:center;
+  font-size:13.5px;font-weight:800;color:#0a5c0a;
+  background:rgba(12,163,12,.13);border:1.5px solid rgba(12,163,12,.45);
+}
+
+/* 실험 방법 */
+#methodBox{max-width:520px;margin:16px auto 0}
+.method{
+  --hue:210;
+  display:flex;flex-direction:column;gap:13px;padding:20px 18px;border-radius:22px;
+  background:var(--surface-1);border:2px solid hsl(var(--hue) 70% 80%);
+  box-shadow:0 4px 0 hsl(var(--hue) 60% 86%), 0 10px 24px rgba(0,0,0,.07);
+  animation:methodIn .35s cubic-bezier(.2,1.3,.4,1) both;
+}
+@keyframes methodIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .method{
+    border-color:hsl(var(--hue) 40% 36%);box-shadow:0 4px 0 hsl(var(--hue) 40% 26%)}
+}
+:root[data-theme="dark"] .method{
+  border-color:hsl(var(--hue) 40% 36%);box-shadow:0 4px 0 hsl(var(--hue) 40% 26%)}
+.m-head{display:flex;align-items:center;gap:11px}
+.m-em{font-size:26px;animation:wobble 3.4s ease-in-out infinite}
+.m-head b{display:block;font-size:16px;font-weight:800}
+.m-head small{display:block;font-size:12px;color:var(--muted)}
+.m-hyp{
+  padding:11px 13px;border-radius:12px;font-size:12.5px;line-height:1.6;
+  background:hsl(var(--hue) 80% 96%);border:1.5px solid hsl(var(--hue) 65% 78%);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .m-hyp{
+    background:hsl(var(--hue) 35% 22%);border-color:hsl(var(--hue) 40% 42%)}
+}
+:root[data-theme="dark"] .m-hyp{
+  background:hsl(var(--hue) 35% 22%);border-color:hsl(var(--hue) 40% 42%)}
+.m-hyp b{font-size:13.5px}
+.m-steps{margin:0;padding:0;list-style:none;counter-reset:ms;display:flex;
+  flex-direction:column;gap:9px}
+.m-steps li{
+  position:relative;padding-left:32px;font-size:13px;line-height:1.6;
+  color:var(--text-secondary);
+}
+.m-steps li b{color:var(--text-primary)}
+.m-steps li::before{
+  counter-increment:ms;content:counter(ms);position:absolute;left:0;top:0;
+  width:22px;height:22px;border-radius:50%;background:hsl(var(--hue) 80% 55%);color:#fff;
+  font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;
+}
+.m-warn{
+  padding:11px 13px;border-radius:12px;font-size:12.5px;line-height:1.6;
+  color:var(--text-secondary);
+  background:rgba(250,178,25,.12);border:1.5px solid rgba(250,178,25,.45);
+}
+.m-warn b{display:block;color:var(--text-primary);margin-bottom:3px}
+.m-btns{display:flex;gap:9px;align-items:center}
+.m-btns .btn-ghost{flex:none;min-height:46px}
+.m-go{
+  flex:1;padding:14px;border:0;border-radius:14px;cursor:pointer;
+  background:hsl(var(--hue) 80% 52%);color:#fff;font:inherit;font-size:15px;font-weight:800;
+  box-shadow:0 4px 0 hsl(var(--hue) 80% 40%);
+  transition:transform .12s, box-shadow .12s, filter .15s;
+}
+.m-go:hover{filter:brightness(1.07);transform:translateY(-2px);
+  box-shadow:0 6px 0 hsl(var(--hue) 80% 40%)}
+.m-go:active{transform:translateY(2px);box-shadow:0 2px 0 hsl(var(--hue) 80% 40%)}
 
 .plan-card{
   --hue:210;
@@ -1129,7 +1238,12 @@ td.pending{color:var(--muted)}
 <header>
   <div class="topbar">
     <div>
-      <h1>산소 팡팡! 광합성 타이쿤</h1>
+      <h1 class="logo">
+        <span class="bub b1">🫧</span><span class="bub b2">🫧</span>
+        <span class="t1">산소</span> <span class="t2">팡팡!</span>
+        <span class="t3">광합성 타이쿤</span>
+        <span class="leaf">🌿</span>
+      </h1>
       <p class="sub">검정말의 산소 발생량을 측정하여 빛의 세기 · 이산화 탄소 농도 · 온도의 영향을 알아봅시다.</p>
     </div>
     <div class="topbar-btns">
@@ -1164,12 +1278,15 @@ td.pending{color:var(--muted)}
 
 <!-- ===== 첫 화면: 탐구 실험 계획서 ===== -->
 <section id="plan">
+  <img class="hero" src="./photosynthesis_og.jpg" width="1200" height="630"
+       alt="수조 속 검정말에 전등을 비추면 산소 기포가 발생하는 실험 장치">
   <div class="plan-intro">
     <h2>탐구 실험 계획서</h2>
     <p>검정말에 빛을 비추면 산소가 발생합니다. 어떤 조건에서 광합성이 가장 활발할까요?<br>
        세 가지 탐구 중 하나를 골라, <b>실험 전에 결과를 예상</b>해 보고 시작하세요.</p>
   </div>
   <div class="plan-grid" id="planGrid"></div>
+  <div id="methodBox" hidden></div>
 </section>
 
 <div class="labbar" id="labbar" hidden>
@@ -1454,8 +1571,8 @@ const RANGE = { light:[0,100,10], co2:[0,100,10], temp:[0,50,1] };
 /* ---------------------------------------------------------------
    상태
 ----------------------------------------------------------------*/
-const MEASURE_MS = 20000;      // 직접 세기 — 실제로 20초를 센다
-const AUTO_MS    = 5000;       // 자동 측정 — 20초 측정을 압축해 보여준다
+const MEASURE_MS = 10000;      // 직접 세기 — 실제로 10초를 센다
+const AUTO_MS    = 5000;       // 자동 측정 — 부피 측정을 압축해 보여준다
 
 const state = {
   mode: 'manual',              // 'manual'(직접 세기) | 'auto'(자동 측정)
@@ -1473,6 +1590,59 @@ const store = () => state.data[state.mode][state.activeTab];
 const isManual = () => state.mode === 'manual';
 
 /* ---------------------------------------------------------------
+   💾 진행 상황 저장 — 새로고침해도 측정값이 남는다.
+   수업 중 실수로 새로고침하거나 태블릿이 잠겨도 기록을 잃지 않도록,
+   측정할 때마다 이 기기에 저장한다. (서버로 보내지 않는다)
+----------------------------------------------------------------*/
+const SAVE_KEY = 'photosynthesis.session.v1';
+let restoring = false;                 // 복원 중에는 저장하지 않는다
+
+function saveSession(){
+  if (restoring) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v: 1,
+      data:    state.data,
+      graphed: state.graphed,
+      hyp:     state.hyp,
+      badges:  [...state.badges],
+      mission: state.mission,
+      mode:    state.mode,
+      tab:     state.activeTab,
+      inLab:   !document.querySelector('main').hidden,
+      at:      Date.now(),
+    }));
+  } catch {}                           // 저장 공간이 막혀도 앱은 계속 동작한다
+}
+
+function loadSession(){
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return false; }
+  if (!s || s.v !== 1 || !s.data) return false;
+
+  restoring = true;
+  state.data    = s.data;
+  state.graphed = s.graphed || { manual:[false,false,false], auto:[true,true,true] };
+  state.hyp     = s.hyp     || state.hyp;
+  state.badges  = new Set(s.badges || []);
+  state.mission = s.mission || { done:false };
+  state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
+  state.activeTab = [0,1,2].includes(s.tab) ? s.tab : 0;
+  restoring = false;
+  return !!s.inLab;
+}
+
+function clearSession(){
+  try { localStorage.removeItem(SAVE_KEY); } catch {}
+}
+
+/* 저장된 측정값이 하나라도 있는가 */
+function hasSaved(){
+  return ['manual','auto'].some(m =>
+    state.data[m].some(tab => Object.keys(tab).length > 0));
+}
+
+/* ---------------------------------------------------------------
    산소 생성량 모델  (PRD 3.2)
 ----------------------------------------------------------------*/
 const fL = l => l / (l + 15);                       // 포화 곡선
@@ -1487,11 +1657,11 @@ const fT = t => t <= 35
 
 /* 측정 방식별 설정.
    두 방식은 같은 광합성 모델을 쓰되 재는 양이 다르다.
-   - 직접 세기: 20초간 발생한 기포 수. 계수 34.5는 최적 조건에서
-     20초당 30개(분당 90개) — 실제 검정말 실험값이자 눈으로 셀 수 있는 속도.
+   - 직접 세기: 10초간 발생한 기포 수. 계수 17.25는 최적 조건에서
+     10초당 15개(분당 90개) — 실제 검정말 실험값이자 초당 1.5개로 셀 수 있는 속도.
    - 자동 측정: 모인 산소의 부피(ml/분). 최적 조건에서 2.17 ml/분. */
 const MODES = {
-  manual: { k:34.5, unit:'개',    yLabel:'20초간 기포 수 (개)',    yMax:32,  dec:0, ms:20000 },
+  manual: { k:17.25, unit:'개',   yLabel:'10초간 기포 수 (개)',    yMax:16,  dec:0, ms:10000 },
   auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:5000  },
 };
 const M = () => MODES[state.mode];
@@ -1565,6 +1735,7 @@ const PLANS = [
 ];
 
 state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
+state.planPick = null;      // 계획 화면에서 고른 탐구 (null이면 3개 모두 보임)
 const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
 
 /* 고른 가설을 한 문장으로 */
@@ -1575,7 +1746,11 @@ function hypText(i){
 }
 
 function renderPlan(){
+  const pick = state.planPick;
+  $('planGrid').classList.toggle('focused', pick !== null);
+  $('methodBox').hidden = pick === null;
   $('planGrid').innerHTML = PLANS.map((p, i) => {
+    if (pick !== null && i !== pick) return '';
     const h = state.hyp[i], ready = hypReady(i);
     return `
     <div class="plan-card ${ready ? 'ready' : ''}" style="--hue:${p.hue}">
@@ -1615,21 +1790,23 @@ function renderPlan(){
         </p>
       </div>
 
-      <button class="plan-go ${ready ? '' : 'dim'}" data-go="${i}">
-        ${ready ? `탐구 ${i + 1} 시작하기 →` : '가설을 완성해 주세요'}
-      </button>
+      ${pick === i
+        ? '<div class="plan-picked">✅ 이 탐구를 선택했어요</div>'
+        : `<button class="plan-go ${ready ? '' : 'dim'}" data-go="${i}">${
+            ready ? `탐구 ${i + 1} 시작하기 →` : '가설을 완성해 주세요'}</button>`}
     </div>`; }).join('');
 
-  const pick = (sel, field) =>
+  const bindChip = (sel, field) =>
     $('planGrid').querySelectorAll(sel).forEach(b =>
       b.addEventListener('click', () => {
         const [i, k] = b.dataset[field].split('-').map(Number);
         state.hyp[i][field] = state.hyp[i][field] === k ? null : k;
+        saveSession();
         Sfx.tick();
         renderPlan();
       }));
-  pick('[data-op]', 'op');
-  pick('[data-dep]', 'dep');
+  bindChip('[data-op]', 'op');
+  bindChip('[data-dep]', 'dep');
 
   $('planGrid').querySelectorAll('[data-go]').forEach(b =>
     b.addEventListener('click', () => {
@@ -1640,8 +1817,54 @@ function renderPlan(){
          .scrollIntoView({ behavior:'smooth', block:'center' });
         return;
       }
-      openLab(i);
+      state.planPick = i;            // 고른 탐구만 남기고 실험 방법을 보여준다
+      renderPlan();
+      scrollTo({ top:0, behavior:'smooth' });
     }));
+
+  if (state.planPick !== null) renderMethod(state.planPick);
+}
+
+/* 고른 탐구의 실험 방법 — 다른 탐구는 감추고 그 자리에 띄운다 */
+function renderMethod(i){
+  const p = PLANS[i], cfg = TABS[i];
+  const steps = [
+    `검정말을 <b>깔때기</b>로 덮고, 그 위에 물을 채운 <b>시험관</b>을 거꾸로 씌웁니다.`,
+    `통제 변인을 <b>${p.ctrl}</b> 로 맞춥니다. 실험 내내 바꾸지 않습니다.`,
+    `조작 변인인 <b>${cfg.name}</b>를 ${cfg.min}${cfg.unit}부터 ${cfg.max}${cfg.unit}까지 바꿔 가며 실험합니다.`,
+    `각 조건에서 <b>10초</b> 동안 깔때기 목을 지나는 <b>기포 수</b>를 셉니다.`,
+    `같은 조건에서 <b>3번</b> 반복해 평균을 냅니다. 한 번의 측정에는 오차가 있기 때문입니다.`,
+    `조건을 <b>5가지 이상</b> 모아 표를 채운 뒤, <b>그래프</b>로 바꿔 관계를 확인합니다.`,
+  ];
+
+  $('methodBox').innerHTML = `
+    <div class="method" style="--hue:${p.hue}">
+      <div class="m-head">
+        <span class="m-em">🔬</span>
+        <div><b>실험 방법</b><small>탐구 ${i + 1} · ${cfg.name}</small></div>
+      </div>
+
+      <div class="m-hyp">🎯 나의 가설<br><b>“${hypText(i)} 것이다!”</b></div>
+
+      <ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>
+
+      <div class="m-warn">
+        <b>⚖️ 왜 다른 조건을 똑같이 둘까요?</b>
+        ${cfg.name} 말고 다른 것도 함께 바뀌면, 결과가 무엇 때문인지 알 수 없습니다.
+      </div>
+
+      <div class="m-btns">
+        <button class="btn-ghost" id="pickAgain">← 다른 탐구 고르기</button>
+        <button class="m-go" id="goLab">실험 시작하기 →</button>
+      </div>
+    </div>`;
+
+  $('pickAgain').addEventListener('click', () => {
+    state.planPick = null;
+    renderPlan();
+    scrollTo({ top:0, behavior:'smooth' });
+  });
+  $('goLab').addEventListener('click', () => openLab(i));
 }
 
 function openLab(tab){
@@ -1651,17 +1874,20 @@ function openLab(tab){
   $('hall').hidden = false;
   $('shelfWrap').hidden = false;
   switchTab(tab);
+  saveSession();
   scrollTo({ top:0, behavior:'smooth' });
 }
 
 function backToPlan(){
   if (state.isMeasuring) return;
+  state.planPick = null;
   document.querySelector('main').hidden = true;
   $('labbar').hidden = true;
   $('hall').hidden = true;
   $('shelfWrap').hidden = true;
   $('plan').hidden = false;
   renderPlan();
+  saveSession();
   scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -2020,7 +2246,7 @@ function startMeasure(){
   $('tankStatus').textContent = manual ? '기포를 세어 보세요 👀' : '측정 중…';
   $('measureHint').textContent = manual
     ? '깔때기 목을 지나가는 기포를 눈으로 세어 주세요. 끝나면 몇 개였는지 적습니다.'
-    : '장치가 20초간 모인 산소의 부피를 측정합니다.';
+    : '장치가 모인 산소의 부피를 자동으로 측정합니다.';
 
   const bar = $('progress');
   bar.classList.remove('run'); void bar.offsetWidth;
@@ -2116,6 +2342,7 @@ function startMeasure(){
         `${counted}개로 셌지만 실제는 ${actual}개였습니다. 표에서 <b>다시 세기</b>를 누를 수 있어요.`);
     }
 
+    saveSession();
     if (state.temp >= 50) award('mad');              // 🧪 매드 사이언티스트
     checkMission(actual);
     checkBadges();
@@ -2157,7 +2384,7 @@ function setGas(frac){
 /* 직접 세기 — 학생이 센 기포 수를 입력받아 기록한다 */
 function askCount(actual, cfg){
   openPrompt('🫧 기포는 몇 개였나요?',
-    `${cfg.name} <b>${state[cfg.key]}${cfg.unit}</b> 조건에서 20초 동안 센 기포 수를 적어 주세요.`,
+    `${cfg.name} <b>${state[cfg.key]}${cfg.unit}</b> 조건에서 10초 동안 센 기포 수를 적어 주세요.`,
     { placeholder:'예) 24', okText:'기록하기', cancelText:'이번 측정 버리기',
       maxlength:3, numeric:true,
       rule:'숫자만 입력하세요 (0 ~ 99)',
@@ -2183,6 +2410,7 @@ function recordCount(counted, actual, cfg){
     ? `정확! ${counted}개 맞았어요`
     : `${counted}개로 셌어요 (실제 ${actual}개)`;
 
+  saveSession();
   renderCondWarn(); renderTable(); renderChart(); renderHint(); renderMyHyp();
 
   if (miss === 0){
@@ -2292,6 +2520,7 @@ function renderTable(){
 
       state[cfg.key] = x;                           // 그 조건으로 슬라이더를 맞춰 준다
       state.graphed[state.mode][state.activeTab] = false;
+      saveSession();
       renderAll();
       toast('🔄', `${nth}회차를 지웠습니다`,
         `${cfg.name} ${x}${cfg.unit} 조건의 ${nth}회차(${fmt(removed)}${M().unit})를 지웠습니다. ` +
@@ -2369,6 +2598,7 @@ function renderChart(){
     const go = document.getElementById('toGraph');
     if (go) go.addEventListener('click', () => {
       state.graphed.manual[state.activeTab] = true;
+      saveSession();
       renderChart();
       Sfx.fanfare();
     });
@@ -2740,6 +2970,7 @@ function award(id){
   if (state.badges.has(id)) return;
   const b = BADGES.find(x => x.id === id);
   state.badges.add(id);
+  saveSession();
   renderShelf();
   toast(b.em, `업적 획득 — ${b.name}`, b.desc, true);
   Sfx.fanfare();
@@ -2842,6 +3073,7 @@ function checkMission(result){
   if (!missionUnlocked()) return;
   if (Math.abs(result - m.target) <= m.tol){
     state.mission.done = true;
+    saveSession();
     renderMission();
     Sfx.fanfare();
     confetti(90);
@@ -3355,6 +3587,7 @@ document.querySelectorAll('.mode').forEach(b =>
       x.setAttribute('aria-selected', String(x.dataset.mode === state.mode)));
     Object.assign(state, TABS[state.activeTab].fixed);
     $('tankStatus').textContent = '대기 중';
+    saveSession();
     setGas(0);
     clearBubbles();
     renderAll();
@@ -3366,15 +3599,26 @@ $('resetBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
   state.data[state.mode][state.activeTab] = {};
   state.graphed[state.mode][state.activeTab] = !isManual();
+  saveSession();
   $('tankStatus').textContent = '대기 중';
   renderCondWarn(); renderTable(); renderChart(); renderHint();
 });
 
 $('stableNoise').addEventListener('change', e => { state.stableNoise = e.target.checked; });
 
+// 지난 진행 상황을 되살린다
+const wasInLab = loadSession();
 renderShelf();
 renderPlan();
-switchTab(0);
+switchTab(state.activeTab);
+document.querySelectorAll('.mode').forEach(x =>
+  x.setAttribute('aria-selected', String(x.dataset.mode === state.mode)));
+
+if (wasInLab && hasSaved()){
+  openLab(state.activeTab);
+  setTimeout(() => toast('💾', '이어서 진행합니다',
+    '지난번 측정 기록을 불러왔습니다. 계획서로 돌아가도 기록은 남아 있어요.'), 700);
+}
 
 // Firebase 모듈이 준비되면 공유 명단을 켠다 (실패하면 로컬 저장으로 동작)
 if (window.Cloud) initCloud();
