@@ -1985,7 +1985,7 @@ const isManual = () => state.mode === 'manual';
    수업 중 실수로 새로고침하거나 태블릿이 잠겨도 기록을 잃지 않도록,
    측정할 때마다 이 기기에 저장한다. (서버로 보내지 않는다)
 ----------------------------------------------------------------*/
-const SAVE_KEY = 'photosynthesis.session.v1';
+const SAVE_KEY = 'photosynthesis.session.v2';
 let restoring = false;                 // 복원 중에는 저장하지 않는다
 
 function saveSession(){
@@ -2249,38 +2249,33 @@ function renderTopics(){
 function freeSteps(i){
   const cfg = TABS[i];
   const ctrls = ctrlNeed(i);
+  const all = ['light','co2','temp'];
+  const ctrlAns = ctrls.map(k => LABEL[k]).join('와 ');
+  // 단계마다 빈칸은 하나씩. 학생이 판단해야 할 것만 비운다.
+  // 15초·3번 같은 값은 앱이 정한 것이라 빈칸으로 적당하지 않다.
   return [
-    { text:['검정말을 ', ' 로 덮고, 그 위에 물을 채운 ', ' 을 거꾸로 씌웁니다.'],
-      slots:[
-        { id:'s1a', ans:'깔때기', pool:['깔때기','비커','유리막대'] },
-        { id:'s1b', ans:'시험관', pool:['시험관','알코올램프','거름종이'] },
-      ] },
-    { text:['이 실험에서 ', ' 은(는) 실험 내내 같게 둡니다. (통제 변인)'],
-      slots:[
-        { id:'s2', ans:ctrls.map(k => LABEL[k]).join('와 '),
-          pool:[ctrls.map(k => LABEL[k]).join('와 '), LABEL[cfg.key],
-                ['light','co2','temp'].map(k => LABEL[k]).join(', ')] },
-      ] },
+    { text:['검정말을 ', ' 로 덮어, 발생한 기체가 한곳으로 모이게 합니다.'],
+      slots:[{ id:'s1', ans:'깔때기', pool:['깔때기','비커','유리막대'] }] },
+
+    { text:['깔때기 위에 물을 채운 ', ' 을 거꾸로 씌워 기체를 모읍니다.'],
+      slots:[{ id:'s2', ans:'시험관', pool:['시험관','알코올램프','거름종이'] }] },
+
     { text:['바꿔 가며 알아볼 것은 ', ' 입니다. (조작 변인)'],
-      slots:[
-        { id:'s3', ans:LABEL[cfg.key],
-          pool:['light','co2','temp'].map(k => LABEL[k]) },
-      ] },
-    { text:['각 조건에서 ', ' 동안 깔때기 목을 지나는 ', ' 를 셉니다.'],
-      slots:[
-        { id:'s4a', ans:'15초', pool:['15초','1분','5분'] },
-        { id:'s4b', ans:'기포 수', pool:['기포 수','물의 온도','잎의 색'] },
-      ] },
-    { text:['같은 조건에서 ', ' 반복해 평균을 냅니다. 한 번의 측정에는 ', ' 가 있기 때문입니다.'],
-      slots:[
-        { id:'s5a', ans:'3번', pool:['3번','1번','10번'] },
-        { id:'s5b', ans:'오차', pool:['오차','정답','평균'] },
-      ] },
-    { text:['조건을 ', ' 이상 모아 표를 채운 뒤, ', ' 로 바꿔 관계를 확인합니다.'],
-      slots:[
-        { id:'s6a', ans:'5가지', pool:['5가지','1가지','20가지'] },
-        { id:'s6b', ans:'그래프', pool:['그래프','사진','글'] },
-      ] },
+      slots:[{ id:'s3', ans:LABEL[cfg.key], pool:all.map(k => LABEL[k]) }] },
+
+    { text:['이 실험에서 ', ' 은(는) 실험 내내 같게 둡니다. (통제 변인)'],
+      slots:[{ id:'s4', ans:ctrlAns,
+        pool:[ctrlAns, LABEL[cfg.key], all.map(k => LABEL[k]).join(', ')] }] },
+
+    { text:['각 조건에서 15초 동안 깔때기 목을 지나는 ', ' 를 셉니다. (종속 변인)'],
+      slots:[{ id:'s5', ans:'기포 수', pool:['기포 수','물의 온도','잎의 색'] }] },
+
+    { text:['같은 조건에서 3번 반복해 평균을 냅니다. 한 번의 측정에는 ',
+            ' 가 있기 때문입니다.'],
+      slots:[{ id:'s6', ans:'오차', pool:['오차','정답','평균'] }] },
+
+    { text:['조건을 5가지 이상 모아 표를 채운 뒤, ', ' 로 바꿔 관계를 확인합니다.'],
+      slots:[{ id:'s7', ans:'그래프', pool:['그래프','사진','글'] }] },
   ];
 }
 
