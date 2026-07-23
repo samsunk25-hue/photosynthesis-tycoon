@@ -413,10 +413,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 /* =========================================================
    진척도
    ========================================================= */
-.prog{
-  margin-bottom:14px;padding:12px 14px;border-radius:14px;
-  background:var(--page);border:1.5px solid var(--border);
-}
+.prog{ margin-bottom:16px }
 .prog.done{border-color:#0ca30c;background:rgba(12,163,12,.08)}
 .prog-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .prog-top b{font-size:13.5px;font-weight:800}
@@ -437,32 +434,37 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 
 /* 측정 구간 안내 — 조작 변인 슬라이더 바로 위. 눈에 잘 띄어야 한다. */
 .rng{
+  display:block;width:100%;
   margin:0 0 14px;padding:12px 14px;border-radius:12px;
   background:color-mix(in srgb,var(--series-1) 9%,transparent);
   border:1.5px solid color-mix(in srgb,var(--series-1) 35%,transparent);
 }
+/* 구간이 좁아 결론을 잘못 읽을 수 있는 상태 — 빨강으로 확실히 알린다 */
 .rng.warn{
-  background:rgba(250,178,25,.15);border-color:rgba(250,178,25,.65);
+  background:rgba(208,59,59,.13);border-color:rgba(208,59,59,.6);
   animation:rngPop .4s cubic-bezier(.2,1.4,.4,1);
 }
 @keyframes rngPop{from{transform:scale(.97)}to{transform:scale(1)}}
 .rng-msg{
+  display:block;width:100%;
   margin:0 0 9px;font-size:13.5px;line-height:1.6;font-weight:600;
   color:var(--text-primary);
 }
 .rng-msg b{font-weight:800;color:var(--series-1)}
-.rng.warn .rng-msg{color:#7a5c00}
-.rng.warn .rng-msg b{color:#a8760a}
+.rng.warn .rng-msg{color:#a02a2a}
+.rng.warn .rng-msg b{color:#c62828}
 .rng-bar{
-  position:relative;height:16px;border-radius:99px;background:var(--surface-1);
+  display:block;position:relative;width:100%;box-sizing:border-box;
+  height:16px;border-radius:99px;background:var(--surface-1);
   border:1.5px solid var(--border);
 }
+.rng.warn .rng-bar{border-color:rgba(208,59,59,.45)}
 .rng-bar i{
   position:absolute;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
   transform:translateY(-50%);background:#0ca30c;border:2px solid var(--surface-1);
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
-.rng-ends{display:flex;justify-content:space-between;margin-top:5px;
+.rng-ends{display:flex;width:100%;justify-content:space-between;margin-top:5px;
   font-size:11px;font-weight:650;color:var(--text-secondary);
   font-variant-numeric:tabular-nums}
 
@@ -1650,15 +1652,9 @@ td.pending{color:var(--muted)}
   main{grid-template-columns:1fr;gap:14px}
 }
 /* 태블릿 세로에서는 좌우 패널을 다시 2단으로 나눠 세로 스크롤을 줄인다 */
-@media (min-width:700px) and (max-width:999px){
-  main{grid-template-columns:1fr 1fr;align-items:start}
-  main > section:first-child{grid-column:1 / -1}
-  main > section:first-child > .card:first-child{display:grid;
-    grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:0 20px;align-items:start}
-  main > section:first-child > .card:first-child > .now{grid-column:1 / -1}
-  main > section:first-child > .card:first-child > .rig{margin-bottom:0}
-  main > section:first-child > .card:first-child > #condWarn{grid-column:1 / -1}
-}
+/* 태블릿 세로 폭에서 카드를 2단 그리드로 나누던 규칙은 없앴다.
+   카드 안 항목이 늘어나면서 엉뚱한 칸에 배치되어 화면이 깨졌고,
+   좁은 화면은 이제 실험/결과 탭이 처리한다. */
 /* 터치: 히트 영역을 손가락 크기로 */
 @media (pointer:coarse){
   body{font-size:15px}
@@ -1812,16 +1808,6 @@ td.pending{color:var(--muted)}
           <small id="nowQ"></small></span>
       </div>
 
-      <!-- 진척도 — 목표가 보여야 학생이 스스로 움직인다 -->
-      <div class="prog" id="prog">
-        <div class="prog-top">
-          <b id="progNum">조건 0 / 5</b>
-          <span class="dots" id="progDots"></span>
-        </div>
-        <div class="prog-bar"><span id="progFill"></span></div>
-        <small id="progMsg">서로 다른 조건 5가지를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.</small>
-      </div>
-
       <!-- 실제 교과서 실험 장치: 비커 + 깔때기 + 시험관 + 전등 -->
       <div class="rig" id="tank">
         <div class="beam" aria-hidden="true"></div>
@@ -1906,6 +1892,16 @@ td.pending{color:var(--muted)}
 
   <!-- ============ RIGHT ============ -->
   <section>
+    <!-- 진척도 — 표 바로 위에 두어 얼마나 모았는지 함께 본다 -->
+    <div class="card prog" id="prog">
+      <div class="prog-top">
+        <b id="progNum">조건 0 / 5</b>
+        <span class="dots" id="progDots"></span>
+      </div>
+      <div class="prog-bar"><span id="progFill"></span></div>
+      <small id="progMsg">서로 다른 조건 5가지를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.</small>
+    </div>
+
     <div class="card">
       <div class="head-row">
         <h2>실험 결과 활동지</h2>
