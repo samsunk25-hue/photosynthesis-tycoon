@@ -433,12 +433,16 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .prog small{display:block;margin-top:7px;font-size:11.5px;color:var(--text-secondary);line-height:1.5}
 
 /* 측정 구간 안내 — 조작 변인 슬라이더 바로 위. 눈에 잘 띄어야 한다. */
+/* 세로로만 쌓이도록 flex-column 으로 못 박는다.
+   바깥 요소가 무엇이든 가로로 나뉘지 않는다. */
 .rng{
-  display:block;width:100%;
+  display:flex;flex-direction:column;align-items:stretch;gap:8px;
+  width:100%;box-sizing:border-box;
   margin:0 0 14px;padding:12px 14px;border-radius:12px;
   background:color-mix(in srgb,var(--series-1) 9%,transparent);
   border:1.5px solid color-mix(in srgb,var(--series-1) 35%,transparent);
 }
+.rng > *{flex:none;width:100%;box-sizing:border-box}
 /* 구간이 좁아 결론을 잘못 읽을 수 있는 상태 — 빨강으로 확실히 알린다 */
 .rng.warn{
   background:rgba(208,59,59,.13);border-color:rgba(208,59,59,.6);
@@ -446,8 +450,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 }
 @keyframes rngPop{from{transform:scale(.97)}to{transform:scale(1)}}
 .rng-msg{
-  display:block;width:100%;
-  margin:0 0 9px;font-size:13.5px;line-height:1.6;font-weight:600;
+  margin:0;font-size:13.5px;line-height:1.6;font-weight:600;
   color:var(--text-primary);
 }
 .rng-msg b{font-weight:800;color:var(--series-1)}
@@ -464,7 +467,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   transform:translateY(-50%);background:#0ca30c;border:2px solid var(--surface-1);
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
-.rng-ends{display:flex;width:100%;justify-content:space-between;margin-top:5px;
+.rng-ends{display:flex;width:100%;justify-content:space-between;margin:-4px 0 0;
   font-size:11px;font-weight:650;color:var(--text-secondary);
   font-variant-numeric:tabular-nums}
 
@@ -3473,7 +3476,7 @@ function renderProg(){
      어디가 비었는지 스스로 보고 정하는 것도 실험 설계다. */
   $('progRange').innerHTML = `
     <div class="rng ${cov.narrow ? 'warn' : ''}">
-      <p class="rng-msg">${
+      <div class="rng-msg">${
         full === 0
           ? `${cfg.name}를 <b>${cfg.min}${cfg.unit}</b> 부터 <b>${cfg.max}${cfg.unit}</b> 까지
              넓게 옮겨 가며 재어 보세요.`
@@ -3487,7 +3490,7 @@ function renderProg(){
         : full < GOAL
           ? `👍 잘 퍼졌어요. 아래 눈금에서 <b>빈 곳</b>을 찾아 마저 재어 보세요.`
           : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었어요.`
-      }</p>
+      }</div>
       <div class="rng-bar">${marks}</div>
       <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
     </div>`;
