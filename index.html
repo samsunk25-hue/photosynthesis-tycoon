@@ -647,6 +647,8 @@ td.fresh.wrong{animation-name:freshFlashBad}
   background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary);
 }
 .rpt:hover{color:var(--text-primary);border-color:var(--series-1)}
+.rpt.danger{color:#a83232;border-color:rgba(208,59,59,.4)}
+.rpt.danger:hover{color:#fff;background:#d03b3b;border-color:#d03b3b}
 
 /* 진행 중인 탐구 표시 (탭 대신) */
 .now{
@@ -1797,6 +1799,7 @@ td.pending{color:var(--muted)}
           <button class="rpt" id="whoBtn">📇 학번 입력</button>
           <button class="rpt" id="pdfBtn">📄 PDF</button>
           <button class="rpt" id="docBtn">📝 Word</button>
+          <button class="rpt danger" id="wipeBtn">🧹 전체 지우기</button>
         </div>
       </div>
       <p class="hint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
@@ -1925,6 +1928,18 @@ try {
     await db.remove(db.ref(rtdb, 'pending'));
   };
 
+  /* 학번별 진행 상황 — 기기를 바꿔도 이어서 할 수 있게 한다.
+     학번은 비밀이 아니므로, 남이 덮어쓰지 못하도록 서버 규칙에서
+     '이미 있는 기록은 수정 불가'로 막지 않는다. 대신 저장할 때마다
+     통째로 덮어쓰므로, 같은 학번을 여러 명이 쓰면 서로 덮어쓴다.
+     수업에서는 학번이 겹치지 않으므로 문제되지 않는다. */
+  Cloud.saveProgress = (no, payload) =>
+    db.set(db.ref(rtdb, `progress/${no}`), payload);
+  Cloud.loadProgress = no =>
+    db.get(db.ref(rtdb, `progress/${no}`)).then(sn => sn.val());
+  Cloud.dropProgress = no =>
+    db.remove(db.ref(rtdb, `progress/${no}`));
+
   Cloud.signIn  = (email, pw) => auth.signInWithEmailAndPassword(au, email, pw);
   Cloud.signOut = () => auth.signOut(au);
   Cloud.onAuth  = cb => auth.onAuthStateChanged(au, u => {
@@ -1988,10 +2003,8 @@ const isManual = () => state.mode === 'manual';
 const SAVE_KEY = 'photosynthesis.session.v2';
 let restoring = false;                 // 복원 중에는 저장하지 않는다
 
-function saveSession(){
-  if (restoring) return;
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
+function sessionPayload(){
+  return {
       v: 1,
       data:    state.data,
       graphed: state.graphed,
@@ -2008,10 +2021,24 @@ function saveSession(){
       mission: state.mission,
       mode:    state.mode,
       tab:     state.activeTab,
-      inLab:   !document.querySelector('main').hidden,
-      at:      Date.now(),
-    }));
-  } catch {}                           // 저장 공간이 막혀도 앱은 계속 동작한다
+    inLab:   !document.querySelector('main').hidden,
+    at:      Date.now(),
+  };
+}
+
+let cloudSaveTimer = null;
+function saveSession(){
+  if (restoring) return;
+  const payload = sessionPayload();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(payload)); } catch {}
+  // 학번을 적었고 서버를 쓸 수 있으면, 잠잠해진 뒤 한 번만 올린다
+  const w = getWho();
+  if (w && w.no && cloudOn() && window.Cloud.saveProgress){
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => {
+      window.Cloud.saveProgress(w.no, payload).catch(() => {});
+    }, 1500);
+  }
 }
 
 function loadSession(){
@@ -2037,6 +2064,20 @@ function loadSession(){
   state.blanks  = s.blanks  || {};
   restoring = false;
   return !!s.inLab;
+}
+
+/* 학번으로 서버에 저장된 진행 상황을 불러온다 */
+function pullProgress(no){
+  if (!cloudOn() || !window.Cloud.loadProgress) return Promise.resolve(null);
+  return window.Cloud.loadProgress(no).catch(() => null);
+}
+
+/* 불러온 내용을 적용하고 화면을 다시 그린다 */
+function applyPayload(p){
+  if (!p || p.v !== 1) return false;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(p)); } catch {}
+  location.reload();
+  return true;
 }
 
 function clearSession(){
@@ -4713,7 +4754,29 @@ function askWho(then){
         if (!no) return '학번을 적어 주세요.';
         if (!/^[0-9a-zA-Z-]+$/.test(no))
           return '학번은 숫자와 영문만 쓸 수 있습니다.';
+        const prev = getWho();
         setWho(no);
+        renderWho();
+        // 학번이 새로 정해졌고 서버에 기록이 있으면 이어서 할지 묻는다
+        if (!prev || prev.no !== no){
+          pullProgress(no).then(p => {
+            if (!p || p.v !== 1){ saveSession(); then && then(); return; }
+            const d = new Date(p.at || Date.now());
+            const when = `${d.getMonth()+1}월 ${d.getDate()}일 ` +
+              `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            openModal('📥 이전에 하던 기록이 있어요',
+              `학번 <b>${esc(no)}</b> 으로 <b>${when}</b> 에 저장한 기록이 서버에 있습니다.<br><br>
+               불러오면 <b>지금 이 기기의 기록은 사라집니다.</b><br><br>
+               <span style="color:var(--muted)">다른 기기에서 하던 것을 이어서 하려면 불러오세요.
+               처음부터 시작하려면 '지금 것 쓰기'를 누르세요.</span>`);
+            $('modalOk').textContent = '불러오기';
+            $('modalCancel').hidden = false;
+            $('modalCancel').textContent = '지금 것 쓰기';
+            onSubmit = () => { applyPayload(p); return null; };
+          });
+          return null;
+        }
+        saveSession();
         then && then();
         return null;
       } });
@@ -4930,6 +4993,25 @@ function exportDoc(){
 $('csvBtn').addEventListener('click', exportCSV);
 $('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(exportPDF));
 $('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
+$('wipeBtn').addEventListener('click', () => {
+  const w = getWho();
+  openPrompt('🧹 전체 지우고 새로 시작',
+    `이 기기의 <b>모든 기록</b>을 지웁니다 — 측정값, 가설, 배지, 학번.<br>
+     ${w && w.no ? `서버에 저장된 학번 <b>${esc(w.no)}</b> 의 기록도 함께 지웁니다.<br>` : ''}
+     <br>다음 학생이 쓸 수 있도록 깨끗하게 비웁니다. <b>되돌릴 수 없습니다.</b><br><br>
+     지우려면 아래에 <b>지우기</b> 라고 입력하세요.`,
+    { placeholder:'지우기', okText:'모두 지우기', cancelText:'취소', maxlength:5,
+      handler: v => {
+        if (v.trim() !== '지우기') return '"지우기" 라고 정확히 입력해 주세요.';
+        if (w && w.no && cloudOn() && window.Cloud.dropProgress)
+          window.Cloud.dropProgress(w.no).catch(() => {});
+        clearSession();
+        try { localStorage.removeItem(WHO_KEY); } catch {}
+        setTimeout(() => location.reload(), 300);
+        return null;
+      } });
+});
+
 $('whoBtn').addEventListener('click', () => askWho(() => {
   const w = getWho();
   toast('📇', '학번을 저장했습니다', `파일 이름 앞에 <b>${whoPrefix().slice(0, -1)}</b> 가 붙습니다.`);

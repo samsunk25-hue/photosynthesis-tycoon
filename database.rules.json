@@ -1,14 +1,11 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
-
     "pending": {
       ".read": "auth != null",
       "$id": {
         ".write": "(!data.exists() && newData.exists()) || auth != null",
-        ".validate": "newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 5 && newData.child('name').val().matches(/^[가-힣a-zA-Z]+$/) && newData.child('at').isNumber()",
-        "name": { ".validate": "newData.isString()" },
+        ".validate": "newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 5 && newData.child('at').isNumber()",
+        "name": { ".validate": "newData.isString() && newData.val().length <= 5" },
         "at":   { ".validate": "newData.isNumber()" },
         "$other": { ".validate": false }
       }
@@ -19,9 +16,17 @@
       ".write": "auth != null",
       "$id": {
         ".validate": "newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length <= 5 && newData.child('at').isNumber()",
-        "name": { ".validate": "newData.isString()" },
+        "name": { ".validate": "newData.isString() && newData.val().length <= 5" },
         "at":   { ".validate": "newData.isNumber()" },
         "$other": { ".validate": false }
+      }
+    },
+
+    "progress": {
+      "$no": {
+        ".read": true,
+        ".write": true,
+        ".validate": "!newData.exists() || (newData.hasChildren(['v','at']) && newData.child('v').isNumber() && newData.child('at').isNumber())"
       }
     }
   }
