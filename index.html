@@ -449,6 +449,144 @@ td.fresh.wrong{animation-name:freshFlashBad}
 }
 .concl-hyp b{color:var(--text-primary)}
 
+/* =========================================================
+   심화 활동 — 설계 검토 · 세 탐구 종합
+   ========================================================= */
+.extras{max-width:820px;margin:22px auto 0;display:flex;flex-direction:column;gap:10px}
+.extras[hidden]{display:none}
+.ex{border:1.5px solid var(--border);border-radius:16px;background:var(--surface-1);overflow:hidden}
+.ex summary{
+  display:flex;align-items:center;gap:12px;padding:15px 17px;cursor:pointer;list-style:none;
+}
+.ex summary::-webkit-details-marker{display:none}
+.ex summary::after{content:'▾';margin-left:auto;color:var(--muted);font-size:14px;transition:transform .2s}
+.ex[open] summary::after{transform:rotate(180deg)}
+.ex summary:hover{background:var(--page)}
+.ex-em{font-size:24px;flex:none}
+.ex-t{display:flex;flex-direction:column;min-width:0}
+.ex-t b{font-size:14.5px;font-weight:750}
+.ex-t small{font-size:11.5px;color:var(--muted)}
+.ex-cnt{
+  padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:800;
+  background:var(--page);border:1px solid var(--border);color:var(--text-secondary);
+}
+.ex > div{padding:0 17px 17px}
+
+/* 설계 검토 */
+.rv{
+  padding:15px;border-radius:14px;border:1.5px solid var(--border);
+  background:var(--page);margin-bottom:12px;
+}
+.rv:last-child{margin-bottom:0}
+.rv.solved{border-color:#0ca30c;background:rgba(12,163,12,.07)}
+.rv.missed{border-color:rgba(250,178,25,.6);background:rgba(250,178,25,.07)}
+.rv-head{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.rv-em{font-size:22px}
+.rv-head b{font-size:14px;font-weight:750}
+.rv-body{padding:11px 13px;border-radius:11px;background:var(--surface-1);
+  border:1px solid var(--border);margin-bottom:12px}
+.rv-body p{margin:0 0 7px;font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.rv-body p:last-child{margin:0}
+.rv-tag{
+  display:inline-block;min-width:38px;margin-right:7px;padding:1px 7px;border-radius:5px;
+  font-size:10.5px;font-weight:800;text-align:center;
+  background:var(--grid);color:var(--text-secondary);
+}
+.rv-tag.res{background:color-mix(in srgb,var(--series-1) 22%,transparent);color:var(--series-1)}
+.rv-q{margin:0 0 8px;font-size:13px;font-weight:700}
+.rv-opts{display:flex;flex-direction:column;gap:6px}
+.rv-opt{
+  padding:10px 13px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;font-size:12.5px;
+  border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);
+  transition:border-color .15s,background .15s,transform .12s;
+}
+.rv-opt:hover:not(:disabled){border-color:color-mix(in srgb,var(--series-1) 50%,transparent);
+  transform:translateX(3px)}
+.rv-opt:disabled{cursor:default}
+.rv-opt.right{border-color:#0ca30c;background:rgba(12,163,12,.14);font-weight:750}
+.rv-opt.wrong{border-color:#d03b3b;background:rgba(208,59,59,.1)}
+.rv-why{
+  margin:11px 0 0;padding:12px 13px;border-radius:11px;font-size:12.5px;line-height:1.65;
+  animation:methodIn .3s ease-out both;
+}
+.rv-why.ok{background:rgba(12,163,12,.12);border:1.5px solid rgba(12,163,12,.45)}
+.rv-why.no{background:rgba(250,178,25,.13);border:1.5px solid rgba(250,178,25,.5)}
+
+/* 세 탐구 종합 */
+.synth-lock{
+  display:flex;flex-direction:column;align-items:center;gap:9px;padding:24px 16px;text-align:center;
+}
+.sl-em{font-size:34px;opacity:.5}
+.synth-lock b{display:block;font-size:14px}
+.synth-lock small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.sl-dots{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:6px}
+.sl-dots span{
+  padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:700;
+  background:var(--page);border:1.5px solid var(--border);color:var(--muted);
+}
+.sl-dots span.on{background:rgba(12,163,12,.14);border-color:#0ca30c;color:#0a5c0a}
+.synth-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (max-width:760px){ .synth-grid{grid-template-columns:1fr} }
+.sy-fig{margin:0;padding:10px;border-radius:12px;background:var(--page);border:1px solid var(--border)}
+.sy-fig figcaption{font-size:12px;font-weight:750;margin-bottom:4px;text-align:center}
+.mini{display:block;width:100%;height:auto}
+.synth-qs{display:flex;flex-direction:column;gap:14px}
+.sq-q{margin:0 0 8px;font-size:13px;line-height:1.6}
+.sq-opts{display:flex;flex-direction:column;gap:6px}
+.sq-opt{
+  padding:10px 13px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;font-size:12.5px;
+  border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);
+  transition:border-color .15s,background .15s,transform .12s;
+}
+.sq-opt:hover:not(:disabled){border-color:color-mix(in srgb,var(--series-1) 50%,transparent);
+  transform:translateX(3px)}
+.sq-opt:disabled{cursor:default}
+.sq-opt.right{border-color:#0ca30c;background:rgba(12,163,12,.14);font-weight:750}
+.sq-opt.wrong{border-color:#d03b3b;background:rgba(208,59,59,.1)}
+.sq-why{
+  margin:9px 0 0;padding:11px 13px;border-radius:11px;font-size:12.5px;line-height:1.65;
+}
+.sq-why.ok{background:rgba(12,163,12,.12);border:1.5px solid rgba(12,163,12,.45)}
+.sq-why.no{background:rgba(250,178,25,.13);border:1.5px solid rgba(250,178,25,.5)}
+.synth-sum{
+  margin-top:16px;padding:15px 17px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(12,163,12,.12),rgba(42,120,214,.1));
+  border:1.5px solid rgba(12,163,12,.4);
+}
+.synth-sum b{display:block;font-size:14.5px;margin-bottom:8px}
+.synth-sum ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px}
+.synth-sum li{font-size:12.5px;line-height:1.65;color:var(--text-secondary)}
+.synth-sum li b{display:inline;font-size:inherit;color:var(--text-primary)}
+
+/* =========================================================
+   제한 요인 도전
+   ========================================================= */
+.limit{display:flex;flex-direction:column;gap:9px}
+.limit.ok .lm-em{filter:none}
+.lm-head{display:flex;align-items:flex-start;gap:11px}
+.lm-em{font-size:26px;flex:none}
+.lm-head b{display:block;font-size:14px;font-weight:750;line-height:1.4}
+.lm-head small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.lm-ask{
+  margin:0;padding:11px 13px;border-radius:11px;font-size:12.5px;line-height:1.6;
+  background:var(--page);border:1px dashed var(--border);color:var(--text-secondary);
+}
+.lm-why{
+  margin:0;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.7;
+  background:rgba(12,163,12,.12);border:1.5px solid rgba(12,163,12,.45);
+}
+.lm-prog{
+  padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:700;text-align:center;
+  background:color-mix(in srgb,var(--series-1) 12%,transparent);
+  border:1.5px solid color-mix(in srgb,var(--series-1) 40%,transparent);
+}
+.lm-go{
+  padding:11px;border:0;border-radius:11px;cursor:pointer;font:inherit;
+  font-size:13px;font-weight:750;background:var(--series-1);color:#fff;
+}
+.lm-go:hover{filter:brightness(1.08)}
+.limit.ready .lm-head b{color:var(--series-1)}
+
 /* 진행 중인 탐구 표시 (탭 대신) */
 .now{
   display:flex;align-items:center;gap:11px;margin-bottom:14px;padding:12px 14px;
@@ -1411,6 +1549,24 @@ td.pending{color:var(--muted)}
   </div>
   <div class="plan-grid" id="planGrid"></div>
   <div id="methodBox" hidden></div>
+
+  <!-- 탐구를 고르지 않았을 때만 보이는 심화 활동 -->
+  <div class="extras" id="extras">
+    <details class="ex">
+      <summary><span class="ex-em">🕵️</span>
+        <span class="ex-t"><b>설계 검토</b><small>남의 실험에서 잘못된 점 찾기</small></span>
+        <span class="ex-cnt" id="reviewCnt">0 / 3</span>
+      </summary>
+      <div id="reviewBox"></div>
+    </details>
+
+    <details class="ex">
+      <summary><span class="ex-em">🔭</span>
+        <span class="ex-t"><b>세 탐구 종합</b><small>결과를 나란히 놓고 공통점 찾기</small></span>
+      </summary>
+      <div id="synthBox"></div>
+    </details>
+  </div>
 </section>
 
 <div class="labbar" id="labbar" hidden>
@@ -1567,6 +1723,9 @@ td.pending{color:var(--muted)}
       <p class="hint" style="margin-top:8px">3회 측정이 완료된 조건만 그래프에 표시됩니다.</p>
     </div>
 
+    <!-- 제한 요인 도전 -->
+    <div class="card" id="limitCard" hidden></div>
+
     <!-- 결론 정리 — 그래프를 그린 뒤에 나타난다 -->
     <div class="card" id="conclCard" hidden>
       <h2>✍️ 결론 정리</h2>
@@ -1711,6 +1870,8 @@ const TABS = [
   { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:25} },
   { key:'co2',   name:'CO₂ 농도',  unit:'%',  min:0, max:100, step:10, fixed:{light:100, temp:25} },
   { key:'temp',  name:'온도',      unit:'°C', min:0, max:50,  step:1,  fixed:{light:100, co2:100} },
+  // 자유 탐구 — 조작 변인을 학생이 정한다 (key 는 state.freeKey 를 따라 바뀐다)
+  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:25}, free:true },
 ];
 const LABEL = { light:'빛의 세기', co2:'CO₂ 농도', temp:'온도' };
 const UNIT  = { light:'%', co2:'%', temp:'°C' };
@@ -1727,8 +1888,8 @@ const state = {
   activeTab: 0,
   light: 100, co2: 100, temp: 25,
   // 측정 방식마다 데이터를 따로 보관한다 (세는 방법이 다르므로 섞으면 안 된다)
-  data: { manual: [ {}, {}, {} ], auto: [ {}, {}, {} ] },
-  graphed: { manual: [false, false, false], auto: [true, true, true] },
+  data: { manual: [ {}, {}, {}, {} ], auto: [ {}, {}, {}, {} ] },
+  graphed: { manual: [false, false, false, false], auto: [true, true, true, true] },
   isMeasuring: false,
   stableNoise: true,
 };
@@ -1755,7 +1916,11 @@ function saveSession(){
       hyp:     state.hyp,
       ctrl:    state.ctrl,
       ctrlVal: state.ctrlVal,
+      freeKey: state.freeKey,
       concl:   state.concl,
+      limitDone: state.limitDone,
+      synth:   state.synth,
+      review:  state.review,
       badges:  [...state.badges],
       mission: state.mission,
       mode:    state.mode,
@@ -1773,15 +1938,30 @@ function loadSession(){
 
   restoring = true;
   state.data    = s.data;
-  state.graphed = s.graphed || { manual:[false,false,false], auto:[true,true,true] };
+  state.graphed = s.graphed || { manual:[false,false,false,false], auto:[true,true,true,true] };
+  // 예전 저장본은 3칸이므로 4칸으로 늘린다
+  ['manual','auto'].forEach(m => {
+    while (state.graphed[m].length < 4) state.graphed[m].push(m === 'auto');
+    while (state.data[m].length < 4) state.data[m].push({});
+  });
+  while (state.hyp.length < 4) state.hyp.push({ op:null, dep:null });
+  while (state.ctrl.length < 4) state.ctrl.push([]);
+  while (state.concl.length < 4) state.concl.push(null);
+  while (state.limitDone.length < 4) state.limitDone.push(false);
+  while (state.ctrlVal.length < 4) state.ctrlVal.push({ light:100, co2:100, temp:25 });
   state.hyp     = s.hyp     || state.hyp;
   state.ctrl    = s.ctrl    || state.ctrl;
   state.ctrlVal = s.ctrlVal || state.ctrlVal;
   state.concl   = s.concl   || state.concl;
+  state.limitDone = s.limitDone || state.limitDone;
+  state.synth   = s.synth   || state.synth;
+  state.review  = s.review  || state.review;
   state.badges  = new Set(s.badges || []);
   state.mission = s.mission || { done:false };
   state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
-  state.activeTab = [0,1,2].includes(s.tab) ? s.tab : 0;
+  state.activeTab = [0,1,2,3].includes(s.tab) ? s.tab : 0;
+  state.freeKey = s.freeKey || null;
+  if (state.freeKey) applyFree(state.freeKey);
   restoring = false;
   return !!s.inLab;
 }
@@ -1888,14 +2068,45 @@ const PLANS = [
     ],
     answer:{ op:0, dep:1 },
     why:'광합성은 <b>효소</b>가 하는 일입니다. 35°C 부근까지는 활발해지지만, 그보다 뜨거워지면 효소가 변성되어 급격히 멈춥니다.' },
+
+  { em:'🔍', hue:270, free:true,
+    q:'내가 직접 설계하는 탐구',
+    ctrl:'내가 정한 값',
+    ops:[{ em:'⬆️', t:'크게 하면' }, { em:'⬇️', t:'작게 하면' }],
+    deps:[
+      { em:'📈', t:'계속 늘어난다' },
+      { em:'📊', t:'늘다가 일정해진다' },
+      { em:'➡️', t:'변하지 않는다' },
+      { em:'📉', t:'줄어든다' },
+    ],
+    answer:{ op:0, dep:1 },
+    why:'스스로 설계한 실험입니다. 조작 변인 하나만 바꾸고 나머지를 고정했다면 훌륭한 설계입니다.' },
 ];
 
-state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
+/* 자유 탐구에서 학생이 고른 조작 변인 */
+state.freeKey = null;
+
+/* 자유 탐구의 조작 변인이 정해지면 TABS[3] 을 그에 맞게 바꾼다 */
+function applyFree(k){
+  state.freeKey = k;
+  const base = { light:{name:'빛의 세기',unit:'%',min:0,max:100,step:10},
+                 co2:  {name:'CO₂ 농도', unit:'%',min:0,max:100,step:10},
+                 temp: {name:'온도',     unit:'°C',min:0,max:50, step:1} }[k];
+  Object.assign(TABS[3], { key:k, ...base,
+    fixed: Object.fromEntries(['light','co2','temp'].filter(x => x !== k)
+             .map(x => [x, x === 'temp' ? 25 : 100])) });
+  PLANS[3].q = `${base.name}는 광합성에 어떤 영향을 미칠까?`;
+  // 통제값 기본치도 다시 잡는다
+  state.ctrlVal[3] = { light:100, co2:100, temp:25, ...TABS[3].fixed };
+}
+
+state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
 state.planPick = null;      // 계획 화면에서 고른 탐구 (null이면 3개 모두 보임)
-state.ctrl = [[], [], []];  // 탐구별로 학생이 고른 통제 변인
+state.ctrl = [[], [], [], []];  // 탐구별로 학생이 고른 통제 변인
 // 학생이 정한 통제값 (기본은 권장값)
-state.ctrlVal = [0,1,2].map(i => ({ light:100, co2:100, temp:25, ...TABS[i].fixed }));
-state.concl = [null, null, null];   // 탐구별 결론
+state.ctrlVal = [0,1,2,3].map(i => ({ light:100, co2:100, temp:25, ...TABS[i].fixed }));
+state.concl = [null, null, null, null];   // 탐구별 결론
+state.limitDone = [false, false, false, false];   // 제한 요인 도전 성공 여부
 state.lastCell = null;              // 방금 기록한 칸 (강조용)
 state.view = 'lab';                 // 좁은 화면에서의 현재 화면
 const GOAL = 5;                     // 그래프를 그리려면 조건 5가지
@@ -1906,7 +2117,7 @@ const VAR_EM = { light:'💡', co2:'🫧', temp:'🌡️' };
 function ctrlNeed(i){ return ['light','co2','temp'].filter(k => k !== TABS[i].key); }
 function ctrlReady(i){ return ctrlNeed(i).every(k => state.ctrl[i].includes(k)); }
 const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
-const planReady = i => hypReady(i) && ctrlReady(i);
+const planReady = i => hypReady(i) && ctrlReady(i) && !(PLANS[i].free && !state.freeKey);
 
 /* 고른 가설을 한 문장으로 */
 function hypText(i){
@@ -1919,6 +2130,7 @@ function renderPlan(){
   const pick = state.planPick;
   $('planGrid').hidden  = pick !== null;
   $('methodBox').hidden = pick === null;
+  $('extras').hidden    = pick !== null;
   if (pick === null) renderTopics();
   else               renderSetup(pick);
 }
@@ -1926,6 +2138,17 @@ function renderPlan(){
 /* --- 1단계: 탐구 주제만 보여준다 --- */
 function renderTopics(){
   $('planGrid').innerHTML = PLANS.map((p, i) => {
+    if (p.free){
+      const k = state.freeKey;
+      return `
+      <button class="topic free ${planReady(3) ? 'done' : ''}" data-topic="3" style="--hue:${p.hue}">
+        <span class="tp-em">🔍</span>
+        <span class="tp-no">자유 탐구</span>
+        <span class="tp-q">${k ? TABS[3].name + '는 광합성에 어떤 영향을 미칠까?'
+                              : '내가 직접 설계하는 탐구'}</span>
+        <span class="tp-go">${k ? '이어서 하기 →' : '조작 변인부터 정하기 →'}</span>
+      </button>`;
+    }
     const done = planReady(i);
     return `
     <button class="topic ${done ? 'done' : ''}" data-topic="${i}" style="--hue:${p.hue}">
@@ -1967,8 +2190,21 @@ function renderSetup(i){
         <div><span class="su-no">탐구 ${i + 1} · ${cfg.name}</span><b>${p.q}</b></div>
       </div>
 
+      ${p.free ? `
       <section class="su-sec">
-        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small></h4>
+        <h4>🔍 조작 변인 정하기<small>무엇을 바꿔가며 알아볼까요?</small></h4>
+        <div class="chips">
+          ${['light','co2','temp'].map(k => `
+            <button class="chip" data-fk="${k}" aria-pressed="${state.freeKey === k}">
+              <span class="em">${VAR_EM[k]}</span>${LABEL[k]}
+            </button>`).join('')}
+        </div>
+        <p class="su-why">조작 변인은 <b>하나만</b> 고릅니다. 나머지는 통제 변인이 됩니다.</p>
+      </section>` : ''}
+
+      ${p.free && !state.freeKey ? '' : `
+      <section class="su-sec">
+        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small></h4>`}
         <div class="cvars">
           ${['light','co2','temp'].map(k => {
             const isManip = k === cfg.key;
@@ -2054,10 +2290,30 @@ function renderSetup(i){
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
 
+  /* 자유 탐구 — 조작 변인 고르기 */
+  $('methodBox').querySelectorAll('[data-fk]').forEach(b =>
+    b.addEventListener('click', () => {
+      const k = b.dataset.fk;
+      if (state.freeKey === k) return;
+      // 조작 변인을 바꾸면 그 탐구의 기존 기록은 의미가 없어진다
+      const had = Object.keys(state.data.manual[3]).length +
+                  Object.keys(state.data.auto[3]).length > 0;
+      applyFree(k);
+      state.ctrl[3] = [];
+      state.hyp[3] = { op:null, dep:null };
+      if (had){
+        state.data.manual[3] = {}; state.data.auto[3] = {};
+        state.graphed.manual[3] = false; state.graphed.auto[3] = true;
+        state.concl[3] = null;
+        toast('🔄', '조작 변인을 바꿨습니다', '이전에 모은 자유 탐구 기록은 지워졌습니다.');
+      }
+      saveSession(); Sfx.tick(); renderPlan();
+    }));
+
   /* 통제 변인 — 이벤트 위임으로 처리한다.
      매번 다시 그려지는 영역이라 개별 버튼에 거는 것보다 안전하다. */
   const cvars = $('methodBox').querySelector('.cvars');
-  cvars.addEventListener('click', e => {
+  if (cvars) cvars.addEventListener('click', e => {
     const btn = e.target.closest('[data-ck]');
     if (!btn) return;
     const k = btn.dataset.ck, list = state.ctrl[i];
@@ -2066,7 +2322,7 @@ function renderSetup(i){
     saveSession(); Sfx.tick(); renderPlan();
   });
   // 통제값 슬라이더 — 드래그 중에는 숫자만 갱신하고, 놓을 때 다시 그린다
-  cvars.addEventListener('input', e => {
+  if (cvars) cvars.addEventListener('input', e => {
     const sl = e.target.closest('[data-cv]');
     if (!sl) return;
     const k = sl.dataset.cv, v = Number(sl.value);
@@ -2075,7 +2331,7 @@ function renderSetup(i){
     if (box) box.querySelector('.cv-val').textContent = v + UNIT[k];
     Sfx.tick();
   });
-  cvars.addEventListener('change', () => { saveSession(); });
+  if (cvars) cvars.addEventListener('change', () => { saveSession(); });
 
   $('pickAgain').addEventListener('click', () => {
     state.planPick = null;
@@ -2085,6 +2341,10 @@ function renderSetup(i){
   });
 
   $('goLab').addEventListener('click', () => {
+    if (PLANS[i].free && !state.freeKey){
+      toast('🔍', '조작 변인을 먼저 고르세요', '무엇을 바꿔가며 알아볼지 정해야 실험을 시작할 수 있어요.');
+      return;
+    }
     if (!ctrlReady(i)){
       const miss = ctrlNeed(i).filter(k => !state.ctrl[i].includes(k)).map(k => LABEL[k]);
       toast('⚖️', '통제 변인을 모두 골라 주세요',
@@ -2591,7 +2851,7 @@ function startMeasure(){
     if (tag) tag.remove();
     syncControls();
     renderCondWarn(); renderTable(); renderChart(); renderHint();
-    renderProg(); renderConcl();
+    renderProg(); renderLimit(); renderConcl(); renderSynth(); renderReview();
 
     if (manual){
       if (miss === 0) toast('🎯', '정확하게 셌습니다!', `${counted}개 — 오차 없이 기록했습니다.`, true);
@@ -2670,7 +2930,7 @@ function recordCount(counted, actual, cfg){
 
   saveSession();
   renderCondWarn(); renderTable(); renderChart(); renderHint(); renderMyHyp();
-  renderProg(); renderConcl();
+  renderProg(); renderLimit(); renderConcl(); renderSynth(); renderReview();
 
   if (miss === 0){
     toast('🎯', '정확하게 셌습니다!', `${counted}개 — 오차 없이 기록했습니다.`, true);
@@ -3026,6 +3286,328 @@ function renderChart(){
 }
 
 /* ---------------------------------------------------------------
+   🕵️ 설계 검토 — 남의 실험을 살펴보며 변인 통제를 익힌다.
+   막아서 배우는 것보다, 잘못된 설계를 직접 찾아내는 편이 오래 남는다.
+----------------------------------------------------------------*/
+const REVIEWS = [
+  { who:'민수', em:'🙋‍♂️',
+    plan:'빛을 50% → 100%로 올리면서, 온도도 20°C → 30°C로 함께 올렸다.',
+    result:'산소 발생량이 늘었다.',
+    claim:'그래서 <b>“빛이 셀수록 광합성이 활발하다”</b>고 결론지었다.',
+    opts:['맞는 결론이다', '틀렸다 — 온도도 함께 바뀌었다',
+          '틀렸다 — 3번 반복하지 않았다', '틀렸다 — CO₂를 재지 않았다'],
+    ans:1,
+    why:'빛과 온도를 <b>동시에</b> 바꿨기 때문에, 산소가 는 것이 빛 때문인지 ' +
+        '온도 때문인지 알 수 없습니다. 조작 변인은 <b>한 번에 하나만</b> 바꿔야 합니다.' },
+
+  { who:'지현', em:'🙋‍♀️',
+    plan:'CO₂ 농도를 20%, 40%, 60%로 바꾸며 각각 <b>한 번씩만</b> 측정했다.',
+    result:'40%일 때가 60%보다 높게 나왔다.',
+    claim:'그래서 <b>“CO₂는 40%가 가장 좋다”</b>고 결론지었다.',
+    opts:['맞는 결론이다', '틀렸다 — 통제 변인을 정하지 않았다',
+          '틀렸다 — 한 번만 재서 오차일 수 있다', '틀렸다 — 온도를 재지 않았다'],
+    ans:2,
+    why:'측정에는 늘 <b>오차</b>가 있습니다. 한 번만 재면 우연히 높거나 낮게 나올 수 있어, ' +
+        '같은 조건에서 <b>여러 번 반복해 평균</b>을 내야 믿을 수 있습니다.' },
+
+  { who:'서준', em:'🧑‍🔬',
+    plan:'온도를 10°C, 20°C, 30°C로 바꾸며 3번씩 측정했다. ' +
+         '빛과 CO₂는 100%로 고정했다.',
+    result:'온도가 높을수록 산소가 늘었다.',
+    claim:'그래서 <b>“온도가 높을수록 광합성이 계속 활발해진다”</b>고 결론지었다.',
+    opts:['설계는 옳지만, 더 높은 온도까지 재봐야 한다',
+          '설계가 틀렸다 — 통제 변인이 없다',
+          '설계가 틀렸다 — 반복 측정을 안 했다',
+          '완전히 맞는 결론이다'],
+    ans:0,
+    why:'설계 자체는 <b>훌륭합니다</b> — 조작 변인 하나, 통제 변인 고정, 3회 반복. ' +
+        '다만 <b>30°C까지만</b> 재서 그 뒤를 모릅니다. 40°C 이상에서는 효소가 변성되어 ' +
+        '급격히 줄어듭니다. <b>측정 범위</b>도 설계의 일부입니다.' },
+];
+
+state.review = [null, null, null];
+
+function renderReview(){
+  const box = $('reviewBox');
+  const solved = state.review.filter(v => v !== null).length;
+  $('reviewCnt').textContent = `${solved} / ${REVIEWS.length}`;
+
+  box.innerHTML = REVIEWS.map((R, ri) => {
+    const picked = state.review[ri];
+    return `
+    <div class="rv ${picked === null ? '' : (picked === R.ans ? 'solved' : 'missed')}">
+      <div class="rv-head"><span class="rv-em">${R.em}</span>
+        <b>${R.who}의 실험</b></div>
+      <div class="rv-body">
+        <p><span class="rv-tag">설계</span>${R.plan}</p>
+        <p><span class="rv-tag">결과</span>${R.result}</p>
+        <p><span class="rv-tag res">결론</span>${R.claim}</p>
+      </div>
+      <p class="rv-q">이 결론을 믿어도 될까요?</p>
+      <div class="rv-opts">
+        ${R.opts.map((o, k) => {
+          let cls = '';
+          if (picked !== null) cls = k === R.ans ? 'right' : (k === picked ? 'wrong' : '');
+          return `<button class="rv-opt ${cls}" data-rv="${ri}-${k}"
+                    ${picked !== null ? 'disabled' : ''}>${o}</button>`;
+        }).join('')}
+      </div>
+      ${picked === null ? '' :
+        `<p class="rv-why ${picked === R.ans ? 'ok' : 'no'}">
+           ${picked === R.ans ? '✅ 정확합니다! ' : '🔍 다시 보아요. '}${R.why}</p>`}
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-rv]').forEach(b =>
+    b.addEventListener('click', () => {
+      const [ri, k] = b.dataset.rv.split('-').map(Number);
+      state.review[ri] = k;
+      saveSession();
+      renderReview();
+      if (k === REVIEWS[ri].ans){
+        Sfx.fanfare();
+        if (state.review.every((v, i) => v === REVIEWS[i].ans)){
+          confetti(120);
+          award('designer');
+        }
+      } else Sfx.warn();
+    }));
+}
+
+/* ---------------------------------------------------------------
+   🔭 종합 화면 — 세 탐구를 나란히 놓고 공통점을 찾는다.
+   개별 탐구만으로는 '어느 요인이 지금 부족한가'라는 핵심에 닿지 못한다.
+----------------------------------------------------------------*/
+/* 한 탐구의 작은 그래프 (스파크라인) */
+function miniChart(tab){
+  const W2 = 240, H2 = 130, P2 = { t:10, r:10, b:26, l:30 };
+  const pw = W2 - P2.l - P2.r, ph = H2 - P2.t - P2.b;
+  const cfg = TABS[tab];
+  const yMax = M().yMax;
+
+  // 그 탐구에서 가장 많이 모은 조건 묶음을 쓴다
+  const st = state.data[state.mode][tab];
+  const byCond = {};
+  Object.values(st).forEach(r => {
+    if (r.m.length === 3) (byCond[r.cond] = byCond[r.cond] || []).push(r);
+  });
+  const best = Object.values(byCond).sort((a, b) => b.length - a.length)[0] || [];
+  const pts = best.map(r => ({ x:r.x, avg:r.m.reduce((a,b)=>a+b,0)/3 }))
+                  .sort((a, b) => a.x - b.x);
+
+  const sx = v => P2.l + (v - cfg.min) / (cfg.max - cfg.min) * pw;
+  const sy = v => P2.t + ph - (v / yMax) * ph;
+
+  let g = '';
+  for (let i = 0; i <= 2; i++){
+    const y = P2.t + ph * i / 2;
+    g += `<line x1="${P2.l}" y1="${y}" x2="${P2.l+pw}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+  }
+  g += `<line x1="${P2.l}" y1="${P2.t+ph}" x2="${P2.l+pw}" y2="${P2.t+ph}" stroke="var(--baseline)"/>`;
+  g += `<text x="${P2.l-5}" y="${P2.t+5}" text-anchor="end" font-size="9" fill="var(--muted)">${yMax}</text>`;
+  g += `<text x="${P2.l+pw/2}" y="${H2-4}" text-anchor="middle" font-size="10"
+          fill="var(--text-secondary)">${cfg.name} (${cfg.unit})</text>`;
+
+  if (pts.length > 1){
+    g += `<path d="${splinePath(pts.map(p => [sx(p.x), sy(p.avg)]))}" fill="none"
+            stroke="var(--series-1)" stroke-width="2.5" stroke-linecap="round"/>`;
+  }
+  pts.forEach(p => {
+    g += `<circle cx="${sx(p.x)}" cy="${sy(p.avg)}" r="3.5" fill="var(--series-1)"
+            stroke="var(--surface-1)" stroke-width="1.5"/>`;
+  });
+  if (!pts.length){
+    g += `<text x="${P2.l+pw/2}" y="${P2.t+ph/2}" text-anchor="middle" font-size="11"
+            fill="var(--muted)">아직 데이터가 없어요</text>`;
+  }
+  return { svg:`<svg viewBox="0 0 ${W2} ${H2}" class="mini">${g}</svg>`, n:pts.length };
+}
+
+const SYNTH_Q = [
+  { q:'빛과 CO₂ 그래프의 공통점은 무엇인가요?',
+    opts:['둘 다 끝없이 계속 늘어난다',
+          '둘 다 늘어나다가 어느 지점부터 일정해진다',
+          '둘 다 늘어나다가 급격히 줄어든다',
+          '둘 다 변화가 없다'],
+    ans:1,
+    why:'빛과 CO₂는 <b>포화 곡선</b>을 그립니다. 부족할 때는 크게 늘지만, ' +
+        '충분해지면 다른 요인이 한계가 되어 더 늘지 않습니다.' },
+  { q:'온도 그래프만 다른 점은 무엇인가요?',
+    opts:['온도는 아무 영향이 없다',
+          '온도는 35°C 부근에서 가장 높고, 그 뒤로 급격히 줄어든다',
+          '온도는 낮을수록 좋다',
+          '온도는 계속 올라가기만 한다'],
+    ans:1,
+    why:'광합성은 <b>효소</b>가 하는 일입니다. 35°C까지는 활발해지지만 ' +
+        '그보다 뜨거우면 효소가 <b>변성</b>되어 기능을 잃습니다. ' +
+        '빛·CO₂는 재료이고 온도는 일하는 환경이라는 점이 다릅니다.' },
+  { q:'빛이 100%인데도 광합성이 느리다면, 무엇을 확인해야 할까요?',
+    opts:['빛을 더 세게 한다',
+          'CO₂ 농도와 온도가 알맞은지 확인한다',
+          '아무것도 할 수 없다',
+          '측정을 더 오래 한다'],
+    ans:1,
+    why:'가장 <b>부족한 요인</b>이 전체 속도를 정합니다(제한 요인). ' +
+        '빛이 충분하다면 CO₂나 온도 중 부족한 것이 있는지 살펴야 합니다.' },
+];
+
+state.synth = [null, null, null];
+
+function synthReady(){
+  return [0,1,2].every(t => {
+    const st = state.data[state.mode][t];
+    const byCond = {};
+    Object.values(st).forEach(r => { if (r.m.length === 3) byCond[r.cond] = (byCond[r.cond]||0)+1; });
+    return Math.max(0, ...Object.values(byCond)) >= 3;
+  });
+}
+
+function renderSynth(){
+  const box = $('synthBox');
+  if (!synthReady()){
+    box.innerHTML = `
+      <div class="synth-lock">
+        <span class="sl-em">🔭</span>
+        <div><b>세 탐구를 모두 마치면 열립니다</b>
+          <small>각 탐구에서 조건 3가지 이상을 완성해 주세요.</small></div>
+        <div class="sl-dots">${[0,1,2].map(t => {
+          const st = state.data[state.mode][t];
+          const byCond = {};
+          Object.values(st).forEach(r => { if (r.m.length === 3) byCond[r.cond] = (byCond[r.cond]||0)+1; });
+          const n = Math.max(0, ...Object.values(byCond));
+          return `<span class="${n >= 3 ? 'on' : ''}">${PLANS[t].em} ${TABS[t].name} ${Math.min(n,3)}/3</span>`;
+        }).join('')}</div>
+      </div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="synth-grid">
+      ${[0,1,2].map(t => `
+        <figure class="sy-fig">
+          <figcaption>${PLANS[t].em} ${TABS[t].name}</figcaption>
+          ${miniChart(t).svg}
+        </figure>`).join('')}
+    </div>
+    <div class="synth-qs">
+      ${SYNTH_Q.map((Q, qi) => {
+        const picked = state.synth[qi];
+        return `
+        <div class="sq">
+          <p class="sq-q"><b>Q${qi+1}.</b> ${Q.q}</p>
+          <div class="sq-opts">
+            ${Q.opts.map((o, k) => {
+              let cls = '';
+              if (picked !== null) cls = k === Q.ans ? 'right' : (k === picked ? 'wrong' : '');
+              return `<button class="sq-opt ${cls}" data-sq="${qi}-${k}"
+                        ${picked !== null ? 'disabled' : ''}>${o}</button>`;
+            }).join('')}
+          </div>
+          ${picked === null ? '' :
+            `<p class="sq-why ${picked === Q.ans ? 'ok' : 'no'}">
+               ${picked === Q.ans ? '✅ ' : '🔍 '}${Q.why}</p>`}
+        </div>`;
+      }).join('')}
+    </div>
+    ${state.synth.every(v => v !== null) ? `
+      <div class="synth-sum">
+        <b>🌿 오늘 배운 것</b>
+        <ul>
+          <li>빛과 CO₂는 <b>많아질수록 광합성이 활발해지지만, 어느 지점부터는 일정</b>해집니다.</li>
+          <li>온도는 <b>35°C 부근이 가장 알맞고</b>, 그보다 뜨거우면 효소가 변성되어 급격히 줄어듭니다.</li>
+          <li>세 요인 중 <b>가장 부족한 것</b>이 광합성 속도를 정합니다 — 이를 <b>제한 요인</b>이라고 합니다.</li>
+        </ul>
+      </div>` : ''}`;
+
+  box.querySelectorAll('[data-sq]').forEach(b =>
+    b.addEventListener('click', () => {
+      const [qi, k] = b.dataset.sq.split('-').map(Number);
+      state.synth[qi] = k;
+      saveSession();
+      renderSynth();
+      if (k === SYNTH_Q[qi].ans){ Sfx.fanfare(); if (state.synth.every(v => v !== null)) confetti(120); }
+      else Sfx.warn();
+    }));
+}
+
+/* ---------------------------------------------------------------
+   🧩 제한 요인 도전 — 통제 변인을 낮추면 무슨 일이 생길까?
+
+   모델은 min(f_L, f_C) 로 최소량의 법칙을 이미 쓰고 있다. 통제값을
+   100%로만 두면 학생이 이를 겪을 일이 없으므로, 일부러 낮춰 보게 한다.
+----------------------------------------------------------------*/
+const LIMITS = [
+  { tab:0, key:'co2',   to:20,
+    title:'CO₂를 20%로 낮추고 빛 실험을 다시 해보세요',
+    ask:'빛을 아무리 세게 해도 산소가 더 늘지 않는 지점이 생깁니다. 왜 그럴까요?',
+    why:'빛이 충분해지면 이제는 <b>CO₂가 부족해서</b> 광합성이 더 빨라지지 못합니다. ' +
+        '이렇게 가장 부족한 요인이 전체 속도를 정하는 것을 <b>제한 요인</b>이라고 합니다.' },
+  { tab:1, key:'light', to:20,
+    title:'빛을 20%로 낮추고 CO₂ 실험을 다시 해보세요',
+    ask:'CO₂를 아무리 늘려도 산소가 더 늘지 않습니다. 무엇이 부족한 걸까요?',
+    why:'이번에는 <b>빛이 제한 요인</b>입니다. CO₂가 아무리 많아도 빛이 부족하면 ' +
+        '광합성은 그 이상 빨라지지 않습니다.' },
+  { tab:2, key:'light', to:20,
+    title:'빛을 20%로 낮추고 온도 실험을 다시 해보세요',
+    ask:'온도를 35°C에 맞춰도 산소가 크게 늘지 않습니다. 왜일까요?',
+    why:'온도가 알맞아도 <b>빛이 부족하면</b> 광합성은 활발해질 수 없습니다. ' +
+        '세 요인 중 <b>가장 부족한 것</b>이 전체를 결정합니다.' },
+];
+
+/* 현재 조건이 도전 과제를 만족하는가 */
+function limitActive(){
+  if (state.activeTab > 2) return false;
+  const L = LIMITS[state.activeTab];
+  return L && state.ctrlVal[state.activeTab][L.key] <= 30;
+}
+
+function renderLimit(){
+  const i = state.activeTab, L = LIMITS[i];
+  if (!L){ $('limitCard').hidden = true; return; }
+  const cur = condSig();
+  const pts = rows().filter(r => r.avg !== null && r.cond === cur);
+  const box = $('limitCard');
+
+  // 이미 성공했으면 결과를, 조건을 갖췄으면 진행 상황을, 아니면 안내를 보여준다
+  const on = limitActive();
+  const enough = on && pts.length >= 3;
+  if (enough && !state.limitDone[i]){
+    state.limitDone[i] = true;
+    saveSession();
+    Sfx.fanfare();
+    setTimeout(() => toast('🧩', '제한 요인을 발견했어요!',
+      '아래 <b>제한 요인 도전</b> 카드에서 무슨 일이 있었는지 확인해 보세요.', true), 400);
+  }
+
+  box.hidden = false;
+  box.innerHTML = state.limitDone[i]
+    ? `<div class="limit ok">
+         <div class="lm-head"><span class="lm-em">🧩</span>
+           <div><b>제한 요인을 찾았습니다!</b>
+             <small>${LABEL[L.key]}를 ${state.ctrlVal[i][L.key]}${UNIT[L.key]}로 낮춘 실험</small></div>
+         </div>
+         <p class="lm-why">${L.why}</p>
+       </div>`
+    : `<div class="limit ${on ? 'ready' : ''}">
+         <div class="lm-head"><span class="lm-em">🧩</span>
+           <div><b>도전 — ${L.title}</b>
+             <small>${on ? '조건을 맞췄어요! 이제 3가지 조건 이상 측정해 보세요.'
+                          : '실험 계획서에서 통제값을 바꿀 수 있어요.'}</small></div>
+         </div>
+         <p class="lm-ask">${L.ask}</p>
+         ${on ? `<div class="lm-prog">측정한 조건 ${pts.length} / 3</div>`
+              : `<button class="lm-go" id="limitGo">통제값 바꾸러 가기 →</button>`}
+       </div>`;
+
+  const go = document.getElementById('limitGo');
+  if (go) go.addEventListener('click', () => {
+    toast('⚖️', '계획서에서 통제값을 낮춰 보세요',
+      `<b>${LABEL[L.key]}</b>를 <b>${L.to}${UNIT[L.key]}</b> 정도로 낮추면 됩니다.`);
+    backToPlan();
+  });
+}
+
+/* ---------------------------------------------------------------
    ✍️ 결론 정리 — 그래프를 그린 뒤 탐구를 마무리한다
 ----------------------------------------------------------------*/
 function renderConcl(){
@@ -3037,7 +3619,10 @@ function renderConcl(){
   if (!done) return;
 
   const picked = state.concl[i];
-  const ans = p.answer.dep;
+  // 자유 탐구는 조작 변인에 따라 정답이 달라진다
+  const ans = p.free
+    ? (state.freeKey === 'temp' ? 1 : 1)   // 세 요인 모두 '늘다가 일정/정점 후 감소'
+    : p.answer.dep;
   const hyp = state.hyp[i];
 
   $('conclBox').innerHTML = `
@@ -3093,7 +3678,7 @@ function switchTab(i){
 function renderAll(){
   renderControls(); renderTank(); renderCondWarn();
   renderTable(); renderChart(); renderHint(); renderMission(); renderMyHyp();
-  renderProg(); renderConcl();
+  renderProg(); renderLimit(); renderConcl(); renderSynth(); renderReview();
 }
 
 /* ---------------------------------------------------------------
@@ -3322,6 +3907,9 @@ const BADGES = [
   { id:'fever',     em:'🌈', name:'슈퍼 광합성',
     desc:'빛 100% · CO₂ 100% · 온도 35°C — 광합성이 가장 활발한 완벽한 조건을 찾아냈습니다.',
     how :'검정말이 가장 좋아하는 완벽한 조건을 찾아 측정해 보세요. 세 가지 요인이 모두 딱 맞아야 합니다.' },
+  { id:'designer',  em:'🕵️', name:'설계 감식가',
+    desc:'남의 실험 설계에서 잘못된 점을 모두 찾아냈습니다.',
+    how :'설계 검토 문제를 모두 맞혀 보세요. 변인 통제·반복 측정·측정 범위를 살펴야 합니다.' },
   { id:'master',    em:'🏆', name:'광합성 마스터',
     desc:'세 가지 그래프를 모두 완성했습니다!',
     how :'세 탐구 모두에서 조건 5개씩 그래프를 완성해 보세요. 무언가 일어날지도?' },
