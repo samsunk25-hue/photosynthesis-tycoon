@@ -1939,16 +1939,6 @@ function loadSession(){
   restoring = true;
   state.data    = s.data;
   state.graphed = s.graphed || { manual:[false,false,false,false], auto:[true,true,true,true] };
-  // 예전 저장본은 3칸이므로 4칸으로 늘린다
-  ['manual','auto'].forEach(m => {
-    while (state.graphed[m].length < 4) state.graphed[m].push(m === 'auto');
-    while (state.data[m].length < 4) state.data[m].push({});
-  });
-  while (state.hyp.length < 4) state.hyp.push({ op:null, dep:null });
-  while (state.ctrl.length < 4) state.ctrl.push([]);
-  while (state.concl.length < 4) state.concl.push(null);
-  while (state.limitDone.length < 4) state.limitDone.push(false);
-  while (state.ctrlVal.length < 4) state.ctrlVal.push({ light:100, co2:100, temp:25 });
   state.hyp     = s.hyp     || state.hyp;
   state.ctrl    = s.ctrl    || state.ctrl;
   state.ctrlVal = s.ctrlVal || state.ctrlVal;
@@ -1961,7 +1951,6 @@ function loadSession(){
   state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
   state.activeTab = [0,1,2,3].includes(s.tab) ? s.tab : 0;
   state.freeKey = s.freeKey || null;
-  if (state.freeKey) applyFree(state.freeKey);
   restoring = false;
   return !!s.inLab;
 }
@@ -4586,6 +4575,19 @@ $('stableNoise').addEventListener('change', e => { state.stableNoise = e.target.
 
 // 지난 진행 상황을 되살린다
 const wasInLab = loadSession();
+
+/* 예전 저장본은 탐구 3개 기준이라 배열이 3칸이다. 자유 탐구를 더해 4칸으로 늘린다.
+   (loadSession 안에서 하면 state 선언보다 먼저 실행되어 오류가 난다) */
+['manual','auto'].forEach(m => {
+  while (state.graphed[m].length < 4) state.graphed[m].push(m === 'auto');
+  while (state.data[m].length    < 4) state.data[m].push({});
+});
+while (state.hyp.length       < 4) state.hyp.push({ op:null, dep:null });
+while (state.ctrl.length      < 4) state.ctrl.push([]);
+while (state.concl.length     < 4) state.concl.push(null);
+while (state.limitDone.length < 4) state.limitDone.push(false);
+while (state.ctrlVal.length   < 4) state.ctrlVal.push({ light:100, co2:100, temp:25 });
+if (state.freeKey) applyFree(state.freeKey);
 renderShelf();
 renderPlan();
 switchTab(state.activeTab);
