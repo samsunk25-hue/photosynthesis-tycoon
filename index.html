@@ -1653,7 +1653,7 @@ td.pending{color:var(--muted)}
       <form class="idbox" id="idBox">
         <label for="idInput">📇 학번</label>
         <input type="text" id="idInput" maxlength="10" autocomplete="off"
-               inputmode="numeric" placeholder="예) 20312">
+               inputmode="numeric" placeholder="예) 2101">
         <button type="submit" class="id-go" id="idSave">저장</button>
         <span class="id-state" id="idState"></span>
         <button type="button" class="id-wipe" id="wipeBtn2">🧹 이 기기 비우기</button>
@@ -4824,7 +4824,7 @@ function getWho(){
 function setWho(no){
   try { localStorage.setItem(WHO_KEY, JSON.stringify({ no })); } catch {}
 }
-/* 파일 이름 앞머리 — 예: "20312_" */
+/* 파일 이름 앞머리 — 예: "2101_" */
 function whoPrefix(){
   const w = getWho();
   return w && w.no ? w.no + '_' : '';
@@ -4836,7 +4836,7 @@ function askWho(then){
     `저장하는 파일 이름 앞에 학번이 붙어, 나중에 찾기 쉽습니다.<br>
      <span style="color:var(--muted)">한 번 적으면 이 기기에 저장되어 다음부터는 묻지 않습니다.
      이름은 적지 않습니다.</span>`,
-    { placeholder:'학번 (예: 20312)', okText:'저장하기', cancelText:'취소',
+    { placeholder:'학번 (예: 2101)', okText:'저장하기', cancelText:'취소',
       maxlength:10, preset:[w && w.no ? w.no : ''],
       rule:'숫자와 영문만 쓸 수 있습니다',
       handler: v => {
