@@ -2041,6 +2041,20 @@ function saveSession(){
   }
 }
 
+/* 기다리지 않고 지금 바로 서버에 올린다.
+   기기를 비우기 직전처럼, 늦으면 기록을 잃는 순간에 쓴다. */
+function flushSave(){
+  clearTimeout(cloudSaveTimer);
+  const w = getWho();
+  if (!(w && w.no && cloudOn() && window.Cloud.saveProgress)) return Promise.resolve(false);
+  return window.Cloud.saveProgress(w.no, sessionPayload())
+    .then(() => true).catch(() => false);
+}
+
+// 창을 닫거나 다른 곳으로 갈 때도 대기 중인 저장을 흘려보낸다
+addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
+addEventListener('pagehide', () => { flushSave(); });
+
 function loadSession(){
   let s;
   try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return false; }
@@ -4993,21 +5007,28 @@ function exportDoc(){
 $('csvBtn').addEventListener('click', exportCSV);
 $('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(exportPDF));
 $('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
+/* 이 기기만 비운다. 서버 기록은 남겨 두어야 학생이 다른 기기에서
+   자기 학번으로 다시 불러올 수 있다. */
 $('wipeBtn').addEventListener('click', () => {
   const w = getWho();
-  openPrompt('🧹 전체 지우고 새로 시작',
-    `이 기기의 <b>모든 기록</b>을 지웁니다 — 측정값, 가설, 배지, 학번.<br>
-     ${w && w.no ? `서버에 저장된 학번 <b>${esc(w.no)}</b> 의 기록도 함께 지웁니다.<br>` : ''}
-     <br>다음 학생이 쓸 수 있도록 깨끗하게 비웁니다. <b>되돌릴 수 없습니다.</b><br><br>
-     지우려면 아래에 <b>지우기</b> 라고 입력하세요.`,
-    { placeholder:'지우기', okText:'모두 지우기', cancelText:'취소', maxlength:5,
+  const saved = w && w.no && cloudOn();
+  openPrompt('🧹 이 기기 비우기',
+    `<b>이 기기</b>의 기록을 지워 다음 학생이 쓸 수 있게 합니다.<br><br>
+     ${saved
+       ? `<span style="color:#0a5c0a">✅ 학번 <b>${esc(w.no)}</b> 의 기록은 서버에 남습니다.
+          나중에 어느 기기에서든 같은 학번을 적으면 다시 불러올 수 있어요.</span>`
+       : `<span style="color:#8a6a00">⚠️ 학번을 적지 않았거나 서버에 연결되지 않아,
+          지우면 <b>되돌릴 수 없습니다.</b> 먼저 학번을 적어 저장해 두세요.</span>`}
+     <br><br>비우려면 아래에 <b>지우기</b> 라고 입력하세요.`,
+    { placeholder:'지우기', okText:'이 기기 비우기', cancelText:'취소', maxlength:5,
       handler: v => {
         if (v.trim() !== '지우기') return '"지우기" 라고 정확히 입력해 주세요.';
-        if (w && w.no && cloudOn() && window.Cloud.dropProgress)
-          window.Cloud.dropProgress(w.no).catch(() => {});
-        clearSession();
-        try { localStorage.removeItem(WHO_KEY); } catch {}
-        setTimeout(() => location.reload(), 300);
+        // 지우기 전에 서버에 확실히 올린다. 서버 기록은 남겨 둔다.
+        flushSave().then(() => {
+          clearSession();
+          try { localStorage.removeItem(WHO_KEY); } catch {}
+          location.reload();
+        });
         return null;
       } });
 });
