@@ -587,6 +587,58 @@ td.fresh.wrong{animation-name:freshFlashBad}
 .lm-go:hover{filter:brightness(1.08)}
 .limit.ready .lm-head b{color:var(--series-1)}
 
+/* =========================================================
+   빈칸 채우기 (자유 탐구 실험 방법)
+   ========================================================= */
+.blanks li{line-height:2.1}
+.blank{
+  display:inline-block;min-width:74px;padding:3px 11px;margin:0 2px;border-radius:8px;
+  font-weight:700;text-align:center;cursor:pointer;vertical-align:1px;
+  background:var(--page);border:2px dashed var(--baseline);color:var(--muted);
+  transition:border-color .15s,background .15s,transform .12s;
+}
+.blank:hover{border-color:var(--series-1);color:var(--text-primary)}
+.blank.picked{
+  border-style:solid;border-color:var(--series-1);
+  background:color-mix(in srgb,var(--series-1) 16%,transparent);
+  color:var(--text-primary);animation:blankPulse 1.1s ease-in-out infinite;
+}
+@keyframes blankPulse{50%{transform:scale(1.06)}}
+.blank.over{border-color:var(--series-1);background:color-mix(in srgb,var(--series-1) 22%,transparent)}
+.blank.ok{border-style:solid;border-color:#0ca30c;background:rgba(12,163,12,.16);color:#0a5c0a}
+.blank.no{border-style:solid;border-color:#d03b3b;background:rgba(208,59,59,.13);color:#a82a2a}
+
+.wordbank{
+  margin-top:13px;padding:12px 13px;border-radius:13px;
+  background:var(--page);border:1.5px solid var(--border);
+}
+.wb-title{margin:0 0 9px;font-size:11.5px;color:var(--muted)}
+.wb-words{display:flex;flex-wrap:wrap;gap:7px}
+.word{
+  padding:8px 14px;border-radius:99px;cursor:grab;font:inherit;font-size:12.5px;font-weight:700;
+  background:var(--surface-1);border:1.5px solid var(--border);color:var(--text-primary);
+  transition:transform .12s,border-color .15s,box-shadow .15s;
+}
+.word:hover{transform:translateY(-2px);border-color:var(--series-1);
+  box-shadow:0 3px 0 color-mix(in srgb,var(--series-1) 40%,transparent)}
+.word:active{cursor:grabbing}
+.word.dragging{opacity:.45;transform:scale(.94)}
+.wb-done{
+  margin:13px 0 0;padding:11px 13px;border-radius:11px;font-size:13px;font-weight:700;
+  text-align:center;background:rgba(12,163,12,.13);border:1.5px solid rgba(12,163,12,.45);
+  color:#0a5c0a;
+}
+
+/* 보고서 내보내기 */
+.report-btns{display:flex;gap:7px;flex-wrap:wrap}
+.rpt{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:9px;cursor:pointer;font:inherit;
+  font-size:12px;font-weight:650;
+  background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary);
+}
+.rpt:hover{color:var(--text-primary);border-color:var(--series-1)}
+
 /* 진행 중인 탐구 표시 (탭 대신) */
 .now{
   display:flex;align-items:center;gap:11px;margin-bottom:14px;padding:12px 14px;
@@ -1365,13 +1417,13 @@ td.pending{color:var(--muted)}
 .modal-btns .btn-ghost{flex:none;min-height:44px}
 #modalForm{margin:0 0 16px}
 #modalForm[hidden]{display:none}
-#modalInput,#modalInput2{
+#modalInput,#modalInput2,#modalInput3{
   width:100%;padding:11px 13px;border-radius:9px;font:inherit;font-size:15px;
   border:1.5px solid var(--border);background:var(--page);color:var(--text-primary);
 }
-#modalInput2{margin-top:8px}
-#modalInput2[hidden]{display:none}
-#modalInput:focus,#modalInput2:focus{outline:none;border-color:var(--series-1);
+#modalInput2,#modalInput3{margin-top:8px}
+#modalInput2[hidden],#modalInput3[hidden]{display:none}
+#modalInput:focus,#modalInput2:focus,#modalInput3:focus{outline:none;border-color:var(--series-1);
   box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 22%,transparent)}
 .err{margin:7px 0 0!important;font-size:12px;color:#d03b3b!important}
 .err[hidden]{display:none}
@@ -1701,7 +1753,7 @@ td.pending{color:var(--muted)}
       <div class="head-row">
         <h2>실험 결과 활동지</h2>
         <div class="head-btns">
-          <button class="btn-ghost" id="csvBtn">CSV 내보내기</button>
+          <button class="btn-ghost" id="csvBtn">CSV</button>
           <button class="btn-ghost" id="resetBtn">데이터 초기화</button>
         </div>
       </div>
@@ -1721,6 +1773,20 @@ td.pending{color:var(--muted)}
         <div class="tip" id="tip"></div>
       </div>
       <p class="hint" style="margin-top:8px">3회 측정이 완료된 조건만 그래프에 표시됩니다.</p>
+    </div>
+
+    <!-- 보고서 저장 -->
+    <div class="card">
+      <div class="head-row">
+        <h2>📄 탐구 보고서</h2>
+        <div class="report-btns">
+          <button class="rpt" id="whoBtn">📇 학급·번호 입력</button>
+          <button class="rpt" id="pdfBtn">📄 PDF</button>
+          <button class="rpt" id="docBtn">📝 Word</button>
+        </div>
+      </div>
+      <p class="hint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
+        한 장의 보고서로 저장합니다.</p>
     </div>
 
     <!-- 제한 요인 도전 -->
@@ -1768,6 +1834,8 @@ td.pending{color:var(--muted)}
              placeholder="별명을 입력하세요 (5글자까지)" aria-label="별명">
       <input type="password" id="modalInput2" autocomplete="current-password"
              placeholder="비밀번호" aria-label="비밀번호" hidden>
+      <input type="text" id="modalInput3" autocomplete="off"
+             placeholder="" aria-label="추가 입력" hidden>
       <p class="rule" id="modalRule" hidden>한글·영문만 · 숫자와 빈칸, 특수문자는 쓸 수 없습니다</p>
       <p class="err" id="modalErr" hidden></p>
     </form>
@@ -1917,6 +1985,7 @@ function saveSession(){
       ctrl:    state.ctrl,
       ctrlVal: state.ctrlVal,
       freeKey: state.freeKey,
+      blanks:  state.blanks,
       concl:   state.concl,
       limitDone: state.limitDone,
       synth:   state.synth,
@@ -1951,6 +2020,7 @@ function loadSession(){
   state.mode    = s.mode === 'auto' ? 'auto' : 'manual';
   state.activeTab = [0,1,2,3].includes(s.tab) ? s.tab : 0;
   state.freeKey = s.freeKey || null;
+  state.blanks  = s.blanks  || {};
   restoring = false;
   return !!s.inLab;
 }
@@ -2074,6 +2144,7 @@ const PLANS = [
 
 /* 자유 탐구에서 학생이 고른 조작 변인 */
 state.freeKey = null;
+state.blanks = {};          // 자유 탐구 실험 방법의 빈칸 답 { slotId: word }
 
 /* 자유 탐구의 조작 변인이 정해지면 TABS[3] 을 그에 맞게 바꾼다 */
 function applyFree(k){
@@ -2106,7 +2177,8 @@ const VAR_EM = { light:'💡', co2:'🫧', temp:'🌡️' };
 function ctrlNeed(i){ return ['light','co2','temp'].filter(k => k !== TABS[i].key); }
 function ctrlReady(i){ return ctrlNeed(i).every(k => state.ctrl[i].includes(k)); }
 const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
-const planReady = i => hypReady(i) && ctrlReady(i) && !(PLANS[i].free && !state.freeKey);
+const planReady = i => hypReady(i) && ctrlReady(i) &&
+  !(PLANS[i].free && (!state.freeKey || !blanksDone(i)));
 
 /* 고른 가설을 한 문장으로 */
 function hypText(i){
@@ -2156,6 +2228,138 @@ function renderTopics(){
       renderPlan();
       scrollTo({ top:0, behavior:'smooth' });
     }));
+}
+
+/* 자유 탐구의 실험 방법 — 학생이 빈칸을 채워 절차를 완성한다.
+   읽기만 하는 것과 직접 채우는 것은 남는 것이 다르다. */
+function freeSteps(i){
+  const cfg = TABS[i];
+  const ctrls = ctrlNeed(i);
+  return [
+    { text:['검정말을 ', ' 로 덮고, 그 위에 물을 채운 ', ' 을 거꾸로 씌웁니다.'],
+      slots:[
+        { id:'s1a', ans:'깔때기', pool:['깔때기','비커','유리막대'] },
+        { id:'s1b', ans:'시험관', pool:['시험관','알코올램프','거름종이'] },
+      ] },
+    { text:['이 실험에서 ', ' 은(는) 실험 내내 같게 둡니다. (통제 변인)'],
+      slots:[
+        { id:'s2', ans:ctrls.map(k => LABEL[k]).join('와 '),
+          pool:[ctrls.map(k => LABEL[k]).join('와 '), LABEL[cfg.key],
+                ['light','co2','temp'].map(k => LABEL[k]).join(', ')] },
+      ] },
+    { text:['바꿔 가며 알아볼 것은 ', ' 입니다. (조작 변인)'],
+      slots:[
+        { id:'s3', ans:LABEL[cfg.key],
+          pool:['light','co2','temp'].map(k => LABEL[k]) },
+      ] },
+    { text:['각 조건에서 ', ' 동안 깔때기 목을 지나는 ', ' 를 셉니다.'],
+      slots:[
+        { id:'s4a', ans:'15초', pool:['15초','1분','5분'] },
+        { id:'s4b', ans:'기포 수', pool:['기포 수','물의 온도','잎의 색'] },
+      ] },
+    { text:['같은 조건에서 ', ' 반복해 평균을 냅니다. 한 번의 측정에는 ', ' 가 있기 때문입니다.'],
+      slots:[
+        { id:'s5a', ans:'3번', pool:['3번','1번','10번'] },
+        { id:'s5b', ans:'오차', pool:['오차','정답','평균'] },
+      ] },
+    { text:['조건을 ', ' 이상 모아 표를 채운 뒤, ', ' 로 바꿔 관계를 확인합니다.'],
+      slots:[
+        { id:'s6a', ans:'5가지', pool:['5가지','1가지','20가지'] },
+        { id:'s6b', ans:'그래프', pool:['그래프','사진','글'] },
+      ] },
+  ];
+}
+
+const blanksDone = i => freeSteps(i).every(st =>
+  st.slots.every(sl => state.blanks[sl.id] === sl.ans));
+
+/* 빈칸 채우기 UI — 드래그도 되고, 눌러서도 고를 수 있다 */
+function renderBlanks(i){
+  const steps = freeSteps(i);
+  const html = steps.map((st, n) => {
+    let line = '';
+    st.text.forEach((t, k) => {
+      line += t;
+      const sl = st.slots[k];
+      if (sl){
+        const v = state.blanks[sl.id];
+        const ok = v === sl.ans;
+        line += `<span class="blank ${v ? (ok ? 'ok' : 'no') : ''}" data-slot="${sl.id}"
+                   role="button" tabindex="0">${v || '＿＿＿'}</span>`;
+      }
+    });
+    return `<li>${line}</li>`;
+  }).join('');
+
+  // 아직 못 맞힌 빈칸의 후보 낱말을 섞어서 모아 둔다
+  const pending = steps.flatMap(st => st.slots).filter(sl => state.blanks[sl.id] !== sl.ans);
+  const words = [...new Set(pending.flatMap(sl => sl.pool))];
+  // 시드를 고정해 다시 그려도 순서가 흔들리지 않게 한다
+  words.sort((a, b) => (a.length * 7 + a.charCodeAt(0)) - (b.length * 7 + b.charCodeAt(0)));
+
+  return `
+    <ol class="m-steps blanks">${html}</ol>
+    ${pending.length ? `
+      <div class="wordbank">
+        <p class="wb-title">낱말을 끌어다 넣거나, 빈칸을 누른 뒤 낱말을 고르세요</p>
+        <div class="wb-words">${words.map(w =>
+          `<button class="word" draggable="true" data-word="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+      </div>` : `
+      <p class="wb-done">✅ 실험 방법을 모두 완성했습니다!</p>`}`;
+}
+
+/* 빈칸 상호작용 — 드래그 앤 드롭 + 탭 방식 */
+let pickedSlot = null;
+function bindBlanks(i){
+  const root = $('methodBox');
+
+  const put = (slotId, word) => {
+    const sl = freeSteps(i).flatMap(st => st.slots).find(x => x.id === slotId);
+    if (!sl) return;
+    if (!sl.pool.includes(word)) return;
+    state.blanks[slotId] = word;
+    saveSession();
+    if (word === sl.ans){ Sfx.bloop(1.2, 0.14); }
+    else Sfx.warn();
+    pickedSlot = null;
+    renderPlan();
+    if (blanksDone(i)) setTimeout(() => {
+      toast('📋', '실험 방법 완성!', '이제 실험을 시작할 수 있어요.', true);
+      Sfx.fanfare();
+    }, 200);
+  };
+
+  root.querySelectorAll('.blank').forEach(b => {
+    b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('over'); });
+    b.addEventListener('dragleave', () => b.classList.remove('over'));
+    b.addEventListener('drop', e => {
+      e.preventDefault(); b.classList.remove('over');
+      put(b.dataset.slot, e.dataTransfer.getData('text/plain'));
+    });
+    // 터치·클릭 방식 — 빈칸을 먼저 고르고 낱말을 누른다
+    b.addEventListener('click', () => {
+      root.querySelectorAll('.blank').forEach(x => x.classList.remove('picked'));
+      if (pickedSlot === b.dataset.slot){ pickedSlot = null; return; }
+      pickedSlot = b.dataset.slot;
+      b.classList.add('picked');
+      Sfx.tick();
+    });
+  });
+
+  root.querySelectorAll('.word').forEach(w => {
+    w.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', w.dataset.word);
+      w.classList.add('dragging');
+    });
+    w.addEventListener('dragend', () => w.classList.remove('dragging'));
+    w.addEventListener('click', () => {
+      if (!pickedSlot){
+        toast('👆', '빈칸을 먼저 누르세요', '채우고 싶은 빈칸을 누른 뒤 낱말을 고르면 됩니다.');
+        return;
+      }
+      put(pickedSlot, w.dataset.word);
+    });
+  });
 }
 
 /* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
@@ -2255,16 +2459,19 @@ function renderSetup(i){
         </p>
       </section>
 
+      ${p.free && !state.freeKey ? '' : `
       <section class="su-sec">
-        <h4>🔬 실험 방법</h4>
-        <ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>
-      </section>
+        <h4>🔬 실험 방법${p.free ? '<small>빈칸을 채워 완성하세요</small>' : ''}</h4>
+        ${p.free ? renderBlanks(i)
+                 : `<ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>`}
+      </section>`}
 
       <div class="m-btns">
         <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? '실험 시작하기 →'
-                  : (!ctrlReady(i) ? '통제 변인을 골라 주세요' : '가설을 완성해 주세요')}
+                  : (!ctrlReady(i) ? '통제 변인을 골라 주세요'
+              : !hypReady(i) ? '가설을 완성해 주세요' : '실험 방법을 완성해 주세요')}
         </button>
       </div>
     </div>`;
@@ -2278,6 +2485,7 @@ function renderSetup(i){
       }));
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
+  if (PLANS[i].free && state.freeKey) bindBlanks(i);
 
   /* 자유 탐구 — 조작 변인 고르기 */
   $('methodBox').querySelectorAll('[data-fk]').forEach(b =>
@@ -2343,6 +2551,10 @@ function renderSetup(i){
     }
     if (!hypReady(i)){
       toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
+      return;
+    }
+    if (PLANS[i].free && !blanksDone(i)){
+      toast('📋', '실험 방법을 완성해 주세요', '빈칸에 알맞은 낱말을 모두 넣어야 시작할 수 있어요.');
       return;
     }
     openLab(i);
@@ -4111,7 +4323,8 @@ function openModal(title, html, wide){
 
 /* 입력을 받는 팝업 — handler가 문자열을 반환하면 오류로 표시하고 닫지 않는다 */
 function openPrompt(title, html, { placeholder, okText = '확인', cancelText = '건너뛰기',
-                                   handler, rule, maxlength = 5, second, numeric }){
+                                   handler, rule, maxlength = 5, second, numeric,
+                                   secondPlaceholder, third, thirdPlaceholder, preset }){
   openModal(title, html);
   const input = $('modalInput');
   input.value = '';
@@ -4121,7 +4334,14 @@ function openPrompt(title, html, { placeholder, okText = '확인', cancelText = 
   input.inputMode = numeric ? 'numeric' : 'text';
   const pw = $('modalInput2');
   pw.value = '';
-  pw.hidden = !second;                               // 비밀번호 칸은 로그인일 때만
+  pw.hidden = !second;                               // 둘째 칸은 필요할 때만
+  pw.type = secondPlaceholder ? 'text' : 'password';
+  if (secondPlaceholder) pw.placeholder = secondPlaceholder;
+  const th = $('modalInput3');
+  th.value = '';
+  th.hidden = !third;
+  if (thirdPlaceholder) th.placeholder = thirdPlaceholder;
+  if (preset){ input.value = preset[0] || ''; pw.value = preset[1] || ''; th.value = preset[2] || ''; }
   $('modalErr').hidden = true;
   $('modalRule').hidden = !rule;
   if (rule) $('modalRule').textContent = rule;
@@ -4141,7 +4361,7 @@ function closeModal(){
 
 function submitModal(){
   if (!onSubmit) return closeModal();
-  const err = onSubmit($('modalInput').value, $('modalInput2').value);
+  const err = onSubmit($('modalInput').value, $('modalInput2').value, $('modalInput3').value);
   if (err){                                          // 검증 실패 — 열어둔 채 안내
     $('modalErr').textContent = err;
     $('modalErr').hidden = false;
@@ -4450,6 +4670,44 @@ function download(blob, filename){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+/* 파일 이름에 넣을 학급·학번. 한 번 적으면 이 기기에 저장된다.
+   보고서·CSV·PNG 를 모아 정리할 때 누구 것인지 알 수 있게 한다. */
+const WHO_KEY = 'photosynthesis.who.v1';
+function getWho(){
+  try { return JSON.parse(localStorage.getItem(WHO_KEY) || 'null'); } catch { return null; }
+}
+function setWho(cls, no, name){
+  try { localStorage.setItem(WHO_KEY, JSON.stringify({ cls, no, name })); } catch {}
+}
+/* 파일 이름 앞머리 — 예: "2학년3반_12번_홍길동" */
+function whoPrefix(){
+  const w = getWho();
+  if (!w) return '';
+  return [w.cls, w.no, w.name].filter(Boolean).join('_') + '_';
+}
+/* 학급·학번을 받은 뒤 이어서 실행한다 */
+function askWho(then){
+  const w = getWho();
+  openPrompt('📇 누구의 보고서인가요?',
+    `파일 이름에 넣을 <b>학급</b>과 <b>번호</b>를 적어 주세요.<br>
+     <span style="color:var(--muted)">한 번 적으면 이 기기에 저장되어 다음부터는 묻지 않습니다.
+     이름은 비워 두어도 됩니다.</span>`,
+    { placeholder:'학급 (예: 2학년 3반)', okText:'저장하기', cancelText:'취소',
+      maxlength:20, second:true, secondPlaceholder:'번호 (예: 12)',
+      third:true, thirdPlaceholder:'이름 (선택)',
+      preset:[w?.cls || '', w?.no || '', w?.name || ''],
+      handler: (cls, no, name) => {
+        cls = String(cls || '').trim(); no = String(no || '').trim(); name = String(name || '').trim();
+        if (!cls) return '학급을 적어 주세요.';
+        if (!no)  return '번호를 적어 주세요.';
+        if (/[\/:*?"<>|]/.test(cls + no + name))
+          return '파일 이름에 쓸 수 없는 기호(\ / : * ? " < > |)가 있습니다.';
+        setWho(cls.replace(/s+/g, ''), no.replace(/s+/g, '') + (/번$/.test(no) ? '' : '번'), name);
+        then && then();
+        return null;
+      } });
+}
+
 function stamp(){
   const d = new Date(), p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
@@ -4477,7 +4735,7 @@ function exportCSV(){
 
   // Excel이 UTF-8로 인식하도록 BOM을 붙인다
   download(new Blob(['﻿' + lines], {type:'text/csv;charset=utf-8'}),
-           `광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.csv`);
+           `${whoPrefix()}광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.csv`);
 }
 
 function exportPNG(){
@@ -4518,16 +4776,160 @@ function exportPNG(){
     ctx.fillStyle = map['--surface-1'];
     ctx.fillRect(0,0,cv.width,cv.height);
     ctx.drawImage(img,0,0,cv.width,cv.height);
-    cv.toBlob(b => download(b, `광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.png`), 'image/png');
+    cv.toBlob(b => download(b, `${whoPrefix()}광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.png`), 'image/png');
   };
   img.onerror = () => openModal('내보내기 실패', '그래프를 이미지로 변환하지 못했습니다.');
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
 /* ---------------------------------------------------------------
+   📄 탐구 보고서 — 계획과 결과를 한 장으로 묶어 저장한다.
+   PDF는 브라우저 인쇄를, Word는 .doc(HTML) 형식을 쓴다.
+   둘 다 외부 라이브러리 없이 오프라인에서 동작한다.
+----------------------------------------------------------------*/
+function reportHTML(){
+  const i   = state.activeTab;
+  const cfg = TABS[i], p = PLANS[i];
+  const cur = condSig();
+  const data = rows().filter(r => r.cond === cur);
+  const pts  = data.filter(r => r.avg !== null);
+  const d = new Date(), pad = n => String(n).padStart(2, '0');
+  const when = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+  // 그래프를 인쇄용 SVG로 다시 그린다 (화면용 CSS 변수를 실제 색으로 바꾼다)
+  const cs = getComputedStyle(document.body);
+  const col = k => cs.getPropertyValue(k).trim() || '#333';
+  let svg = $('chart').innerHTML
+    .replace(/var\(--surface-1\)/g, '#ffffff')
+    .replace(/var\(--grid\)/g, '#e0e0e0')
+    .replace(/var\(--baseline\)/g, '#b0b0b0')
+    .replace(/var\(--muted\)/g, '#767676')
+    .replace(/var\(--text-primary\)/g, '#111111')
+    .replace(/var\(--text-secondary\)/g, '#444444')
+    .replace(/var\(--series-1\)/g, '#2a78d6');
+
+  const hyp = hypReady(i) ? hypText(i) : '(정하지 않음)';
+  const ctrlTxt = ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', ');
+  const conclTxt = state.concl[i] === null ? '(아직 정리하지 않음)' : p.deps[state.concl[i]].t;
+
+  const tableRows = data.map(r => {
+    const cells = [0,1,2].map(k => r.m[k] === undefined ? '–' : fmt(r.m[k]));
+    return `<tr><td>${r.x}${cfg.unit}</td><td>${cells[0]}</td><td>${cells[1]}</td>
+            <td>${cells[2]}</td><td><b>${r.avg === null ? '–' : fmt(r.avg)}</b></td></tr>`;
+  }).join('');
+
+  return `
+<h1>탐구 보고서 — ${p.free ? '자유 탐구' : `탐구 ${i+1}`}</h1>
+<p class="meta">${(() => { const w = getWho(); return w ? [w.cls, w.no, w.name].filter(Boolean).join(' ') + ' · ' : ''; })()}${when} · 산소 팡팡! 광합성 타이쿤</p>
+
+<h2>1. 탐구 질문</h2>
+<p>${p.q}</p>
+
+<h2>2. 변인</h2>
+<table class="vars">
+  <tr><th>조작 변인</th><td>${cfg.name} (${cfg.min}${cfg.unit} ~ ${cfg.max}${cfg.unit})</td></tr>
+  <tr><th>통제 변인</th><td>${ctrlTxt || '(정하지 않음)'}</td></tr>
+  <tr><th>종속 변인</th><td>산소 발생량 (${M().unit})</td></tr>
+</table>
+
+<h2>3. 가설</h2>
+<p class="quote">"${hyp} 것이다."</p>
+
+<h2>4. 실험 방법</h2>
+<ol>
+  <li>검정말을 깔때기로 덮고, 그 위에 물을 채운 시험관을 거꾸로 씌운다.</li>
+  <li>통제 변인을 ${ctrlTxt || '정한 값'} 으로 맞추고 실험 내내 바꾸지 않는다.</li>
+  <li>조작 변인인 ${cfg.name}를 바꿔 가며 실험한다.</li>
+  <li>각 조건에서 ${isManual() ? '15초 동안 기포 수를 센다' : '산소 발생량을 측정한다'}.</li>
+  <li>같은 조건에서 3번 반복해 평균을 낸다.</li>
+  <li>조건을 5가지 이상 모아 표를 채운 뒤 그래프로 바꾼다.</li>
+</ol>
+
+<h2>5. 실험 결과</h2>
+${data.length ? `
+<table class="data">
+  <thead><tr><th>${cfg.name}</th><th>1회</th><th>2회</th><th>3회</th>
+    <th>평균 (${M().unit})</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>` : '<p>(측정한 데이터가 없습니다)</p>'}
+
+${pts.length ? `<div class="chart">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 280"
+       width="460" height="280" style="max-width:100%">${svg}</svg>
+</div>` : ''}
+
+<h2>6. 결론</h2>
+<p>${cfg.name}를 크게 하면 산소 발생량은 <b>${conclTxt}</b>.</p>
+${state.concl[i] !== null ? `<p class="why">${p.why.replace(/<\/?b>/g, '')}</p>` : ''}
+
+<h2>7. 가설과 비교</h2>
+<p>${!hypReady(i) ? '가설을 정하지 않았습니다.'
+   : state.concl[i] === null ? '아직 결론을 정리하지 않았습니다.'
+   : (state.hyp[i].dep === (p.free ? 1 : p.answer.dep)
+      ? '예상대로였습니다. 가설이 실험 결과와 일치했습니다.'
+      : '예상과 달랐습니다. 예상과 다른 결과에서 더 많은 것을 배웁니다.')}</p>
+`;
+}
+
+const REPORT_CSS = `
+body{font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11pt;line-height:1.7;
+  color:#111;max-width:700px;margin:0 auto;padding:28px}
+h1{font-size:18pt;margin:0 0 4px;border-bottom:3px solid #2a78d6;padding-bottom:8px}
+h2{font-size:13pt;margin:22px 0 8px;color:#2a78d6}
+p{margin:0 0 10px}
+.meta{color:#767676;font-size:9.5pt;margin-bottom:18px}
+.quote{padding:11px 14px;background:#f2f7fd;border-left:4px solid #2a78d6;font-weight:bold}
+.why{padding:10px 13px;background:#f5f5f5;border-radius:6px;font-size:10pt;color:#444}
+table{border-collapse:collapse;width:100%;margin:8px 0 14px}
+th,td{border:1px solid #ccc;padding:7px 10px;text-align:center;font-size:10.5pt}
+th{background:#eef4fb}
+table.vars th{width:110px;text-align:left;background:#f5f5f5}
+table.vars td{text-align:left}
+.chart{text-align:center;margin:14px 0}
+ol{padding-left:22px;margin:0 0 10px}
+li{margin-bottom:5px}
+@page{margin:15mm}
+`;
+
+function exportPDF(){
+  const w = window.open('', '_blank');
+  if (!w){ openModal('팝업이 막혔어요', '브라우저에서 이 사이트의 팝업을 허용해 주세요.'); return; }
+  w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+    <title>탐구 보고서</title><style>${REPORT_CSS}</style></head>
+    <body>${reportHTML()}</body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+  toast('📄', 'PDF로 저장하기', '인쇄 창에서 <b>대상</b>을 "PDF로 저장"으로 고르세요.');
+}
+
+function exportDoc(){
+  const html = `<!DOCTYPE html><html xmlns:w="urn:schemas-microsoft-com:office:word"
+    lang="ko"><head><meta charset="utf-8"><title>탐구 보고서</title>
+    <style>${REPORT_CSS}</style></head><body>${reportHTML()}</body></html>`;
+  const cfg = TABS[state.activeTab];
+  download(new Blob(['\ufeff' + html], { type:'application/msword' }),
+    `${whoPrefix()}탐구보고서_${cfg.name}_${stamp()}.doc`);
+  toast('📝', 'Word 문서로 저장했습니다', '한글(HWP)에서도 열 수 있습니다.');
+}
+
+/* ---------------------------------------------------------------
    이벤트
 ----------------------------------------------------------------*/
 $('csvBtn').addEventListener('click', exportCSV);
+$('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(exportPDF));
+$('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
+$('whoBtn').addEventListener('click', () => askWho(() => {
+  const w = getWho();
+  toast('📇', '저장했습니다', `파일 이름 앞에 <b>${whoPrefix().slice(0, -1)}</b> 가 붙습니다.`);
+  renderWho();
+}));
+
+function renderWho(){
+  const w = getWho();
+  $('whoBtn').textContent = w ? `📇 ${[w.cls, w.no].filter(Boolean).join(' ')}` : '📇 학급·번호 입력';
+}
+renderWho();
 $('pngBtn').addEventListener('click', exportPNG);
 
 $('restoreBtn').addEventListener('click', () => {
