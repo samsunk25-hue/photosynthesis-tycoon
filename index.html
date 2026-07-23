@@ -495,6 +495,53 @@ td.fresh.wrong{animation-name:freshFlashBad}
 }
 .concl-hyp b{color:var(--text-primary)}
 
+/* 결과 해석 쓰기 (자유 탐구) */
+.interp{
+  margin-top:16px;padding:15px;border-radius:14px;
+  background:var(--page);border:1.5px solid var(--border);
+}
+.ip-head{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:8px}
+.ip-head b{font-size:14.5px;font-weight:800}
+.ip-cnt{
+  padding:3px 11px;border-radius:99px;font-size:11.5px;font-weight:800;flex:none;
+  background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary);
+}
+.ip-cnt.full{background:#0ca30c;border-color:#0ca30c;color:#fff}
+.ip-lead{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.ip-lead b{color:var(--text-primary)}
+.ip-item{margin-bottom:14px}
+.ip-item:last-of-type{margin-bottom:10px}
+.ip-item label{
+  display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.5;
+}
+.ip-em{font-size:15px;flex:none}
+.ip-ok{margin-left:auto;color:#0ca30c;font-weight:900;flex:none}
+.ip-hint{
+  margin:5px 0 7px 22px;font-size:11.5px;line-height:1.55;color:var(--muted);
+}
+.ip-hint b{color:var(--text-secondary)}
+.ip-fill{
+  margin:0 0 7px 22px;padding:5px 12px;border-radius:8px;cursor:pointer;font:inherit;
+  font-size:11.5px;font-weight:700;
+  background:color-mix(in srgb,var(--series-1) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--series-1) 45%,transparent);color:var(--series-1);
+}
+.ip-fill:hover{background:var(--series-1);color:#fff}
+.ip-item textarea{
+  width:100%;padding:10px 12px;border-radius:10px;font:inherit;font-size:13px;line-height:1.6;
+  border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);
+  resize:vertical;min-height:62px;
+}
+.ip-item textarea:focus{outline:none;border-color:var(--series-1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 18%,transparent)}
+.ip-item.ok textarea{border-color:rgba(12,163,12,.5);background:rgba(12,163,12,.05)}
+.ip-note{margin:0;font-size:11.5px;color:var(--muted)}
+.ip-done{
+  margin:0;padding:11px 13px;border-radius:11px;font-size:12.5px;font-weight:700;
+  text-align:center;background:rgba(12,163,12,.13);
+  border:1.5px solid rgba(12,163,12,.45);color:#0a5c0a;
+}
+
 /* =========================================================
    심화 활동 — 설계 검토 · 세 탐구 종합
    ========================================================= */
@@ -2071,6 +2118,7 @@ function sessionPayload(){
       freeKey: state.freeKey,
       blanks:  state.blanks,
       blankSeed: state.blankSeed,
+      interpret: state.interpret,
       concl:   state.concl,
       limitDone: state.limitDone,
       synth:   state.synth,
@@ -2135,6 +2183,7 @@ function loadSession(){
   state.freeKey = s.freeKey || null;
   state.blanks  = s.blanks  || {};
   state.blankSeed = s.blankSeed || state.blankSeed;
+  state.interpret = s.interpret || {};
   restoring = false;
   return !!s.inLab;
 }
@@ -4037,7 +4086,8 @@ function renderConcl(){
         실험 전 나의 가설: <b>${hypText(i)}</b> —
         ${hyp.dep === ans ? '가설이 맞았습니다 👏'
                           : '가설과 결과가 달랐습니다. 예상과 다른 결과에서 더 많이 배웁니다.'}
-      </div>`}`;
+      </div>`}
+    ${p.free && picked !== null ? interpretHTML(i) : ''}`;
 
   $('conclBox').querySelectorAll('[data-cc]').forEach(b =>
     b.addEventListener('click', () => {
@@ -4047,6 +4097,137 @@ function renderConcl(){
       if (state.concl[i] === ans){ Sfx.fanfare(); confetti(70); }
       else Sfx.warn();
     }));
+
+  if (p.free && picked !== null) bindInterpret(i);
+}
+
+/* ---------------------------------------------------------------
+   ✍️ 결과 해석 (자유 탐구) — 스스로 설계한 실험이므로
+   고르기가 아니라 직접 글로 정리하게 한다.
+   막막하지 않도록 생각을 이끄는 질문을 함께 준다.
+----------------------------------------------------------------*/
+/* 가설이 맞았는지에 따라 세 번째 질문이 달라진다.
+   틀렸다면 결과에 맞는 가설을 다시 세워 보게 한다 — 그것이 탐구다. */
+function interpretQs(hit){
+  return [
+    { id:'q1', icon:'📈',
+      q:'그래프의 모양을 말로 설명해 보세요.',
+      hint:'어디서 늘고, 어디서 멈추거나 줄었나요? 가장 높은 곳은 어디였나요?' },
+    { id:'q2', icon:'❓',
+      q:'왜 그런 모양이 나왔을까요?',
+      hint:'광합성에 필요한 것이 부족해졌거나, 너무 뜨거워 방해가 되지는 않았을까요?' },
+    hit
+      ? { id:'q3', icon:'✅',
+          q:'가설이 맞았습니다. 이제 확인된 사실로 결론을 써 보세요.',
+          hint:'“~할 것이다”가 아니라 <b>“~한다”</b>로 단정해 적습니다. ' +
+               '예) “빛의 세기를 세게 하면 산소 발생량은 늘다가 일정해진다.” ' +
+               '그리고 그래프의 어느 부분이 그 근거인지 함께 적어 보세요.' }
+      : { id:'q3', icon:'🔁',
+          q:'가설이 결과와 달랐습니다. 결과에 맞게 가설을 다시 세워 보세요.',
+          hint:'“○○를 ~하면 산소 발생량은 ~할 것이다” 처럼 문장으로 적고, ' +
+               '처음 예상이 왜 빗나갔는지도 함께 적어 보세요.' },
+    { id:'q4', icon:'🔬',
+      q:'이 실험에서 아쉬웠던 점이나, 더 알아보고 싶은 것은?',
+      hint:'측정 범위가 좁지는 않았나요? 다음에는 무엇을 바꿔 보고 싶나요?' },
+  ];
+}
+
+state.interpret = {};      // { qId: 학생이 쓴 글 }
+
+/* 가설을 확정형 결론 문장으로 바꾼다.
+   "~할 것이다"(예상) → "~한다"(확인된 사실) */
+function conclusionSentence(i){
+  const p = PLANS[i], h = state.hyp[i], cfg = TABS[i];
+  if (h.op === null || h.dep === null) return '';
+  return `${cfg.name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}.`;
+}
+
+/* 해석을 다 썼는가 — 보고서 저장의 조건 */
+const MIN_CHARS = 10;
+function interpretDone(){
+  return interpretQs(true).every(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS);
+}
+
+function interpretHTML(i){
+  const cfg = TABS[i];
+  const hit = state.hyp[i].dep === state.concl[i];
+  const QS = interpretQs(hit);
+  const written = QS.filter(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS).length;
+  return `
+    <div class="interp">
+      <div class="ip-head">
+        <b>✍️ 결과 해석 쓰기</b>
+        <span class="ip-cnt ${written === QS.length ? 'full' : ''}">${written} / ${QS.length}</span>
+      </div>
+      <p class="ip-lead">스스로 설계한 실험입니다.
+        <b>${cfg.name}</b>와 산소 발생량의 관계를 자기 말로 정리해 보세요.
+        <b>모두 적어야 보고서를 저장할 수 있습니다.</b></p>
+      ${QS.map(q => {
+        const v = state.interpret[q.id] || '';
+        const ok = v.trim().length >= MIN_CHARS;
+        return `
+        <div class="ip-item ${ok ? 'ok' : ''}">
+          <label for="ip-${q.id}"><span class="ip-em">${q.icon}</span>${q.q}
+            ${ok ? '<span class="ip-ok">✓</span>' : ''}</label>
+          <p class="ip-hint">💡 ${q.hint}</p>
+          ${q.id === 'q3' && hit ? `
+            <button class="ip-fill" data-fill="${esc(conclusionSentence(i))}">
+              📝 결론 문장 넣기</button>` : ''}
+          <textarea id="ip-${q.id}" data-ip="${q.id}" rows="3"
+            placeholder="${q.id === 'q3' && hit
+              ? esc(conclusionSentence(i)) + ' 왜냐하면…'
+              : `여기에 자기 생각을 적어 보세요 (${MIN_CHARS}자 이상)`}">${esc(v)}</textarea>
+        </div>`;
+      }).join('')}
+      ${written === QS.length
+        ? `<p class="ip-done">✅ 해석을 모두 적었습니다! 이제 보고서를 저장할 수 있어요.</p>`
+        : `<p class="ip-note">적은 내용은 자동으로 저장되고, 보고서(PDF·Word)에도 들어갑니다.</p>`}
+    </div>`;
+}
+
+function bindInterpret(i){
+  // 결론 문장 넣기 — 확정형 문장을 넣어 주고 이유를 이어 쓰게 한다
+  $('conclBox').querySelectorAll('[data-fill]').forEach(b =>
+    b.addEventListener('click', () => {
+      const t = $('conclBox').querySelector('[data-ip="q3"]');
+      if (!t) return;
+      const sentence = b.dataset.fill;
+      t.value = t.value.trim() ? `${sentence} ${t.value.trim()}` : `${sentence} 왜냐하면 `;
+      t.focus();
+      t.setSelectionRange(t.value.length, t.value.length);
+      state.interpret.q3 = t.value;
+      saveSession();
+      Sfx.tick();
+    }));
+
+  $('conclBox').querySelectorAll('[data-ip]').forEach(t => {
+    let timer = null;
+    t.addEventListener('input', () => {
+      state.interpret[t.dataset.ip] = t.value;
+      clearTimeout(timer);
+      // 타이핑이 멈춘 뒤 저장한다 (매 글자마다 저장하지 않는다)
+      timer = setTimeout(() => {
+        saveSession();
+        // 글자 수를 채운 항목 수와 체크 표시만 갱신 (입력 중 커서가 튀지 않도록)
+        const QS = interpretQs(state.hyp[i].dep === state.concl[i]);
+        const n = QS.filter(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS).length;
+        const box = $('conclBox').querySelector('.ip-cnt');
+        if (box){
+          box.textContent = `${n} / ${QS.length}`;
+          box.classList.toggle('full', n === QS.length);
+        }
+        const item = t.closest('.ip-item');
+        if (item){
+          const ok = t.value.trim().length >= MIN_CHARS;
+          item.classList.toggle('ok', ok);
+          const lab = item.querySelector('label');
+          const mark = lab.querySelector('.ip-ok');
+          if (ok && !mark) lab.insertAdjacentHTML('beforeend', '<span class="ip-ok">✓</span>');
+          if (!ok && mark) mark.remove();
+        }
+      }, 600);
+    });
+  });
 }
 
 /* ---------------------------------------------------------------
@@ -5070,7 +5251,14 @@ ${pts.length ? `<div class="chart">
 <p>${cfg.name}를 크게 하면 산소 발생량은 <b>${conclTxt}</b>.</p>
 ${state.concl[i] !== null ? `<p class="why">${p.why.replace(/<\/?b>/g, '')}</p>` : ''}
 
-<h2>7. 가설과 비교</h2>
+${PLANS[i].free ? `
+<h2>7. 결과 해석</h2>
+${interpretQs(state.hyp[i].dep === state.concl[i]).map(q => `
+  <p class="ipq"><b>${q.q}</b></p>
+  <p class="ipa">${esc(state.interpret[q.id] || '(적지 않음)')}</p>`).join('')}
+` : ''}
+
+<h2>${PLANS[i].free ? '8' : '7'}. 가설과 비교</h2>
 <p>${!hypReady(i) ? '가설을 정하지 않았습니다.'
    : state.concl[i] === null ? '아직 결론을 정리하지 않았습니다.'
    : (state.hyp[i].dep === (p.free ? 1 : p.answer.dep)
@@ -5088,6 +5276,9 @@ p{margin:0 0 10px}
 .meta{color:#767676;font-size:9.5pt;margin-bottom:18px}
 .quote{padding:11px 14px;background:#f2f7fd;border-left:4px solid #2a78d6;font-weight:bold}
 .why{padding:10px 13px;background:#f5f5f5;border-radius:6px;font-size:10pt;color:#444}
+.ipq{margin:12px 0 4px;font-size:10.5pt;color:#2a78d6}
+.ipa{margin:0 0 10px;padding:9px 12px;background:#fafafa;border:1px solid #e0e0e0;
+  border-radius:6px;font-size:10.5pt;white-space:pre-wrap}
 table{border-collapse:collapse;width:100%;margin:8px 0 14px}
 th,td{border:1px solid #ccc;padding:7px 10px;text-align:center;font-size:10.5pt}
 th{background:#eef4fb}
@@ -5125,8 +5316,39 @@ function exportDoc(){
    이벤트
 ----------------------------------------------------------------*/
 $('csvBtn').addEventListener('click', exportCSV);
-$('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(exportPDF));
-$('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
+/* 자유 탐구는 결과 해석을 다 써야 저장할 수 있다 */
+function canExport(){
+  if (!PLANS[state.activeTab].free) return true;
+  if (state.concl[state.activeTab] === null){
+    toast('✍️', '먼저 결론을 고르세요', '결과 해석은 결론을 고른 뒤에 쓸 수 있어요.');
+    return false;
+  }
+  if (!interpretDone()){
+    const QS = interpretQs(state.hyp[state.activeTab].dep === state.concl[state.activeTab]);
+    const left = QS.filter(q => (state.interpret[q.id] || '').trim().length < MIN_CHARS).length;
+    openModal('✍️ 결과 해석을 먼저 써 주세요',
+      `자유 탐구 보고서에는 <b>결과 해석</b>이 들어갑니다.<br><br>
+       아직 <b>${left}개</b> 항목이 비어 있어요. (각 ${MIN_CHARS}자 이상)<br><br>
+       <span style="color:var(--muted)">그래프 아래 <b>결과 해석 쓰기</b>에서 적을 수 있습니다.</span>`);
+    $('modalOk').textContent = '해석 쓰러 가기';
+    onSubmit = () => {
+      const el = document.querySelector('.interp');
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+      return null;
+    };
+    return false;
+  }
+  return true;
+}
+
+$('pdfBtn').addEventListener('click', () => {
+  if (!canExport()) return;
+  getWho() ? exportPDF() : askWho(exportPDF);
+});
+$('docBtn').addEventListener('click', () => {
+  if (!canExport()) return;
+  getWho() ? exportDoc() : askWho(exportDoc);
+});
 /* 이 기기만 비운다. 서버 기록은 남겨 두어야 학생이 다른 기기에서
    자기 학번으로 다시 불러올 수 있다. */
 function askWipe(){
