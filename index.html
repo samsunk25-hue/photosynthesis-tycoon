@@ -154,6 +154,12 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 }
 .id-go:hover{filter:brightness(1.08)}
 .id-state{font-size:11.5px;font-weight:700;color:#0a5c0a;flex:none}
+.id-wipe{
+  padding:8px 12px;border-radius:9px;cursor:pointer;font:inherit;flex:none;
+  font-size:11.5px;font-weight:650;
+  background:transparent;border:1px solid rgba(208,59,59,.4);color:#a83232;
+}
+.id-wipe:hover{background:#d03b3b;border-color:#d03b3b;color:#fff}
 .id-hint{margin:6px 0 0!important;font-size:11px;color:var(--muted)!important}
 @media (max-width:640px){ .idbox{justify-content:center} }
 
@@ -229,7 +235,14 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .su-sec{display:flex;flex-direction:column;gap:9px;padding-top:14px;
   border-top:1.5px dashed var(--grid)}
 .su-sec h4{margin:0;font-size:13.5px;font-weight:800}
-.su-sec h4 small{font-weight:500;color:var(--muted);margin-left:6px;font-size:11.5px}
+.su-sec h4{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.su-sec h4 small{font-weight:500;color:var(--muted);font-size:11.5px}
+.sec-clr{
+  margin-left:auto;padding:3px 10px;border-radius:7px;cursor:pointer;font:inherit;
+  font-size:10.5px;font-weight:650;flex:none;
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+}
+.sec-clr:hover{background:#d03b3b;border-color:#d03b3b;color:#fff}
 .su-why{margin:0;font-size:11.5px;line-height:1.55;color:var(--text-secondary);
   padding:9px 11px;border-radius:10px;
   background:rgba(250,178,25,.12);border:1px solid rgba(250,178,25,.4)}
@@ -1643,6 +1656,7 @@ td.pending{color:var(--muted)}
                inputmode="numeric" placeholder="예) 20312">
         <button type="submit" class="id-go" id="idSave">저장</button>
         <span class="id-state" id="idState"></span>
+        <button type="button" class="id-wipe" id="wipeBtn2">🧹 이 기기 비우기</button>
       </form>
       <p class="id-hint" id="idHint">학번을 적어 두면 다른 기기에서도 이어서 할 수 있어요.</p>
     </div>
@@ -2490,7 +2504,8 @@ function renderSetup(i){
 
       ${p.free ? `
       <section class="su-sec">
-        <h4>🔍 조작 변인 정하기<small>무엇을 바꿔가며 알아볼까요?</small></h4>
+        <h4>🔍 조작 변인 정하기<small>무엇을 바꿔가며 알아볼까요?</small>
+          ${state.freeKey ? '<button class="sec-clr" data-clr="fk">지우기</button>' : ''}</h4>
         <div class="chips">
           ${['light','co2','temp'].map(k => `
             <button class="chip" data-fk="${k}" aria-pressed="${state.freeKey === k}">
@@ -2502,7 +2517,8 @@ function renderSetup(i){
 
       ${p.free && !state.freeKey ? '' : `
       <section class="su-sec">
-        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small></h4>`}
+        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small>
+          ${p.free && state.ctrl[i].length ? '<button class="sec-clr" data-clr="ctrl">지우기</button>' : ''}</h4>`}
         <div class="cvars">
           ${['light','co2','temp'].map(k => {
             const isManip = k === cfg.key;
@@ -2540,7 +2556,8 @@ function renderSetup(i){
       </section>
 
       <section class="su-sec">
-        <h4>🎯 가설 만들기<small>결과를 예상해 보세요</small></h4>
+        <h4>🎯 가설 만들기<small>결과를 예상해 보세요</small>
+          ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
         <div class="hyp-line">
           <span class="hyp-fix">${cfg.name}를</span>
           <div class="chips">
@@ -2566,7 +2583,8 @@ function renderSetup(i){
 
       ${p.free && !state.freeKey ? '' : `
       <section class="su-sec">
-        <h4>🔬 실험 방법${p.free ? '<small>빈칸을 채워 완성하세요</small>' : ''}</h4>
+        <h4>🔬 실험 방법${p.free ? '<small>빈칸을 채워 완성하세요</small>' : ''}
+          ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
         ${p.free ? renderBlanks(i)
                  : `<ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>`}
       </section>`}
@@ -2634,6 +2652,23 @@ function renderSetup(i){
     Sfx.tick();
   });
   if (cvars) cvars.addEventListener('change', () => { saveSession(); });
+
+  /* 항목별 지우기 — 그 부분만 처음 상태로 되돌린다 */
+  $('methodBox').querySelectorAll('[data-clr]').forEach(b =>
+    b.addEventListener('click', () => {
+      const what = b.dataset.clr;
+      if (what === 'fk'){
+        // 조작 변인을 지우면 그에 딸린 설계도 함께 지운다
+        state.freeKey = null;
+        state.ctrl[i] = [];
+        state.hyp[i] = { op:null, dep:null };
+        state.blanks = {};
+      }
+      else if (what === 'ctrl')  state.ctrl[i] = [];
+      else if (what === 'hyp')   state.hyp[i] = { op:null, dep:null };
+      else if (what === 'blank') state.blanks = {};
+      saveSession(); Sfx.tick(); renderPlan();
+    }));
 
   $('pickAgain').addEventListener('click', () => {
     state.planPick = null;
@@ -5050,7 +5085,7 @@ $('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(expo
 $('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
 /* 이 기기만 비운다. 서버 기록은 남겨 두어야 학생이 다른 기기에서
    자기 학번으로 다시 불러올 수 있다. */
-$('wipeBtn').addEventListener('click', () => {
+function askWipe(){
   const w = getWho();
   const saved = w && w.no && cloudOn();
   openPrompt('🧹 이 기기 비우기',
@@ -5072,7 +5107,9 @@ $('wipeBtn').addEventListener('click', () => {
         });
         return null;
       } });
-});
+}
+$('wipeBtn').addEventListener('click', askWipe);
+$('wipeBtn2').addEventListener('click', askWipe);
 
 $('whoBtn').addEventListener('click', () => askWho(() => {
   const w = getWho();
@@ -5105,30 +5142,51 @@ $('idBox').addEventListener('submit', e => {
     return;
   }
   const prev = getWho();
-  setWho(raw);
-  renderWho();
-  Sfx.bloop(1.2, 0.14);
+  // 같은 학번을 다시 저장한 것뿐이면 그대로 둔다
+  if (prev && prev.no === raw){ saveSession(); Sfx.bloop(1.2, 0.14); return; }
 
-  if (prev && prev.no === raw){ saveSession(); return; }
+  /* 학번이 바뀌었다 = 대개 다른 학생이다.
+     앞 학생의 기록을 그대로 물려받지 않도록, 이전 기록을 먼저 서버에
+     올려 두고 이 기기는 비운 뒤 새 학번으로 시작한다. */
+  const hadWork = hasSaved();
 
-  pullProgress(raw).then(p => {
-    if (!p || p.v !== 1){
-      saveSession();
-      toast('📇', '학번을 저장했습니다', `앞으로 저장하는 파일에 <b>${esc(raw)}</b> 가 붙습니다.`);
-      return;
-    }
-    const d = new Date(p.at || Date.now());
-    const when = `${d.getMonth()+1}월 ${d.getDate()}일 ` +
-      `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    openModal('📥 이전에 하던 기록이 있어요',
-      `학번 <b>${esc(raw)}</b> 으로 <b>${when}</b> 에 저장한 기록이 있습니다.<br><br>
-       불러오면 <b>지금 이 기기의 기록은 사라집니다.</b><br><br>
-       <span style="color:var(--muted)">다른 기기에서 하던 것을 이어서 하려면 불러오세요.</span>`);
-    $('modalOk').textContent = '불러오기';
-    $('modalCancel').hidden = false;
-    $('modalCancel').textContent = '지금 것 쓰기';
-    onSubmit = () => { applyPayload(p); return null; };
-  });
+  const startFresh = () => {
+    flushSave().then(() => {          // 앞 학생 기록을 그 학번으로 보존
+      clearSession();
+      setWho(raw);
+      pullProgress(raw).then(p => {
+        if (p && p.v === 1){ applyPayload(p); return; }
+        location.reload();            // 서버에도 없으면 깨끗한 상태로 시작
+      });
+    });
+  };
+
+  if (!hadWork){
+    // 기록이 없으면 물어볼 것 없이 바로 적용
+    setWho(raw);
+    renderWho();
+    Sfx.bloop(1.2, 0.14);
+    pullProgress(raw).then(p => {
+      if (p && p.v === 1) applyPayload(p);
+      else { saveSession();
+        toast('📇', '학번을 저장했습니다',
+          `앞으로 저장하는 파일에 <b>${esc(raw)}</b> 가 붙습니다.`); }
+    });
+    return;
+  }
+
+  openModal('👤 다른 학생인가요?',
+    `이 기기에 <b>${prev && prev.no ? '학번 ' + esc(prev.no) : '이전 학생'}</b> 의
+     실험 기록이 남아 있습니다.<br><br>
+     <b>${esc(raw)}</b> 로 새로 시작하면 이 기기의 기록은 지워집니다.
+     ${prev && prev.no && cloudOn()
+       ? `<span style="color:#0a5c0a">이전 기록은 학번 <b>${esc(prev.no)}</b> 으로
+          서버에 저장되니, 나중에 다시 불러올 수 있어요.</span>`
+       : `<span style="color:#8a6a00">이전 학번이 없어 그 기록은 되돌릴 수 없습니다.</span>`}`);
+  $('modalOk').textContent = `${esc(raw)} 로 새로 시작`;
+  $('modalCancel').hidden = false;
+  $('modalCancel').textContent = '취소';
+  onSubmit = () => { startFresh(); return null; };
 });
 renderWho();
 $('pngBtn').addEventListener('click', exportPNG);
