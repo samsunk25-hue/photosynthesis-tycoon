@@ -435,27 +435,43 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 }
 .prog small{display:block;margin-top:7px;font-size:11.5px;color:var(--text-secondary);line-height:1.5}
 
-/* 측정 구간 눈금 — 어디를 쟀고 어디가 비었는지 */
-.rng{margin-top:11px}
+/* 측정 구간 안내 — 조작 변인 슬라이더 바로 위. 눈에 잘 띄어야 한다. */
+.rng{
+  margin:0 0 14px;padding:12px 14px;border-radius:12px;
+  background:color-mix(in srgb,var(--series-1) 9%,transparent);
+  border:1.5px solid color-mix(in srgb,var(--series-1) 35%,transparent);
+}
+.rng.warn{
+  background:rgba(250,178,25,.15);border-color:rgba(250,178,25,.65);
+  animation:rngPop .4s cubic-bezier(.2,1.4,.4,1);
+}
+@keyframes rngPop{from{transform:scale(.97)}to{transform:scale(1)}}
+.rng-msg{
+  margin:0 0 9px;font-size:13.5px;line-height:1.6;font-weight:600;
+  color:var(--text-primary);
+}
+.rng-msg b{font-weight:800;color:var(--series-1)}
+.rng.warn .rng-msg{color:#7a5c00}
+.rng.warn .rng-msg b{color:#a8760a}
 .rng-bar{
-  position:relative;height:12px;border-radius:99px;background:var(--grid);
-  border:1px solid var(--border);
+  position:relative;height:16px;border-radius:99px;background:var(--surface-1);
+  border:1.5px solid var(--border);
 }
 .rng-bar i{
-  position:absolute;top:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;
-  transform:translateY(-50%);background:#0ca30c;border:1.5px solid var(--surface-1);
+  position:absolute;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
+  transform:translateY(-50%);background:#0ca30c;border:2px solid var(--surface-1);
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 .rng-next{
-  position:absolute;top:50%;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;
-  transform:translateY(-50%);background:transparent;
-  border:2px dashed var(--series-1);animation:nextPulse 1.6s ease-in-out infinite;
+  position:absolute;top:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;
+  transform:translateY(-50%);background:color-mix(in srgb,var(--series-1) 22%,transparent);
+  border:2.5px dashed var(--series-1);animation:nextPulse 1.5s ease-in-out infinite;
 }
-@keyframes nextPulse{50%{transform:translateY(-50%) scale(1.3)}}
-.rng.warn .rng-bar{border-color:rgba(250,178,25,.7);background:rgba(250,178,25,.14)}
-.rng-ends{display:flex;justify-content:space-between;margin-top:3px;
-  font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
-.rng-msg{margin:6px 0 0;font-size:11.5px;line-height:1.55;color:var(--text-secondary)}
-.rng.warn .rng-msg{color:#8a6a00}
+.rng.warn .rng-next{background:rgba(250,178,25,.3);border-color:#c98500}
+@keyframes nextPulse{50%{transform:translateY(-50%) scale(1.35)}}
+.rng-ends{display:flex;justify-content:space-between;margin-top:5px;
+  font-size:11px;font-weight:650;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums}
 
 /* 이미 눌러 본 오답 — 정답은 알려주지 않는다 */
 .concl-opt.tried{opacity:.5;border-style:dashed}
@@ -1810,7 +1826,6 @@ td.pending{color:var(--muted)}
           <span class="dots" id="progDots"></span>
         </div>
         <div class="prog-bar"><span id="progFill"></span></div>
-        <div id="progRange"></div>
         <small id="progMsg">서로 다른 조건 5가지를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.</small>
       </div>
 
@@ -1880,6 +1895,8 @@ td.pending{color:var(--muted)}
         <h2>환경 요인 설정</h2>
         <button class="btn-ghost" id="restoreBtn">⚖️ 통제 변인 바꾸기</button>
       </div>
+      <!-- 다음에 어디를 잴지 — 조작 변인 슬라이더 바로 위에 크게 -->
+      <div id="progRange"></div>
       <div id="controls"></div>
       <div id="condWarn"></div>
 
@@ -3482,28 +3499,33 @@ function renderProg(){
   const marks = rs.filter(r => r.m.length >= 3)
     .map(r => `<i style="left:${((r.x - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></i>`).join('');
 
-  $('progRange').innerHTML = full === 0 ? '' : `
+  // 조작 변인 슬라이더 바로 위에 — 다음에 어디로 옮길지 한눈에
+  const showNext = next !== null && full < GOAL;
+  $('progRange').innerHTML = `
     <div class="rng ${cov.narrow ? 'warn' : ''}">
+      <p class="rng-msg">${
+        full === 0
+          ? `${cfg.name}를 <b>${cfg.min}${cfg.unit}</b> 부터 <b>${cfg.max}${cfg.unit}</b> 까지
+             넓게 옮겨 가며 재어 보세요.`
+        : cov.narrow
+          ? `⚠️ <b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재었어요 —
+             좁으면 관계를 잘못 읽기 쉬워요.
+             ${showNext ? `다음은 <b>${next}${cfg.unit}</b>!` : '더 넓게 재어 보세요.'}`
+        : !cov.hasLow
+          ? `👉 낮은 쪽도 재어야 해요. 다음은 <b>${next ?? cfg.min}${cfg.unit}</b>!`
+        : !cov.hasHigh
+          ? `👉 높은 쪽도 재어야 해요. 다음은 <b>${next ?? cfg.max}${cfg.unit}</b>!`
+        : showNext
+          ? `👍 잘 퍼졌어요. 다음은 <b>${next}${cfg.unit}</b> 쯤이 좋겠어요.`
+          : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었어요.`
+      }</p>
       <div class="rng-bar">
         ${marks}
-        ${next !== null && full < GOAL
+        ${showNext
           ? `<b class="rng-next" style="left:${((next - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></b>`
           : ''}
       </div>
       <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
-      <p class="rng-msg">${
-        cov.narrow
-          ? `⚠️ <b>${cov.lo}${cfg.unit} ~ ${cov.hi}${cfg.unit}</b> 만 재었습니다.
-             좁은 구간만 보면 관계를 잘못 읽기 쉬워요.
-             ${next !== null ? `<b>${next}${cfg.unit}</b> 쯤도 재어 보세요.` : ''}`
-          : !cov.hasLow
-            ? `👉 낮은 쪽(<b>${cfg.min}${cfg.unit}</b> 가까이)도 재어야 관계가 잘 보여요.`
-            : !cov.hasHigh
-              ? `👉 높은 쪽(<b>${cfg.max}${cfg.unit}</b> 가까이)도 재어 보세요.`
-              : next !== null && full < GOAL
-                ? `👍 넓게 잘 퍼졌어요. 다음은 <b>${next}${cfg.unit}</b> 쯤이 좋겠어요.`
-                : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었습니다.`
-      }</p>
     </div>`;
 
   $('progMsg').innerHTML = full >= GOAL
