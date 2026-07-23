@@ -637,6 +637,12 @@ td.fresh.wrong{animation-name:freshFlashBad}
    빈칸 채우기 (자유 탐구 실험 방법)
    ========================================================= */
 .blanks li{line-height:2.1}
+/* 비우지 않은 칸 — 답이 그대로 보인다 */
+.filled{
+  display:inline-block;padding:2px 9px;margin:0 2px;border-radius:7px;
+  font-weight:700;vertical-align:1px;
+  background:var(--page);border:1.5px solid var(--border);color:var(--text-primary);
+}
 .blank{
   display:inline-block;min-width:74px;padding:3px 11px;margin:0 2px;border-radius:8px;
   font-weight:700;text-align:center;cursor:pointer;vertical-align:1px;
@@ -2064,6 +2070,7 @@ function sessionPayload(){
       ctrlVal: state.ctrlVal,
       freeKey: state.freeKey,
       blanks:  state.blanks,
+      blankSeed: state.blankSeed,
       concl:   state.concl,
       limitDone: state.limitDone,
       synth:   state.synth,
@@ -2127,6 +2134,7 @@ function loadSession(){
   state.activeTab = [0,1,2,3].includes(s.tab) ? s.tab : 0;
   state.freeKey = s.freeKey || null;
   state.blanks  = s.blanks  || {};
+  state.blankSeed = s.blankSeed || state.blankSeed;
   restoring = false;
   return !!s.inLab;
 }
@@ -2265,6 +2273,30 @@ const PLANS = [
 /* 자유 탐구에서 학생이 고른 조작 변인 */
 state.freeKey = null;
 state.blanks = {};          // 자유 탐구 실험 방법의 빈칸 답 { slotId: word }
+state.blankSeed = Math.floor(Math.random() * 100000);   // 빈칸 뽑기 씨앗
+
+/* 빈칸은 최대 5개.
+   조작 변인·통제 변인은 실험 설계의 핵심이라 늘 비우고,
+   나머지는 씨앗에 따라 무작위로 3개를 고른다.
+   씨앗은 저장되므로 다시 그려도 같은 문제가 나오고,
+   '지우기'를 누르면 새 씨앗을 뽑아 다른 문제가 된다. */
+const BLANK_MAX  = 5;
+const BLANK_CORE = ['s3', 's4'];            // 조작 변인, 통제 변인
+
+function activeBlanks(i){
+  const all = freeSteps(i).map(st => st.slots[0].id);
+  const rest = all.filter(id => !BLANK_CORE.includes(id));
+  // 씨앗으로 섞는다 (같은 씨앗이면 늘 같은 순서)
+  let r = state.blankSeed || 1;
+  const rnd = () => (r = (r * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const shuffled = rest.map(id => [id, rnd()]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+  return new Set([...BLANK_CORE, ...shuffled.slice(0, BLANK_MAX - BLANK_CORE.length)]);
+}
+
+function newBlankSet(){
+  state.blankSeed = Math.floor(Math.random() * 100000);
+  state.blanks = {};
+}
 
 /* 자유 탐구의 조작 변인이 정해지면 TABS[3] 을 그에 맞게 바꾼다 */
 function applyFree(k){
@@ -2385,42 +2417,53 @@ function freeSteps(i){
   ];
 }
 
-const blanksDone = i => freeSteps(i).every(st =>
-  st.slots.every(sl => state.blanks[sl.id] === sl.ans));
+/* 비운 칸만 채우면 된다 */
+const blanksDone = i => {
+  const on = activeBlanks(i);
+  return freeSteps(i).every(st =>
+    st.slots.every(sl => !on.has(sl.id) || state.blanks[sl.id] === sl.ans));
+};
 
 /* 빈칸 채우기 UI — 드래그도 되고, 눌러서도 고를 수 있다 */
 function renderBlanks(i){
   const steps = freeSteps(i);
-  const html = steps.map((st, n) => {
+  const on = activeBlanks(i);
+  const html = steps.map(st => {
     let line = '';
     st.text.forEach((t, k) => {
       line += t;
       const sl = st.slots[k];
-      if (sl){
-        const v = state.blanks[sl.id];
-        const ok = v === sl.ans;
-        line += `<span class="blank ${v ? (ok ? 'ok' : 'no') : ''}" data-slot="${sl.id}"
-                   role="button" tabindex="0">${v || '＿＿＿'}</span>`;
+      if (!sl) return;
+      if (!on.has(sl.id)){
+        // 비우지 않은 칸은 답을 그대로 보여준다
+        line += `<b class="filled">${esc(sl.ans)}</b>`;
+        return;
       }
+      const v = state.blanks[sl.id];
+      const ok = v === sl.ans;
+      line += `<span class="blank ${v ? (ok ? 'ok' : 'no') : ''}" data-slot="${sl.id}"
+                 role="button" tabindex="0">${v || '＿＿＿'}</span>`;
     });
     return `<li>${line}</li>`;
   }).join('');
 
-  // 아직 못 맞힌 빈칸의 후보 낱말을 섞어서 모아 둔다
-  const pending = steps.flatMap(st => st.slots).filter(sl => state.blanks[sl.id] !== sl.ans);
+  // 비운 칸 중 아직 못 맞힌 것의 후보 낱말을 모은다
+  const mine = steps.flatMap(st => st.slots).filter(sl => on.has(sl.id));
+  const pending = mine.filter(sl => state.blanks[sl.id] !== sl.ans);
   const words = [...new Set(pending.flatMap(sl => sl.pool))];
-  // 시드를 고정해 다시 그려도 순서가 흔들리지 않게 한다
-  words.sort((a, b) => (a.length * 7 + a.charCodeAt(0)) - (b.length * 7 + b.charCodeAt(0)));
+  // 씨앗으로 섞어, 정답이 늘 같은 자리에 오지 않게 한다
+  let r = (state.blankSeed || 1) + 7;
+  const rnd = () => (r = (r * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const mixed = words.map(w => [w, rnd()]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
 
   // 낱말 보관함을 단계 위에 둔다 — 무엇을 어떻게 해야 하는지 먼저 보이도록
-  const total = steps.flatMap(st => st.slots).length;
-  const done  = total - pending.length;
+  const done = mine.length - pending.length;
   return `
     ${pending.length ? `
       <div class="wordbank">
         <p class="wb-title">낱말을 끌어다 넣거나, 빈칸을 누른 뒤 낱말을 고르세요
-          <span class="wb-cnt">${done} / ${total}</span></p>
-        <div class="wb-words">${words.map(w =>
+          <span class="wb-cnt">${done} / ${mine.length}</span></p>
+        <div class="wb-words">${mixed.map(w =>
           `<button class="word" draggable="true" data-word="${esc(w)}">${esc(w)}</button>`).join('')}</div>
       </div>` : `
       <p class="wb-done">✅ 실험 방법을 모두 완성했습니다!</p>`}
@@ -2621,6 +2664,7 @@ function renderSetup(i){
       applyFree(k);
       state.ctrl[3] = [];
       state.hyp[3] = { op:null, dep:null };
+      newBlankSet();
       if (had){
         state.data.manual[3] = {}; state.data.auto[3] = {};
         state.graphed.manual[3] = false; state.graphed.auto[3] = true;
@@ -2662,11 +2706,11 @@ function renderSetup(i){
         state.freeKey = null;
         state.ctrl[i] = [];
         state.hyp[i] = { op:null, dep:null };
-        state.blanks = {};
+        newBlankSet();
       }
       else if (what === 'ctrl')  state.ctrl[i] = [];
       else if (what === 'hyp')   state.hyp[i] = { op:null, dep:null };
-      else if (what === 'blank') state.blanks = {};
+      else if (what === 'blank') newBlankSet();   // 다시 뽑아 새 문제로
       saveSession(); Sfx.tick(); renderPlan();
     }));
 
