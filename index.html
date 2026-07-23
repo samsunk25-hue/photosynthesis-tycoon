@@ -5089,10 +5089,13 @@ switchTab(state.activeTab);
 document.querySelectorAll('.mode').forEach(x =>
   x.setAttribute('aria-selected', String(x.dataset.mode === state.mode)));
 
+/* 링크로 들어오면 늘 첫 화면(탐구 고르기)에서 시작한다.
+   기록은 그대로 남아 있으므로, 하던 탐구를 고르면 이어서 할 수 있다. */
+state.planPick = null;
+renderPlan();
 if (wasInLab && hasSaved()){
-  openLab(state.activeTab);
-  setTimeout(() => toast('💾', '이어서 진행합니다',
-    '지난번 측정 기록을 불러왔습니다. 계획서로 돌아가도 기록은 남아 있어요.'), 700);
+  setTimeout(() => toast('💾', '지난 기록이 남아 있어요',
+    '하던 탐구를 고르면 이어서 진행할 수 있습니다.'), 700);
 }
 
 // Firebase 모듈이 준비되면 공유 명단을 켠다 (실패하면 로컬 저장으로 동작)
