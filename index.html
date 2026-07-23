@@ -133,6 +133,30 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   max-width:820px;margin:8px auto 18px;
 }
 .intro-txt{min-width:0}
+/* 첫 화면 학번 입력 */
+.idbox{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;
+  padding:10px 12px;border-radius:12px;
+  background:var(--surface-1);border:1.5px solid var(--border);
+}
+.idbox.saved{border-color:#0ca30c;background:rgba(12,163,12,.07)}
+.idbox label{font-size:12.5px;font-weight:750;flex:none}
+.idbox input{
+  flex:1;min-width:110px;padding:8px 11px;border-radius:9px;font:inherit;font-size:14px;
+  border:1.5px solid var(--border);background:var(--page);color:var(--text-primary);
+  font-variant-numeric:tabular-nums;
+}
+.idbox input:focus{outline:none;border-color:var(--series-1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 20%,transparent)}
+.id-go{
+  padding:8px 15px;border:0;border-radius:9px;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:750;background:var(--series-1);color:#fff;flex:none;
+}
+.id-go:hover{filter:brightness(1.08)}
+.id-state{font-size:11.5px;font-weight:700;color:#0a5c0a;flex:none}
+.id-hint{margin:6px 0 0!important;font-size:11px;color:var(--muted)!important}
+@media (max-width:640px){ .idbox{justify-content:center} }
+
 .plan-intro h2{font-size:20px;margin:0 0 6px;font-weight:750}
 .plan-intro p{margin:0;color:var(--text-secondary);font-size:13.5px;line-height:1.6}
 @media (max-width:640px){
@@ -618,10 +642,13 @@ td.fresh.wrong{animation-name:freshFlashBad}
 .blank.no{border-style:solid;border-color:#d03b3b;background:rgba(208,59,59,.13);color:#a82a2a}
 
 .wordbank{
-  margin-top:13px;padding:12px 13px;border-radius:13px;
+  margin-bottom:14px;padding:12px 13px;border-radius:13px;
   background:var(--page);border:1.5px solid var(--border);
 }
-.wb-title{margin:0 0 9px;font-size:11.5px;color:var(--muted)}
+.wb-title{margin:0 0 9px;font-size:11.5px;color:var(--muted);
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wb-cnt{padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;flex:none;
+  background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary)}
 .wb-words{display:flex;flex-wrap:wrap;gap:7px}
 .word{
   padding:8px 14px;border-radius:99px;cursor:grab;font:inherit;font-size:12.5px;font-weight:700;
@@ -633,7 +660,7 @@ td.fresh.wrong{animation-name:freshFlashBad}
 .word:active{cursor:grabbing}
 .word.dragging{opacity:.45;transform:scale(.94)}
 .wb-done{
-  margin:13px 0 0;padding:11px 13px;border-radius:11px;font-size:13px;font-weight:700;
+  margin:0 0 14px;padding:11px 13px;border-radius:11px;font-size:13px;font-weight:700;
   text-align:center;background:rgba(12,163,12,.13);border:1.5px solid rgba(12,163,12,.45);
   color:#0a5c0a;
 }
@@ -1608,6 +1635,16 @@ td.pending{color:var(--muted)}
       <h2>탐구 실험 계획서</h2>
       <p>검정말에 빛을 비추면 산소가 발생합니다. 어떤 조건에서 광합성이 가장 활발할까요?
          세 가지 탐구 중 하나를 골라, <b>실험 전에 결과를 예상</b>해 보고 시작하세요.</p>
+
+      <!-- 학번 — 먼저 적어야 기록이 서버에 저장되어 기기를 바꿔도 이어할 수 있다 -->
+      <form class="idbox" id="idBox">
+        <label for="idInput">📇 학번</label>
+        <input type="text" id="idInput" maxlength="10" autocomplete="off"
+               inputmode="numeric" placeholder="예) 20312">
+        <button type="submit" class="id-go" id="idSave">저장</button>
+        <span class="id-state" id="idState"></span>
+      </form>
+      <p class="id-hint" id="idHint">학번을 적어 두면 다른 기기에서도 이어서 할 수 있어요.</p>
     </div>
   </div>
   <div class="plan-grid" id="planGrid"></div>
@@ -2361,15 +2398,19 @@ function renderBlanks(i){
   // 시드를 고정해 다시 그려도 순서가 흔들리지 않게 한다
   words.sort((a, b) => (a.length * 7 + a.charCodeAt(0)) - (b.length * 7 + b.charCodeAt(0)));
 
+  // 낱말 보관함을 단계 위에 둔다 — 무엇을 어떻게 해야 하는지 먼저 보이도록
+  const total = steps.flatMap(st => st.slots).length;
+  const done  = total - pending.length;
   return `
-    <ol class="m-steps blanks">${html}</ol>
     ${pending.length ? `
       <div class="wordbank">
-        <p class="wb-title">낱말을 끌어다 넣거나, 빈칸을 누른 뒤 낱말을 고르세요</p>
+        <p class="wb-title">낱말을 끌어다 넣거나, 빈칸을 누른 뒤 낱말을 고르세요
+          <span class="wb-cnt">${done} / ${total}</span></p>
         <div class="wb-words">${words.map(w =>
           `<button class="word" draggable="true" data-word="${esc(w)}">${esc(w)}</button>`).join('')}</div>
       </div>` : `
-      <p class="wb-done">✅ 실험 방법을 모두 완성했습니다!</p>`}`;
+      <p class="wb-done">✅ 실험 방법을 모두 완성했습니다!</p>`}
+    <ol class="m-steps blanks">${html}</ol>`;
 }
 
 /* 빈칸 상호작용 — 드래그 앤 드롭 + 탭 방식 */
@@ -5042,7 +5083,53 @@ $('whoBtn').addEventListener('click', () => askWho(() => {
 function renderWho(){
   const w = getWho();
   $('whoBtn').textContent = w && w.no ? `📇 ${w.no}` : '📇 학번 입력';
+  // 첫 화면 입력칸도 함께 맞춘다
+  const box = $('idBox');
+  if (box){
+    box.classList.toggle('saved', !!(w && w.no));
+    $('idInput').value = (w && w.no) || '';
+    $('idState').textContent = w && w.no ? '✅ 저장됨' : '';
+    $('idHint').textContent = w && w.no
+      ? '다른 기기에서 같은 학번을 적으면 이어서 할 수 있어요.'
+      : '학번을 적어 두면 다른 기기에서도 이어서 할 수 있어요.';
+  }
 }
+
+/* 첫 화면 학번 저장 — 서버에 기록이 있으면 불러올지 묻는다 */
+$('idBox').addEventListener('submit', e => {
+  e.preventDefault();
+  const raw = $('idInput').value.trim().replace(/\s+/g, '');
+  if (!raw){ toast('📇', '학번을 적어 주세요', '기록을 이어 가려면 학번이 필요합니다.'); return; }
+  if (!/^[0-9a-zA-Z-]+$/.test(raw)){
+    toast('⚠️', '학번은 숫자와 영문만', '파일 이름에 쓰이므로 기호는 넣을 수 없어요.');
+    return;
+  }
+  const prev = getWho();
+  setWho(raw);
+  renderWho();
+  Sfx.bloop(1.2, 0.14);
+
+  if (prev && prev.no === raw){ saveSession(); return; }
+
+  pullProgress(raw).then(p => {
+    if (!p || p.v !== 1){
+      saveSession();
+      toast('📇', '학번을 저장했습니다', `앞으로 저장하는 파일에 <b>${esc(raw)}</b> 가 붙습니다.`);
+      return;
+    }
+    const d = new Date(p.at || Date.now());
+    const when = `${d.getMonth()+1}월 ${d.getDate()}일 ` +
+      `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    openModal('📥 이전에 하던 기록이 있어요',
+      `학번 <b>${esc(raw)}</b> 으로 <b>${when}</b> 에 저장한 기록이 있습니다.<br><br>
+       불러오면 <b>지금 이 기기의 기록은 사라집니다.</b><br><br>
+       <span style="color:var(--muted)">다른 기기에서 하던 것을 이어서 하려면 불러오세요.</span>`);
+    $('modalOk').textContent = '불러오기';
+    $('modalCancel').hidden = false;
+    $('modalCancel').textContent = '지금 것 쓰기';
+    onSubmit = () => { applyPayload(p); return null; };
+  });
+});
 renderWho();
 $('pngBtn').addEventListener('click', exportPNG);
 
