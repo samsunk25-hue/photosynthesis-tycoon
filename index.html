@@ -462,13 +462,6 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   transform:translateY(-50%);background:#0ca30c;border:2px solid var(--surface-1);
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
-.rng-next{
-  position:absolute;top:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;
-  transform:translateY(-50%);background:color-mix(in srgb,var(--series-1) 22%,transparent);
-  border:2.5px dashed var(--series-1);animation:nextPulse 1.5s ease-in-out infinite;
-}
-.rng.warn .rng-next{background:rgba(250,178,25,.3);border-color:#c98500}
-@keyframes nextPulse{50%{transform:translateY(-50%) scale(1.35)}}
 .rng-ends{display:flex;justify-content:space-between;margin-top:5px;
   font-size:11px;font-weight:650;color:var(--text-secondary);
   font-variant-numeric:tabular-nums}
@@ -3456,25 +3449,6 @@ function coverage(tab){
   };
 }
 
-/* 다음에 재면 좋을 값 — 아직 안 잰 구간 중 가장 넓은 빈 곳의 가운데 */
-function suggestNext(tab){
-  const t = tab ?? state.activeTab;
-  const cfg = TABS[t];
-  const cur = condSig();
-  const xs = rows().filter(r => r.cond === cur && r.m.length >= 3)
-                   .map(r => r.x).sort((a, b) => a - b);
-  const marks = [cfg.min, ...xs, cfg.max];
-  let best = 0, at = null;
-  for (let k = 0; k < marks.length - 1; k++){
-    const gap = marks[k+1] - marks[k];
-    if (gap > best){ best = gap; at = (marks[k] + marks[k+1]) / 2; }
-  }
-  if (at === null) return null;
-  // 슬라이더 눈금에 맞춘다
-  const st = cfg.step;
-  return Math.round(at / st) * st;
-}
-
 function renderProg(){
   const cur = condSig();
   const rs = rows().filter(r => r.cond === cur);
@@ -3495,12 +3469,12 @@ function renderProg(){
      어디를 쟀는지 눈금으로 보여주고, 다음에 잴 곳을 짚어 준다. */
   const cfg = TABS[state.activeTab];
   const cov = coverage();
-  const next = suggestNext();
   const marks = rs.filter(r => r.m.length >= 3)
     .map(r => `<i style="left:${((r.x - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></i>`).join('');
 
-  // 조작 변인 슬라이더 바로 위에 — 다음에 어디로 옮길지 한눈에
-  const showNext = next !== null && full < GOAL;
+  /* 조작 변인 슬라이더 바로 위.
+     어디를 쟀는지는 눈금으로 보여 주되, 다음에 잴 값은 알려주지 않는다.
+     어디가 비었는지 스스로 보고 정하는 것도 실험 설계다. */
   $('progRange').innerHTML = `
     <div class="rng ${cov.narrow ? 'warn' : ''}">
       <p class="rng-msg">${
@@ -3508,23 +3482,17 @@ function renderProg(){
           ? `${cfg.name}를 <b>${cfg.min}${cfg.unit}</b> 부터 <b>${cfg.max}${cfg.unit}</b> 까지
              넓게 옮겨 가며 재어 보세요.`
         : cov.narrow
-          ? `⚠️ <b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재었어요 —
-             좁으면 관계를 잘못 읽기 쉬워요.
-             ${showNext ? `다음은 <b>${next}${cfg.unit}</b>!` : '더 넓게 재어 보세요.'}`
+          ? `⚠️ <b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재었어요.
+             좁은 구간만 보면 관계를 잘못 읽기 쉬워요 — 더 넓게 퍼뜨려 보세요.`
         : !cov.hasLow
-          ? `👉 낮은 쪽도 재어야 해요. 다음은 <b>${next ?? cfg.min}${cfg.unit}</b>!`
+          ? `👉 <b>낮은 쪽</b>은 아직 재지 않았어요.`
         : !cov.hasHigh
-          ? `👉 높은 쪽도 재어야 해요. 다음은 <b>${next ?? cfg.max}${cfg.unit}</b>!`
-        : showNext
-          ? `👍 잘 퍼졌어요. 다음은 <b>${next}${cfg.unit}</b> 쯤이 좋겠어요.`
+          ? `👉 <b>높은 쪽</b>은 아직 재지 않았어요.`
+        : full < GOAL
+          ? `👍 잘 퍼졌어요. 아래 눈금에서 <b>빈 곳</b>을 찾아 마저 재어 보세요.`
           : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었어요.`
       }</p>
-      <div class="rng-bar">
-        ${marks}
-        ${showNext
-          ? `<b class="rng-next" style="left:${((next - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></b>`
-          : ''}
-      </div>
+      <div class="rng-bar">${marks}</div>
       <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
     </div>`;
 
