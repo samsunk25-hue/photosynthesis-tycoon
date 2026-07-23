@@ -434,6 +434,32 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   transition:width .45s cubic-bezier(.3,1.1,.5,1);
 }
 .prog small{display:block;margin-top:7px;font-size:11.5px;color:var(--text-secondary);line-height:1.5}
+
+/* 측정 구간 눈금 — 어디를 쟀고 어디가 비었는지 */
+.rng{margin-top:11px}
+.rng-bar{
+  position:relative;height:12px;border-radius:99px;background:var(--grid);
+  border:1px solid var(--border);
+}
+.rng-bar i{
+  position:absolute;top:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;
+  transform:translateY(-50%);background:#0ca30c;border:1.5px solid var(--surface-1);
+}
+.rng-next{
+  position:absolute;top:50%;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;
+  transform:translateY(-50%);background:transparent;
+  border:2px dashed var(--series-1);animation:nextPulse 1.6s ease-in-out infinite;
+}
+@keyframes nextPulse{50%{transform:translateY(-50%) scale(1.3)}}
+.rng.warn .rng-bar{border-color:rgba(250,178,25,.7);background:rgba(250,178,25,.14)}
+.rng-ends{display:flex;justify-content:space-between;margin-top:3px;
+  font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rng-msg{margin:6px 0 0;font-size:11.5px;line-height:1.55;color:var(--text-secondary)}
+.rng.warn .rng-msg{color:#8a6a00}
+
+/* 이미 눌러 본 오답 — 정답은 알려주지 않는다 */
+.concl-opt.tried{opacity:.5;border-style:dashed}
+.cc-x{margin-left:auto;color:#d03b3b;font-weight:900;flex:none}
 .prog.done small{color:#0a5c0a;font-weight:650}
 
 /* =========================================================
@@ -1784,6 +1810,7 @@ td.pending{color:var(--muted)}
           <span class="dots" id="progDots"></span>
         </div>
         <div class="prog-bar"><span id="progFill"></span></div>
+        <div id="progRange"></div>
         <small id="progMsg">서로 다른 조건 5가지를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.</small>
       </div>
 
@@ -2120,6 +2147,7 @@ function sessionPayload(){
       blankSeed: state.blankSeed,
       interpret: state.interpret,
       concl:   state.concl,
+      conclTried: state.conclTried,
       limitDone: state.limitDone,
       synth:   state.synth,
       review:  state.review,
@@ -2173,6 +2201,7 @@ function loadSession(){
   state.ctrl    = s.ctrl    || state.ctrl;
   state.ctrlVal = s.ctrlVal || state.ctrlVal;
   state.concl   = s.concl   || state.concl;
+  state.conclTried = s.conclTried || [[],[],[],[]];
   state.limitDone = s.limitDone || state.limitDone;
   state.synth   = s.synth   || state.synth;
   state.review  = s.review  || state.review;
@@ -2367,6 +2396,7 @@ state.ctrl = [[], [], [], []];  // 탐구별로 학생이 고른 통제 변인
 // 학생이 정한 통제값 (기본은 권장값)
 state.ctrlVal = [0,1,2,3].map(i => ({ light:100, co2:100, temp:25, ...TABS[i].fixed }));
 state.concl = [null, null, null, null];   // 탐구별 결론
+state.conclTried = [[], [], [], []];      // 눌러 본 오답 (정답은 알려주지 않는다)
 state.limitDone = [false, false, false, false];   // 제한 요인 도전 성공 여부
 state.lastCell = null;              // 방금 기록한 칸 (강조용)
 state.view = 'lab';                 // 좁은 화면에서의 현재 화면
@@ -3388,6 +3418,46 @@ function recordCount(counted, actual, cfg){
 /* ---------------------------------------------------------------
    📈 진척도 — 목표(조건 5가지)까지 얼마나 왔는지 보여준다
 ----------------------------------------------------------------*/
+/* 측정 구간이 조작 변인의 범위를 얼마나 덮는가.
+   좁은 구간만 재면 포화 곡선도 직선처럼 보여 잘못된 결론에 이른다. */
+function coverage(tab){
+  const t = tab ?? state.activeTab;
+  const cfg = TABS[t];
+  const cur = condSig();
+  const xs = rows().filter(r => r.cond === cur && r.m.length >= 3).map(r => r.x);
+  if (!xs.length) return { n:0, ratio:0, narrow:false, lo:null, hi:null };
+  const lo = Math.min(...xs), hi = Math.max(...xs);
+  const span = cfg.max - cfg.min;
+  const ratio = (hi - lo) / span;
+  return {
+    n: xs.length, lo, hi, ratio,
+    // 조건이 3개 이상인데 범위의 60%도 못 덮으면 좁다고 본다
+    narrow: xs.length >= 3 && ratio < 0.6,
+    // 양 끝을 재었는가
+    hasLow:  lo <= cfg.min + span * 0.15,
+    hasHigh: hi >= cfg.max - span * 0.15,
+  };
+}
+
+/* 다음에 재면 좋을 값 — 아직 안 잰 구간 중 가장 넓은 빈 곳의 가운데 */
+function suggestNext(tab){
+  const t = tab ?? state.activeTab;
+  const cfg = TABS[t];
+  const cur = condSig();
+  const xs = rows().filter(r => r.cond === cur && r.m.length >= 3)
+                   .map(r => r.x).sort((a, b) => a - b);
+  const marks = [cfg.min, ...xs, cfg.max];
+  let best = 0, at = null;
+  for (let k = 0; k < marks.length - 1; k++){
+    const gap = marks[k+1] - marks[k];
+    if (gap > best){ best = gap; at = (marks[k] + marks[k+1]) / 2; }
+  }
+  if (at === null) return null;
+  // 슬라이더 눈금에 맞춘다
+  const st = cfg.step;
+  return Math.round(at / st) * st;
+}
+
 function renderProg(){
   const cur = condSig();
   const rs = rows().filter(r => r.cond === cur);
@@ -3403,10 +3473,46 @@ function renderProg(){
   const box = $('prog');
   box.classList.toggle('done', full >= GOAL);
   const left = GOAL - full;
+
+  /* 측정 구간 안내 — 좁은 구간만 재면 관계의 일부만 보여 잘못 읽는다.
+     어디를 쟀는지 눈금으로 보여주고, 다음에 잴 곳을 짚어 준다. */
+  const cfg = TABS[state.activeTab];
+  const cov = coverage();
+  const next = suggestNext();
+  const marks = rs.filter(r => r.m.length >= 3)
+    .map(r => `<i style="left:${((r.x - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></i>`).join('');
+
+  $('progRange').innerHTML = full === 0 ? '' : `
+    <div class="rng ${cov.narrow ? 'warn' : ''}">
+      <div class="rng-bar">
+        ${marks}
+        ${next !== null && full < GOAL
+          ? `<b class="rng-next" style="left:${((next - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1)}%"></b>`
+          : ''}
+      </div>
+      <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
+      <p class="rng-msg">${
+        cov.narrow
+          ? `⚠️ <b>${cov.lo}${cfg.unit} ~ ${cov.hi}${cfg.unit}</b> 만 재었습니다.
+             좁은 구간만 보면 관계를 잘못 읽기 쉬워요.
+             ${next !== null ? `<b>${next}${cfg.unit}</b> 쯤도 재어 보세요.` : ''}`
+          : !cov.hasLow
+            ? `👉 낮은 쪽(<b>${cfg.min}${cfg.unit}</b> 가까이)도 재어야 관계가 잘 보여요.`
+            : !cov.hasHigh
+              ? `👉 높은 쪽(<b>${cfg.max}${cfg.unit}</b> 가까이)도 재어 보세요.`
+              : next !== null && full < GOAL
+                ? `👍 넓게 잘 퍼졌어요. 다음은 <b>${next}${cfg.unit}</b> 쯤이 좋겠어요.`
+                : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었습니다.`
+      }</p>
+    </div>`;
+
   $('progMsg').innerHTML = full >= GOAL
-    ? '목표 달성! 이제 그래프에서 관계를 확인해 보세요.'
+    ? (cov.narrow
+        ? '조건은 다 모았지만 구간이 좁습니다. 넓게 더 재면 관계가 또렷해져요.'
+        : '목표 달성! 이제 그래프에서 관계를 확인해 보세요.')
     : full === 0
-      ? `서로 다른 조건 <b>${GOAL}가지</b>를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.`
+      ? `서로 다른 조건 <b>${GOAL}가지</b>를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.<br>
+         <b>${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 넓게</b> 퍼뜨려 재는 것이 좋습니다.`
       : `조건 <b>${left}가지</b>만 더 모으면 그래프를 그릴 수 있어요.` +
         (part ? ' (측정 중인 조건 1가지)' : '');
 
@@ -4063,35 +4169,54 @@ function renderConcl(){
     ? (state.freeKey === 'temp' ? 1 : 1)   // 세 요인 모두 '늘다가 일정/정점 후 감소'
     : p.answer.dep;
   const hyp = state.hyp[i];
+  const right = picked === ans;
+  const cover = coverage(i);
 
+  /* 틀렸을 때 정답을 알려주지 않는다.
+     대신 그래프를 다시 보게 하고, 측정 구간이 좁으면 그 점을 짚어 준다. */
   $('conclBox').innerHTML = `
     <p class="concl-q">그래프를 보니 <b>${cfg.name}</b>를 높일수록
       산소 발생량은 실제로 어떻게 되었나요?</p>
     <div class="concl-opts">
       ${p.deps.map((d, k) => {
-        let cls = '';
-        if (picked !== null) cls = k === ans ? 'right' : (k === picked ? 'wrong' : '');
+        // 맞힌 뒤에만 정답을 표시한다
+        const cls = right ? (k === ans ? 'right' : '')
+                          : (state.conclTried?.[i]?.includes(k) ? 'tried' : '');
         return `<button class="concl-opt ${cls}" data-cc="${k}"
-                  aria-pressed="${picked === k}" ${picked !== null ? 'disabled' : ''}>
+                  aria-pressed="${picked === k}" ${right ? 'disabled' : ''}>
                   <span class="em">${d.em}</span>${d.t}
+                  ${cls === 'tried' ? '<span class="cc-x">✕</span>' : ''}
                 </button>`;
       }).join('')}
     </div>
-    ${picked === null ? '' : `
-      <div class="concl-fb ${picked === ans ? 'ok' : 'no'}">
-        <b>${picked === ans ? '✅ 맞았어요!' : '🔍 다시 보아요'}</b>
+    ${picked === null ? '' : right ? `
+      <div class="concl-fb ok">
+        <b>✅ 맞았어요!</b>
         ${p.why}
       </div>
       <div class="concl-hyp">
         실험 전 나의 가설: <b>${hypText(i)}</b> —
         ${hyp.dep === ans ? '가설이 맞았습니다 👏'
                           : '가설과 결과가 달랐습니다. 예상과 다른 결과에서 더 많이 배웁니다.'}
+      </div>` : `
+      <div class="concl-fb no">
+        <b>🔍 그래프를 다시 살펴보세요</b>
+        ${cover.narrow
+          ? `측정한 구간이 <b>${cover.lo}${cfg.unit} ~ ${cover.hi}${cfg.unit}</b> 로 좁습니다.
+             좁은 구간만 보면 관계의 일부만 드러나 잘못 읽기 쉽습니다.<br>
+             <b>${cfg.min}${cfg.unit} 쪽과 ${cfg.max}${cfg.unit} 쪽을 모두</b> 재어 보세요.`
+          : `그래프의 <b>왼쪽 끝과 오른쪽 끝</b>을 견주어 보고,
+             중간에서 기울기가 달라지는 곳이 있는지 살펴보세요.`}
       </div>`}
-    ${p.free && picked !== null ? interpretHTML(i) : ''}`;
+    ${p.free && right ? interpretHTML(i) : ''}`;
 
   $('conclBox').querySelectorAll('[data-cc]').forEach(b =>
     b.addEventListener('click', () => {
-      state.concl[i] = Number(b.dataset.cc);
+      const k = Number(b.dataset.cc);
+      state.conclTried = state.conclTried || [[], [], [], []];
+      if (!state.conclTried[i]) state.conclTried[i] = [];
+      if (k !== ans && !state.conclTried[i].includes(k)) state.conclTried[i].push(k);
+      state.concl[i] = k;
       saveSession();
       renderConcl();
       if (state.concl[i] === ans){ Sfx.fanfare(); confetti(70); }
