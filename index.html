@@ -332,6 +332,15 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   box-shadow:0 5px 0 color-mix(in srgb,var(--series-1) 65%,#000)}
 .backbtn:active{transform:translateY(2px);
   box-shadow:0 1px 0 color-mix(in srgb,var(--series-1) 65%,#000)}
+.lab-btns{display:flex;gap:8px;flex:none;flex-wrap:wrap}
+/* 처음 화면 버튼 — 계획서 버튼보다 한 단계 약하게 */
+.backbtn.ghost{
+  background:var(--surface-1);color:var(--text-secondary);
+  border:1.5px solid var(--border);box-shadow:0 3px 0 var(--grid);
+}
+.backbtn.ghost:hover{color:var(--text-primary);border-color:var(--baseline);
+  box-shadow:0 5px 0 var(--grid)}
+.backbtn.ghost:active{box-shadow:0 1px 0 var(--grid)}
 .myhyp{
   display:flex;align-items:center;gap:9px;font-size:17px;font-weight:600;
   color:var(--text-secondary);line-height:1.4;
@@ -1623,9 +1632,14 @@ td.pending{color:var(--muted)}
 
 <div class="labbar" id="labbar" hidden>
   <span class="myhyp" id="myHyp" hidden></span>
-  <button class="backbtn" id="backPlan">
-    <span aria-hidden="true">📋</span> 실험 계획서로 돌아가기
-  </button>
+  <div class="lab-btns">
+    <button class="backbtn ghost" id="backHome">
+      <span aria-hidden="true">🏠</span> 처음 화면
+    </button>
+    <button class="backbtn" id="backPlan">
+      <span aria-hidden="true">📋</span> 이 탐구의 계획서
+    </button>
+  </div>
 </div>
 
 <!-- 좁은 화면에서만 보이는 화면 전환 탭 -->
@@ -1780,7 +1794,7 @@ td.pending{color:var(--muted)}
       <div class="head-row">
         <h2>📄 탐구 보고서</h2>
         <div class="report-btns">
-          <button class="rpt" id="whoBtn">📇 학급·번호 입력</button>
+          <button class="rpt" id="whoBtn">📇 학번 입력</button>
           <button class="rpt" id="pdfBtn">📄 PDF</button>
           <button class="rpt" id="docBtn">📝 Word</button>
         </div>
@@ -2576,9 +2590,13 @@ function openLab(tab){
   scrollTo({ top:0, behavior:'smooth' });
 }
 
-function backToPlan(){
+/* 계획 화면으로 돌아간다.
+   toTopics=true 면 탐구 주제 목록(처음 화면)으로,
+   아니면 지금 하던 탐구의 설계 화면으로 간다. */
+function backToPlan(toTopics){
   if (state.isMeasuring) return;
-  state.planPick = null;
+  if (toTopics) state.planPick = null;
+  else if (state.planPick === null) state.planPick = state.activeTab;
   document.querySelector('main').hidden = true;
   $('labbar').hidden = true;
   $('hall').hidden = true;
@@ -2609,7 +2627,8 @@ function renderMyHyp(){
   el.title = done ? p.why.replace(/<\/?b>/g, '') : '실험을 마치면 가설이 맞았는지 확인할 수 있습니다.';
 }
 
-$('backPlan').addEventListener('click', backToPlan);
+$('backPlan').addEventListener('click', () => backToPlan(false));   // 이 탐구의 설계 화면
+$('backHome').addEventListener('click', () => backToPlan(true));    // 탐구 고르는 처음 화면
 
 /* 좁은 화면(태블릿 세로 이하)에서 실험/결과 화면 전환 */
 function setView(v){
@@ -3804,7 +3823,7 @@ function renderLimit(){
   if (go) go.addEventListener('click', () => {
     toast('⚖️', '계획서에서 통제값을 낮춰 보세요',
       `<b>${LABEL[L.key]}</b>를 <b>${L.to}${UNIT[L.key]}</b> 정도로 낮추면 됩니다.`);
-    backToPlan();
+    backToPlan(false);
   });
 }
 
@@ -4672,37 +4691,34 @@ function download(blob, filename){
 }
 /* 파일 이름에 넣을 학급·학번. 한 번 적으면 이 기기에 저장된다.
    보고서·CSV·PNG 를 모아 정리할 때 누구 것인지 알 수 있게 한다. */
-const WHO_KEY = 'photosynthesis.who.v1';
+const WHO_KEY = 'photosynthesis.who.v2';
 function getWho(){
   try { return JSON.parse(localStorage.getItem(WHO_KEY) || 'null'); } catch { return null; }
 }
-function setWho(cls, no, name){
-  try { localStorage.setItem(WHO_KEY, JSON.stringify({ cls, no, name })); } catch {}
+function setWho(no){
+  try { localStorage.setItem(WHO_KEY, JSON.stringify({ no })); } catch {}
 }
-/* 파일 이름 앞머리 — 예: "2학년3반_12번_홍길동" */
+/* 파일 이름 앞머리 — 예: "20312_" */
 function whoPrefix(){
   const w = getWho();
-  if (!w) return '';
-  return [w.cls, w.no, w.name].filter(Boolean).join('_') + '_';
+  return w && w.no ? w.no + '_' : '';
 }
 /* 학급·학번을 받은 뒤 이어서 실행한다 */
 function askWho(then){
   const w = getWho();
-  openPrompt('📇 누구의 보고서인가요?',
-    `파일 이름에 넣을 <b>학급</b>과 <b>번호</b>를 적어 주세요.<br>
+  openPrompt('📇 학번을 적어 주세요',
+    `저장하는 파일 이름 앞에 학번이 붙어, 나중에 찾기 쉽습니다.<br>
      <span style="color:var(--muted)">한 번 적으면 이 기기에 저장되어 다음부터는 묻지 않습니다.
-     이름은 비워 두어도 됩니다.</span>`,
-    { placeholder:'학급 (예: 2학년 3반)', okText:'저장하기', cancelText:'취소',
-      maxlength:20, second:true, secondPlaceholder:'번호 (예: 12)',
-      third:true, thirdPlaceholder:'이름 (선택)',
-      preset:[w?.cls || '', w?.no || '', w?.name || ''],
-      handler: (cls, no, name) => {
-        cls = String(cls || '').trim(); no = String(no || '').trim(); name = String(name || '').trim();
-        if (!cls) return '학급을 적어 주세요.';
-        if (!no)  return '번호를 적어 주세요.';
-        if (/[\/:*?"<>|]/.test(cls + no + name))
-          return '파일 이름에 쓸 수 없는 기호(\ / : * ? " < > |)가 있습니다.';
-        setWho(cls.replace(/s+/g, ''), no.replace(/s+/g, '') + (/번$/.test(no) ? '' : '번'), name);
+     이름은 적지 않습니다.</span>`,
+    { placeholder:'학번 (예: 20312)', okText:'저장하기', cancelText:'취소',
+      maxlength:10, preset:[w && w.no ? w.no : ''],
+      rule:'숫자와 영문만 쓸 수 있습니다',
+      handler: v => {
+        const no = String(v || '').trim().replace(/s+/g, '');
+        if (!no) return '학번을 적어 주세요.';
+        if (!/^[0-9a-zA-Z-]+$/.test(no))
+          return '학번은 숫자와 영문만 쓸 수 있습니다.';
+        setWho(no);
         then && then();
         return null;
       } });
@@ -4820,7 +4836,7 @@ function reportHTML(){
 
   return `
 <h1>탐구 보고서 — ${p.free ? '자유 탐구' : `탐구 ${i+1}`}</h1>
-<p class="meta">${(() => { const w = getWho(); return w ? [w.cls, w.no, w.name].filter(Boolean).join(' ') + ' · ' : ''; })()}${when} · 산소 팡팡! 광합성 타이쿤</p>
+<p class="meta">${(() => { const w = getWho(); return w && w.no ? '학번 ' + w.no + ' · ' : ''; })()}${when} · 산소 팡팡! 광합성 타이쿤</p>
 
 <h2>1. 탐구 질문</h2>
 <p>${p.q}</p>
@@ -4921,13 +4937,13 @@ $('pdfBtn').addEventListener('click', () => getWho() ? exportPDF() : askWho(expo
 $('docBtn').addEventListener('click', () => getWho() ? exportDoc() : askWho(exportDoc));
 $('whoBtn').addEventListener('click', () => askWho(() => {
   const w = getWho();
-  toast('📇', '저장했습니다', `파일 이름 앞에 <b>${whoPrefix().slice(0, -1)}</b> 가 붙습니다.`);
+  toast('📇', '학번을 저장했습니다', `파일 이름 앞에 <b>${whoPrefix().slice(0, -1)}</b> 가 붙습니다.`);
   renderWho();
 }));
 
 function renderWho(){
   const w = getWho();
-  $('whoBtn').textContent = w ? `📇 ${[w.cls, w.no].filter(Boolean).join(' ')}` : '📇 학급·번호 입력';
+  $('whoBtn').textContent = w && w.no ? `📇 ${w.no}` : '📇 학번 입력';
 }
 renderWho();
 $('pngBtn').addEventListener('click', exportPNG);
@@ -4943,7 +4959,7 @@ $('restoreBtn').addEventListener('click', () => {
      <span style="color:var(--muted)">바꾸려면 <b>실험 계획서</b>로 돌아가세요.
      지금까지 측정한 기록은 그대로 남습니다.</span>`);
   $('modalOk').textContent = '계획서로 이동';
-  onSubmit = () => { backToPlan(); return null; };
+  onSubmit = () => { backToPlan(false); return null; };
 });
 
 /* 측정 방식 전환 — 방식마다 데이터·단위가 다르므로 화면 전체를 다시 그린다 */
