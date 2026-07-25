@@ -2330,7 +2330,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 f';
+const BUILD = '2026-07-25 g';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2437,6 +2437,17 @@ function renderTimer(){
 ----------------------------------------------------------------*/
 const LOG_MAX = 400;              // 너무 길어지지 않게 최근 것만 남긴다
 state.log = [];
+
+/* 조사를 낱말 끝소리에 맞춘다 — '시험관를' 처럼 어긋나면 읽기에 걸린다.
+   한글 음절은 (코드-0xAC00) % 28 이 0 이 아니면 끝소리(종성)가 있다. */
+function jong(w){
+  const s = String(w == null ? '' : w).trim();
+  const c = s.charCodeAt(s.length - 1);
+  if (!(c >= 0xAC00 && c <= 0xD7A3)) return null;    // 한글이 아니면 알 수 없다
+  return (c - 0xAC00) % 28 !== 0;
+}
+const eulReul = w => jong(w) === true  ? '을' : '를';
+const eunNeun = w => jong(w) === true  ? '은' : '는';
 
 function logAssess(what, detail, bad){
   // 수행평가(자유 탐구)에서 한 일만 기록한다
@@ -3167,11 +3178,11 @@ function bindBlanks(i){
        기록에도 남지 않았다. 무엇을 넣으려 했는지가 중요한 정보이므로 남긴다. */
     if (!sl.pool.includes(word)){
       logAssess('실험 방법 빈칸',
-        `${sl.label} 칸에 “${word}” 를 넣으려 했습니다 (이 칸에 쓰이는 낱말이 아님)`, true);
+        `${sl.label} 칸에 “${word}” ${eulReul(word)} 넣으려 했습니다 (이 칸에 쓰이는 낱말이 아님)`, true);
       saveSession();
       Sfx.warn();
       toast('🤔', '이 칸에 넣을 낱말이 아니에요',
-        `“${esc(word)}” 는 다른 칸에 쓰이는 낱말입니다. 다시 골라 보세요.`);
+        `“${esc(word)}” ${eunNeun(word)} 다른 칸에 쓰이는 낱말입니다. 다시 골라 보세요.`);
       pickedSlot = null;
       renderPlan();
       return;
@@ -3218,7 +3229,7 @@ function bindBlanks(i){
       if (!pickedSlot){
         // 순서를 거꾸로 누른 것도 남긴다 (틀린 답은 아니므로 붉게 세지는 않는다)
         logAssess('실험 방법 빈칸',
-          `빈칸을 고르지 않고 “${w.dataset.word}” 를 눌렀습니다`);
+          `빈칸을 고르지 않고 “${w.dataset.word}” ${eulReul(w.dataset.word)} 눌렀습니다`);
         toast('👆', '빈칸을 먼저 누르세요', '채우고 싶은 빈칸을 누른 뒤 낱말을 고르면 됩니다.');
         return;
       }
@@ -3410,7 +3421,7 @@ function renderSetup(i){
       state.ctrl[3] = [];
       state.hyp[3] = { op:null, dep:null };
       newBlankSet();
-      logAssess('조작 변인', `${LABEL[k]} 로 정했습니다`);
+      logAssess('조작 변인', `${LABEL[k]}로 정했습니다`);
       if (had){
         state.data.manual[3] = {}; state.data.auto[3] = {};
         state.graphed.manual[3] = false; state.graphed.auto[3] = true;
@@ -3430,7 +3441,7 @@ function renderSetup(i){
     const at = list.indexOf(k);
     if (at >= 0) list.splice(at, 1); else list.push(k);
     logAssess('통제 변인', list.length
-      ? `${list.map(x => `${LABEL[x]} ${state.ctrlVal[i][x]}${UNIT[x]}`).join(', ')} 로 같게 두기`
+      ? `${list.map(x => `${LABEL[x]} ${state.ctrlVal[i][x]}${UNIT[x]}`).join(', ')}로 같게 두기`
       : '고른 통제 변인 없음');
     saveSession(); Sfx.tick(); renderPlan();
   });
@@ -3447,7 +3458,7 @@ function renderSetup(i){
   if (cvars) cvars.addEventListener('change', e => {
     const sl = e.target.closest('[data-cv]');
     if (sl) logAssess('통제값', `${LABEL[sl.dataset.cv]} 를 ` +
-      `${state.ctrlVal[i][sl.dataset.cv]}${UNIT[sl.dataset.cv]} 로 맞춤`);
+      `${state.ctrlVal[i][sl.dataset.cv]}${UNIT[sl.dataset.cv]}로 맞춤`);
     saveSession();
   });
 
@@ -4907,7 +4918,7 @@ function renderConcl(){
       if (k !== ans && !state.conclTried[i].includes(k)) state.conclTried[i].push(k);
       state.concl[i] = k;
       logAssess('결론 고르기',
-        `“${p.deps[k].t}” 를 골랐습니다 — ${k === ans ? '맞음' : '틀림 (다시 고름)'}`,
+        `“${p.deps[k].t}” ${eulReul(p.deps[k].t)} 골랐습니다 — ${k === ans ? '맞음' : '틀림 (다시 고름)'}`,
         k !== ans);
       saveSession();
       renderConcl();
