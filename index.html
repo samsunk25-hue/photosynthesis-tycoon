@@ -204,27 +204,45 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .ph-del:hover{filter:brightness(1.1)}
 .ph-note{margin:0;font-size:11.5px;line-height:1.55;color:var(--muted);flex:1;min-width:150px}
 
-/* ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 흐른다 */
+/* ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 흐른다.
+   오른쪽 가장자리에서 스크롤바 손잡이를 따라 위아래로 움직이므로,
+   계획서든 실험실이든 화면을 어디까지 내려도 늘 눈에 들어온다.
+   top 값은 스크롤 위치에 맞춰 자바스크립트가 정한다. */
 .atimer{
-  position:fixed;right:14px;bottom:14px;z-index:45;
-  display:none;align-items:center;gap:9px;padding:9px 15px;border-radius:99px;
-  background:var(--surface-1);border:1.5px solid hsl(270 70% 68%);
-  box-shadow:0 5px 16px rgba(0,0,0,.17);
+  position:fixed;right:20px;top:14px;z-index:45;
+  display:none;align-items:center;gap:11px;padding:12px 20px;border-radius:99px;
+  background:var(--surface-1);border:2.5px solid hsl(270 70% 66%);
+  box-shadow:0 7px 22px rgba(0,0,0,.2);
+  transition:top .2s ease-out;
 }
 .atimer.on{display:inline-flex}
-.atimer .at-em{font-size:16px;line-height:1}
+.atimer .at-em{font-size:22px;line-height:1}
 .atimer .at-t{
-  font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;
-  color:hsl(270 70% 45%);
+  font-size:27px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;
+  color:hsl(270 70% 45%);letter-spacing:.5px;
 }
-.atimer .at-lab{font-size:11px;font-weight:700;color:var(--muted)}
+.atimer .at-lab{font-size:12.5px;font-weight:750;color:var(--muted)}
 .atimer.paused{opacity:.62}
 .atimer.paused .at-t{color:var(--muted)}
 .atimer.done{border-color:#0ca30c}
 .atimer.done .at-t{color:#0a8a0a}
+
+/* 10분마다 테두리가 반짝인다 — 시간 흐름을 스스로 느끼도록 */
+@keyframes atFlash{
+  0%,100%{border-color:hsl(270 70% 66%);box-shadow:0 7px 22px rgba(0,0,0,.2)}
+  50%    {border-color:#ff9d00;
+          box-shadow:0 0 0 10px rgba(255,157,0,.32), 0 7px 22px rgba(0,0,0,.2)}
+}
+.atimer.flash{animation:atFlash .75s ease-in-out 8}
+.atimer.flash .at-t{color:#e07000}
+@media (prefers-reduced-motion:reduce){
+  .atimer{transition:none}
+  .atimer.flash{animation:none;border-color:#ff9d00}
+}
 @media (max-width:520px){
-  .atimer{right:10px;bottom:10px;padding:7px 12px;gap:7px}
-  .atimer .at-t{font-size:14px}
+  .atimer{right:12px;padding:9px 14px;gap:8px}
+  .atimer .at-em{font-size:18px}
+  .atimer .at-t{font-size:22px}
   .atimer .at-lab{display:none}
 }
 
@@ -2253,7 +2271,7 @@ const isManual = () => state.mode === 'manual';
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 c';
+const BUILD = '2026-07-25 d';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2307,18 +2325,50 @@ const clockKo = ms => {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
   return (h ? `${h}시간 ` : '') + (h || m ? `${m}분 ` : '') + `${sec}초`;
 };
+/* 스크롤바 손잡이를 따라 위아래로 옮긴다 — 맨 위면 위쪽, 맨 아래면 아래쪽.
+   화면을 어디까지 내려도 타이머가 시야 안에 머문다. */
+function placeTimer(){
+  const el = $('atimer');
+  if (!el || el.hidden || !el.classList.contains('on')) return;
+  const doc = document.documentElement;
+  const max = Math.max(1, doc.scrollHeight - innerHeight);
+  const f = Math.min(1, Math.max(0, (scrollY || doc.scrollTop || 0) / max));
+  const pad = 14, h = el.offsetHeight || 52;
+  el.style.top = `${Math.round(pad + f * Math.max(0, innerHeight - h - pad * 2))}px`;
+}
+
+/* 10분을 지날 때마다 테두리를 반짝인다 */
+const FLASH_EVERY = 600000;                 // 10분
+let flashedAt = null;                       // 몇 번째 10분까지 알렸는가
+function timerFlash(el, ms){
+  const mark = Math.floor(ms / FLASH_EVERY);
+  if (flashedAt === null){ flashedAt = mark; return; }   // 처음 그릴 때는 넘어간다
+  if (mark <= flashedAt) return;
+  flashedAt = mark;
+  el.classList.remove('flash');
+  void el.offsetWidth;                      // 애니메이션을 처음부터 다시 돌린다
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 6200);
+  Sfx.bloop(0.9, 0.2);
+  toast('⏱️', `${mark * 10}분 지났습니다`,
+    '수행평가에 쓴 시간은 보고서에 함께 저장됩니다.');
+}
+
 function renderTimer(){
   const el = $('atimer');
   if (!el) return;
   const show = inAssessment();
   el.classList.toggle('on', show);
-  if (!show) return;
+  if (!show){ flashedAt = null; return; }
+  const ms = timerElapsed();
   const saved = state.timer.total !== null;
   el.classList.toggle('paused', !state.timer.runStart);
   el.classList.toggle('done', saved);
-  $('atimerT').textContent = clock(timerElapsed());
+  $('atimerT').textContent = clock(ms);
   $('atimerLab').textContent = !state.timer.runStart ? '멈춤'
                              : saved ? '저장함' : '수행평가';
+  if (state.timer.runStart) timerFlash(el, ms);
+  placeTimer();
 }
 
 /* ---------------------------------------------------------------
@@ -6106,6 +6156,10 @@ table.log th:nth-child(3){width:110px}
 table.log td.lk{text-align:center;font-weight:bold}
 table.log td.ld{text-align:left}
 .lnote{color:#767676;font-size:9pt;font-weight:normal}
+/* 쪽이 넘어갈 때 줄·칸·그림이 반으로 갈리지 않게 한다 */
+h1,h2{break-after:avoid;page-break-after:avoid}
+tr,li,figure,.quote,.why,.ipq,.ipa,.meta{break-inside:avoid;page-break-inside:avoid}
+thead{display:table-header-group}
 @page{margin:15mm}
 `;
 
@@ -6213,19 +6267,50 @@ function exportPDF(){
         const pdf = new jsPDF({ unit:'mm', format:'a4', compress:true });
         const PW = 210, PH = 297, MG = 10;               // A4 · 여백 10mm
         const w = PW - MG * 2, pageH = PH - MG * 2;
-        // 한 장에 담을 높이만큼 잘라 여러 장으로 붙인다
-        const sliceH = Math.floor(canvas.width * pageH / w);
-        const pages = Math.max(1, Math.ceil(canvas.height / sliceH));
-        for (let n = 0; n < pages; n++){
-          const sh = Math.min(sliceH, canvas.height - n * sliceH);
+        const sliceH = Math.floor(canvas.width * pageH / w);   // 한 장에 담기는 높이
+
+        /* 글자 줄을 반으로 자르지 않도록, 자를 자리를 글줄 사이의 빈 띠에서 찾는다.
+           보고서 바탕이 흰색이므로 '가로 한 줄이 모두 흰색' 인 곳이 글줄 사이다.
+           예정한 자리에서 위로 조금 훑어보며 빈 띠를 찾고, 없으면 예정대로 자른다. */
+        const ctx = canvas.getContext('2d', { willReadFrequently:true });
+        const BLANK_RUN = 4;                  // 빈 줄이 이만큼 이어져야 글줄 사이로 본다
+        const findCut = (want) => {
+          const look = Math.min(Math.floor(sliceH * 0.2), want);
+          if (look < BLANK_RUN * 2) return want;
+          let band;
+          try { band = ctx.getImageData(0, want - look, canvas.width, look).data; }
+          catch { return want; }              // 그림을 읽을 수 없으면 예정대로
+          const rowBlank = r => {
+            const base = r * canvas.width * 4;
+            for (let x = 0; x < canvas.width; x += 5){
+              const p = base + x * 4;
+              if (band[p] < 244 || band[p+1] < 244 || band[p+2] < 244) return false;
+            }
+            return true;
+          };
+          let run = 0;
+          for (let r = look - 1; r >= 0; r--){        // 아래에서 위로 올라가며 찾는다
+            if (rowBlank(r)){
+              if (++run >= BLANK_RUN) return want - look + r + Math.floor(run / 2);
+            } else run = 0;
+          }
+          return want;
+        };
+
+        let y = 0, n = 0;
+        while (y < canvas.height && n < 40){
+          let cut = Math.min(canvas.height, y + sliceH);
+          if (cut < canvas.height) cut = Math.max(y + Math.floor(sliceH * 0.5), findCut(cut));
+          const sh = cut - y;
           const part = document.createElement('canvas');
           part.width = canvas.width; part.height = sh;
           const c = part.getContext('2d');
           c.fillStyle = '#ffffff'; c.fillRect(0, 0, part.width, part.height);
-          c.drawImage(canvas, 0, n * sliceH, canvas.width, sh, 0, 0, canvas.width, sh);
+          c.drawImage(canvas, 0, y, canvas.width, sh, 0, 0, canvas.width, sh);
           if (n) pdf.addPage();
           pdf.addImage(part.toDataURL('image/jpeg', 0.92), 'JPEG',
                        MG, MG, w, sh * w / canvas.width);
+          y = cut; n++;
         }
         pdf.save(`${whoPrefix()}탐구보고서_${cfg.name}_${stamp()}.pdf`);
         done();
@@ -6469,6 +6554,9 @@ $('buildTag').textContent = `산소 팡팡! 광합성 타이쿤 · 판 ${BUILD}`
 timerSync();
 setInterval(timerSync, 1000);
 addEventListener('visibilitychange', timerSync);
+// 스크롤바를 따라 움직이도록 — 스크롤·크기 변화에 곧바로 맞춘다
+addEventListener('scroll', placeTimer, { passive:true });
+addEventListener('resize', placeTimer);
 
 // Firebase 모듈이 준비되면 공유 명단을 켠다 (실패하면 로컬 저장으로 동작)
 if (window.Cloud) initCloud();
