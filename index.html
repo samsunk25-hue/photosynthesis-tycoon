@@ -163,6 +163,70 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .id-hint{margin:6px 0 0!important;font-size:11px;color:var(--muted)!important}
 @media (max-width:640px){ .idbox{justify-content:center} }
 
+/* 학번을 적기 전에는 탐구를 고를 수 없다 — 기록이 학번을 따라가므로,
+   먼저 누구인지 정해야 이전에 쓴 내용을 제자리에 되돌릴 수 있다. */
+.idbox.need{border-color:var(--series-1);animation:idPulse 1.9s ease-in-out infinite}
+@keyframes idPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(42,120,214,.34)}
+  50%    {box-shadow:0 0 0 7px rgba(42,120,214,0)}
+}
+.idgate{
+  max-width:820px;margin:0 auto 20px;padding:18px 20px;border-radius:16px;text-align:center;
+  background:rgba(42,120,214,.07);border:2px dashed var(--series-1);
+}
+.idgate[hidden]{display:none}
+.idgate .g-em{font-size:30px;display:block;margin-bottom:6px}
+.idgate b{display:block;font-size:16.5px;font-weight:800;margin-bottom:7px}
+.idgate p{margin:0;font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.idgate p + p{margin-top:7px}
+.idgate .g-warn{color:#8a6a00;font-weight:700}
+
+/* 📷 실험 장치 사진·그림 (선택) */
+.photo{display:flex;align-items:flex-start;gap:13px;flex-wrap:wrap}
+.ph-pick{
+  display:inline-flex;align-items:center;gap:7px;flex:none;
+  padding:11px 15px;border-radius:12px;cursor:pointer;
+  font-size:12.5px;font-weight:750;color:var(--text-secondary);
+  background:var(--surface-1);border:1.5px dashed var(--baseline);
+}
+.ph-pick:hover{border-color:var(--series-1);color:var(--series-1)}
+.ph-shot{position:relative;flex:none}
+.ph-shot img{
+  display:block;max-width:230px;max-height:180px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--page);
+}
+.ph-del{
+  position:absolute;top:-9px;right:-9px;width:27px;height:27px;border-radius:50%;
+  border:0;cursor:pointer;background:#d03b3b;color:#fff;font:inherit;
+  font-size:13px;font-weight:800;box-shadow:0 2px 7px rgba(0,0,0,.28);
+}
+.ph-del:hover{filter:brightness(1.1)}
+.ph-note{margin:0;font-size:11.5px;line-height:1.55;color:var(--muted);flex:1;min-width:150px}
+
+/* ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 흐른다 */
+.atimer{
+  position:fixed;right:14px;bottom:14px;z-index:45;
+  display:none;align-items:center;gap:9px;padding:9px 15px;border-radius:99px;
+  background:var(--surface-1);border:1.5px solid hsl(270 70% 68%);
+  box-shadow:0 5px 16px rgba(0,0,0,.17);
+}
+.atimer.on{display:inline-flex}
+.atimer .at-em{font-size:16px;line-height:1}
+.atimer .at-t{
+  font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:hsl(270 70% 45%);
+}
+.atimer .at-lab{font-size:11px;font-weight:700;color:var(--muted)}
+.atimer.paused{opacity:.62}
+.atimer.paused .at-t{color:var(--muted)}
+.atimer.done{border-color:#0ca30c}
+.atimer.done .at-t{color:#0a8a0a}
+@media (max-width:520px){
+  .atimer{right:10px;bottom:10px;padding:7px 12px;gap:7px}
+  .atimer .at-t{font-size:14px}
+  .atimer .at-lab{display:none}
+}
+
 .plan-intro h2{font-size:20px;margin:0 0 6px;font-weight:750}
 .plan-intro p{margin:0;color:var(--text-secondary);font-size:13.5px;line-height:1.6}
 @media (max-width:640px){
@@ -780,6 +844,11 @@ td.fresh.wrong{animation-name:freshFlashBad}
   background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary);
 }
 .rpt:hover{color:var(--text-primary);border-color:var(--series-1)}
+/* 수행평가에서는 PDF 말고 다른 저장 버튼을 감춘다 */
+.rpt[hidden],.btn-ghost[hidden]{display:none}
+.rpt.only{border-color:var(--series-1);background:var(--series-1);color:#fff;
+  box-shadow:0 2px 0 color-mix(in srgb,var(--series-1) 65%,#000)}
+.rpt.only:hover{color:#fff;filter:brightness(1.08)}
 .rpt.danger{color:#a83232;border-color:rgba(208,59,59,.4)}
 .rpt.danger:hover{color:#fff;background:#d03b3b;border-color:#d03b3b}
 
@@ -1412,6 +1481,14 @@ td.act{text-align:right;padding-right:0}
 .sound-btn[hidden]{display:none}
 #installBtn{border-color:color-mix(in srgb,var(--series-1) 45%,transparent);
   color:var(--series-1);font-weight:650}
+/* 🏠 메인 화면 — 머리말에 늘 같은 자리에 둔다. 어느 화면에서 눌러도
+   탐구 고르기(첫 화면)로 돌아간다. 첫 화면에서는 감춘다. */
+.home-btn{
+  border-color:var(--series-1);background:var(--series-1);color:#fff;font-weight:700;
+  box-shadow:0 2px 0 color-mix(in srgb,var(--series-1) 65%,#000);
+}
+.home-btn:hover{color:#fff;filter:brightness(1.08)}
+.home-btn:active{transform:translateY(1px);box-shadow:none}
 /* 설치 안내 단계 */
 .steps{margin:12px 0 0;padding:0;list-style:none;counter-reset:s}
 .steps li{position:relative;padding:7px 0 7px 30px;font-size:13px;line-height:1.5;
@@ -1696,6 +1773,10 @@ td.pending{color:var(--muted)}
       <p class="sub">검정말의 산소 발생량을 측정하여 빛의 세기 · 이산화 탄소 농도 · 온도의 영향을 알아봅시다.</p>
     </div>
     <div class="topbar-btns">
+      <!-- 어느 화면에서든 첫 화면(탐구 고르기)으로 돌아간다 -->
+      <button class="sound-btn home-btn" id="homeBtn" hidden>
+        <span aria-hidden="true">🏠</span><span>메인 화면</span>
+      </button>
       <button class="sound-btn" id="installBtn" hidden>
         <span>📲</span><span>홈 화면에 추가</span>
       </button>
@@ -1748,6 +1829,16 @@ td.pending{color:var(--muted)}
       <p class="id-hint" id="idHint">학번을 적어 두면 다른 기기에서도 이어서 할 수 있어요.</p>
     </div>
   </div>
+
+  <!-- 학번을 적기 전에는 탐구를 고를 수 없다 -->
+  <div class="idgate" id="idGate" hidden>
+    <span class="g-em">📇</span>
+    <b>먼저 학번을 입력해 주세요</b>
+    <p>학번을 적으면 <b>탐구 1 · 2 · 3</b> 에서 전에 작성한 내용이 모두 그대로 불러와집니다.</p>
+    <p class="g-warn">⚠️ 수행평가(자유 탐구)는 늘 처음부터 새로 시작합니다.
+      전에 쓴 수행평가 내용은 남지 않습니다.</p>
+  </div>
+
   <div class="plan-grid" id="planGrid"></div>
   <div id="methodBox" hidden></div>
 
@@ -1774,7 +1865,7 @@ td.pending{color:var(--muted)}
   <span class="myhyp" id="myHyp" hidden></span>
   <div class="lab-btns">
     <button class="backbtn ghost" id="backHome">
-      <span aria-hidden="true">🏠</span> 처음 화면
+      <span aria-hidden="true">🏠</span> 메인 화면
     </button>
     <button class="backbtn" id="backPlan">
       <span aria-hidden="true">📋</span> 이 탐구의 계획서
@@ -1937,13 +2028,13 @@ td.pending{color:var(--muted)}
         <h2>📄 탐구 보고서</h2>
         <div class="report-btns">
           <button class="rpt" id="whoBtn">📇 학번 입력</button>
-          <button class="rpt" id="pdfBtn">📄 PDF</button>
-          <button class="rpt" id="docBtn">📝 Word</button>
+          <button class="rpt" id="pdfBtn">💾 PDF로 저장</button>
+          <button class="rpt" id="docBtn">💾 Word로 저장</button>
           <button class="rpt danger" id="wipeBtn">🧹 전체 지우기</button>
         </div>
       </div>
-      <p class="hint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
-        한 장의 보고서로 저장합니다.</p>
+      <p class="hint" id="rptHint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
+        한 장의 보고서로 저장합니다. PDF 파일이 바로 내려받아집니다.</p>
     </div>
 
     <!-- 제한 요인 도전 -->
@@ -1981,6 +2072,13 @@ td.pending{color:var(--muted)}
     <div id="heroes"></div>
   </div>
 </section>
+
+<!-- ⏱️ 수행평가(자유 탐구) 타이머 — 자유 탐구를 보고 있는 동안만 흐른다 -->
+<div class="atimer" id="atimer" aria-live="off">
+  <span class="at-em" aria-hidden="true">⏱️</span>
+  <span class="at-t" id="atimerT">00:00</span>
+  <span class="at-lab" id="atimerLab">수행평가</span>
+</div>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
   <div class="modal-box">
@@ -2135,6 +2233,91 @@ const state = {
 const store = () => state.data[state.mode][state.activeTab];
 const isManual = () => state.mode === 'manual';
 
+/* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
+state.photo = [null, null, null, null];
+
+/* ---------------------------------------------------------------
+   ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 시간이 흐른다.
+   창을 덮어 두거나 다른 탐구를 보는 동안은 멈춘다. 보고서를 저장할 때
+   그때까지의 총 시간을 함께 적는다.
+----------------------------------------------------------------*/
+state.timer = { accum:0, runStart:null, total:null };
+
+const inLabNow = () => !document.querySelector('main').hidden;
+
+/* 지금 수행평가(자유 탐구)를 하고 있는가 */
+function inAssessment(){
+  return inLabNow() ? state.activeTab === ASSESS_TAB : state.planPick === ASSESS_TAB;
+}
+function timerElapsed(){
+  return state.timer.accum +
+         (state.timer.runStart ? Date.now() - state.timer.runStart : 0);
+}
+/* 화면 상태에 맞춰 시계를 켜고 끈다 (1초마다, 그리고 화면이 바뀔 때마다) */
+let lastTimerSave = 0;
+function timerSync(){
+  const run = inAssessment() && !document.hidden;
+  if (run && !state.timer.runStart) state.timer.runStart = Date.now();
+  else if (!run && state.timer.runStart){
+    state.timer.accum += Date.now() - state.timer.runStart;
+    state.timer.runStart = null;
+  }
+  // 새로고침해도 잰 시간이 남도록 이따금 저장한다
+  if (run && Date.now() - lastTimerSave > 60000){ lastTimerSave = Date.now(); saveSession(); }
+  renderTimer();
+}
+/* 보고서를 저장하는 순간의 총 시간을 확정한다 */
+function timerStamp(){
+  state.timer.total = timerElapsed();
+  saveSession();
+  renderTimer();
+  return state.timer.total;
+}
+const clock = ms => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const p = n => String(n).padStart(2, '0');
+  return h ? `${h}:${p(m)}:${p(sec)}` : `${p(m)}:${p(sec)}`;
+};
+/* 보고서에 넣을 사람이 읽는 형태 — 예) "12분 34초" */
+const clockKo = ms => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return (h ? `${h}시간 ` : '') + (h || m ? `${m}분 ` : '') + `${sec}초`;
+};
+function renderTimer(){
+  const el = $('atimer');
+  if (!el) return;
+  const show = inAssessment();
+  el.classList.toggle('on', show);
+  if (!show) return;
+  const saved = state.timer.total !== null;
+  el.classList.toggle('paused', !state.timer.runStart);
+  el.classList.toggle('done', saved);
+  $('atimerT').textContent = clock(timerElapsed());
+  $('atimerLab').textContent = !state.timer.runStart ? '멈춤'
+                             : saved ? '저장함' : '수행평가';
+}
+
+/* ---------------------------------------------------------------
+   📝 수행평가 작성 기록 — 자유 탐구에서 학생이 입력하거나 고친 것을
+   순서대로 남긴다. 보고서 맨 아래에 함께 실려, 무엇을 어떻게 고쳐 가며
+   생각을 다듬었는지 그대로 볼 수 있다.
+----------------------------------------------------------------*/
+const LOG_MAX = 400;              // 너무 길어지지 않게 최근 것만 남긴다
+state.log = [];
+
+function logAssess(what, detail){
+  // 수행평가(자유 탐구)에서 한 일만 기록한다
+  if (!inAssessment()) return;
+  const txt = String(detail == null ? '' : detail).slice(0, 300);
+  const last = state.log[state.log.length - 1];
+  // 같은 항목을 같은 내용으로 다시 적는 것은 남기지 않는다
+  if (last && last.k === what && last.d === txt) return;
+  state.log.push({ t: Date.now(), e: timerElapsed(), k: what, d: txt });
+  if (state.log.length > LOG_MAX) state.log.splice(0, state.log.length - LOG_MAX);
+}
+
 /* ---------------------------------------------------------------
    💾 진행 상황 저장 — 새로고침해도 측정값이 남는다.
    수업 중 실수로 새로고침하거나 태블릿이 잠겨도 기록을 잃지 않도록,
@@ -2142,6 +2325,10 @@ const isManual = () => state.mode === 'manual';
 ----------------------------------------------------------------*/
 const SAVE_KEY = 'photosynthesis.session.v2';
 let restoring = false;                 // 복원 중에는 저장하지 않는다
+
+/* 수행평가 = 자유 탐구(네 번째 탐구). 학번을 입력하면 탐구 1·2·3은
+   그대로 불러오지만 이 칸은 늘 비워, 수행평가는 언제나 처음부터 한다. */
+const ASSESS_TAB = 3;
 
 function sessionPayload(){
   return {
@@ -2155,6 +2342,9 @@ function sessionPayload(){
       blanks:  state.blanks,
       blankSeed: state.blankSeed,
       interpret: state.interpret,
+      photo:   state.photo,
+      timer:   { accum: timerElapsed(), total: state.timer.total },
+      log:     state.log,
       concl:   state.concl,
       conclTried: state.conclTried,
       limitDone: state.limitDone,
@@ -2170,10 +2360,20 @@ function sessionPayload(){
 }
 
 let cloudSaveTimer = null;
+let quotaWarned = false;
 function saveSession(){
   if (restoring) return;
   const payload = sessionPayload();
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(payload)); } catch {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(payload)); }
+  catch {
+    /* 이 기기의 저장 공간이 찼다 — 대개 올린 사진이 크기 때문이다.
+       서버 저장은 그대로 시도하되, 학생에게 한 번 알려 준다. */
+    if (!quotaWarned){
+      quotaWarned = true;
+      toast('⚠️', '이 기기에 저장하지 못했어요',
+        '올린 사진이 너무 큰 것 같습니다. 사진을 지우거나 더 작은 사진으로 바꿔 주세요.');
+    }
+  }
   // 학번을 적었고 서버를 쓸 수 있으면, 잠잠해진 뒤 한 번만 올린다
   const w = getWho();
   if (w && w.no && cloudOn() && window.Cloud.saveProgress){
@@ -2198,6 +2398,26 @@ function flushSave(){
 addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
 addEventListener('pagehide', () => { flushSave(); });
 
+/* 결과 해석은 탐구마다 따로 보관한다.
+   예전 저장본은 자유 탐구 하나만 썼기에 { q1:… } 처럼 평평했다 — 그 글은
+   자유 탐구 칸으로 옮겨 준다. */
+function normInterpret(v){
+  if (Array.isArray(v)){
+    const a = v.slice(0, 4).map(x => (x && typeof x === 'object') ? x : {});
+    while (a.length < 4) a.push({});
+    return a;
+  }
+  if (v && typeof v === 'object') return [{}, {}, {}, v];
+  return [{}, {}, {}, {}];
+}
+
+/* 사진은 탐구마다 하나 (data URL) */
+function normPhoto(v){
+  const a = Array.isArray(v) ? v.slice(0, 4).map(x => (typeof x === 'string' ? x : null)) : [];
+  while (a.length < 4) a.push(null);
+  return a;
+}
+
 function loadSession(){
   let s;
   try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return false; }
@@ -2221,9 +2441,52 @@ function loadSession(){
   state.freeKey = s.freeKey || null;
   state.blanks  = s.blanks  || {};
   state.blankSeed = s.blankSeed || state.blankSeed;
-  state.interpret = s.interpret || {};
+  state.interpret = normInterpret(s.interpret);
+  state.photo   = normPhoto(s.photo);
+  state.log     = Array.isArray(s.log) ? s.log.slice(-LOG_MAX) : [];
+  // 창을 닫아 둔 시간은 세지 않는다 — 다시 열면 그때부터 이어 잰다
+  state.timer = { accum: Number(s.timer && s.timer.accum) || 0, runStart: null,
+                  total: (s.timer && typeof s.timer.total === 'number') ? s.timer.total : null };
   restoring = false;
   return !!s.inLab;
+}
+
+/* ---------------------------------------------------------------
+   🧹 수행평가(자유 탐구) 비우기 — 학번을 입력해 기록을 이어받을 때,
+   탐구 1·2·3 은 그대로 두고 자유 탐구만 처음 상태로 되돌린다.
+   저장본(payload)을 직접 손보므로, 되살리기 전에 적용한다.
+----------------------------------------------------------------*/
+function wipeAssessment(p){
+  if (!p) return p;
+  const t = ASSESS_TAB;
+  const fill = (arr, val, len = 4) => {
+    if (!Array.isArray(arr)) return null;
+    while (arr.length < len) arr.push(val);
+    return arr;
+  };
+  ['manual','auto'].forEach(m => {
+    if (p.data && Array.isArray(p.data[m])){ fill(p.data[m], {}); p.data[m][t] = {}; }
+    if (p.graphed && Array.isArray(p.graphed[m])){
+      fill(p.graphed[m], m === 'auto'); p.graphed[m][t] = (m === 'auto');
+    }
+  });
+  if (fill(p.hyp, { op:null, dep:null }))       p.hyp[t] = { op:null, dep:null };
+  if (fill(p.ctrl, []))                          p.ctrl[t] = [];
+  if (fill(p.ctrlVal, { light:100, co2:100, temp:25 }))
+                                                 p.ctrlVal[t] = { light:100, co2:100, temp:25 };
+  if (fill(p.concl, null))                       p.concl[t] = null;
+  if (fill(p.conclTried, []))                    p.conclTried[t] = [];
+  if (fill(p.limitDone, false))                  p.limitDone[t] = false;
+  p.interpret = normInterpret(p.interpret); p.interpret[t] = {};
+  p.photo     = normPhoto(p.photo);         p.photo[t]     = null;
+  p.freeKey   = null;
+  p.blanks    = {};
+  p.blankSeed = Math.floor(Math.random() * 100000);
+  p.timer     = { accum:0, total:null };
+  p.log       = [];
+  if (p.tab === t) p.tab = 0;
+  p.inLab = false;                    // 늘 첫 화면에서 다시 시작한다
+  return p;
 }
 
 /* 학번으로 서버에 저장된 진행 상황을 불러온다 */
@@ -2232,10 +2495,11 @@ function pullProgress(no){
   return window.Cloud.loadProgress(no).catch(() => null);
 }
 
-/* 불러온 내용을 적용하고 화면을 다시 그린다 */
+/* 불러온 내용을 적용하고 화면을 다시 그린다.
+   수행평가(자유 탐구)는 늘 새로 시작하므로 비워서 적용한다. */
 function applyPayload(p){
   if (!p || p.v !== 1) return false;
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(p)); } catch {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(wipeAssessment(p))); } catch {}
   location.reload();
   return true;
 }
@@ -2357,6 +2621,50 @@ const PLANS = [
     why:'스스로 설계한 실험입니다. 조작 변인 하나만 바꾸고 나머지를 고정했다면 훌륭한 설계입니다.' },
 ];
 
+/* ---------------------------------------------------------------
+   📷 실험 장치 사진 — 태블릿으로 찍은 사진은 크기가 크므로,
+   긴 변 1000px JPEG 으로 줄여 저장한다. 그래야 이 기기와 서버에
+   무리 없이 담기고, 보고서에도 충분히 선명하다.
+----------------------------------------------------------------*/
+const PHOTO_MAX = 1000, PHOTO_Q = 0.72;
+
+function readPhoto(file, i){
+  if (!file) return;
+  if (!/^image\//.test(file.type || '')){
+    toast('⚠️', '그림 파일만 올릴 수 있어요', '사진(JPG·PNG) 이나 그림 파일을 골라 주세요.');
+    return;
+  }
+  if (file.size > 15 * 1024 * 1024){
+    toast('⚠️', '파일이 너무 큽니다', '15MB 보다 작은 사진을 올려 주세요.');
+    return;
+  }
+  const fail = () => toast('⚠️', '사진을 읽지 못했습니다',
+    '다른 파일로 다시 시도해 주세요. (HEIC 사진은 JPG로 바꿔 올려 주세요)');
+  const fr = new FileReader();
+  fr.onerror = fail;
+  fr.onload = () => {
+    const img = new Image();
+    img.onerror = fail;
+    img.onload = () => {
+      const sc = Math.min(1, PHOTO_MAX / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * sc));
+      const h = Math.max(1, Math.round(img.height * sc));
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#ffffff';               // 투명한 그림도 흰 바탕으로 깐다
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      state.photo[i] = cv.toDataURL('image/jpeg', PHOTO_Q);
+      logAssess('실험 장치 사진', `사진을 올렸습니다 (${w}×${h})`);
+      saveSession(); Sfx.bloop(1.2, 0.14); renderPlan();
+      toast('📷', '사진을 올렸습니다', '보고서의 <b>실험 방법</b> 아래에 함께 실립니다.');
+    };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
 /* 자유 탐구에서 학생이 고른 조작 변인 */
 state.freeKey = null;
 state.blanks = {};          // 자유 탐구 실험 방법의 빈칸 답 { slotId: word }
@@ -2420,6 +2728,16 @@ const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
 const planReady = i => hypReady(i) && ctrlReady(i) &&
   !(PLANS[i].free && (!state.freeKey || !blanksDone(i)));
 
+/* 화면에 쓸 탐구 이름.
+   자유 탐구는 조작 변인을 학생이 정하므로, 정하기 전에는 어떤 변인도 내세우지
+   않는다. (TABS[3] 의 기본값이 '빛의 세기' 라서 예전에는 고르기도 전에
+   '탐구 4 · 빛의 세기' 로 보였다.) */
+function tabTitle(i){
+  if (!PLANS[i].free) return `탐구 ${i + 1} · ${TABS[i].name}`;
+  return state.freeKey ? `자유 탐구 · 수행평가 — ${TABS[i].name}`
+                       : '자유 탐구 · 수행평가';
+}
+
 /* 고른 가설을 한 문장으로 */
 function hypText(i){
   const h = state.hyp[i], p = PLANS[i];
@@ -2427,8 +2745,56 @@ function hypText(i){
   return `${TABS[i].name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}`;
 }
 
+/* ---------------------------------------------------------------
+   🏠 메인 화면으로 — 어느 화면에서 눌러도 탐구 고르기 화면으로 돌아간다.
+   머리말에 늘 같은 자리에 있으므로, 길을 잃을 일이 없다.
+----------------------------------------------------------------*/
+function goMain(){
+  if (state.isMeasuring){
+    toast('⏳', '측정이 끝난 뒤에 옮겨 주세요', '지금 옮기면 세고 있던 기포 수가 사라집니다.');
+    return;
+  }
+  backToPlan(true);
+}
+
+/* ---------------------------------------------------------------
+   💾 저장 옵션 — 수행평가(자유 탐구)는 PDF 하나만 남긴다.
+   보고서·수정 기록·소요 시간이 한 파일에 모두 담겨야 평가 자료가 되므로,
+   그 세 가지가 빠지는 CSV·PNG·Word 는 자유 탐구에서 감춘다.
+----------------------------------------------------------------*/
+function renderSaveOpts(){
+  const free = PLANS[state.activeTab].free;
+  ['docBtn','csvBtn','pngBtn'].forEach(id => { const el = $(id); if (el) el.hidden = free; });
+  $('pdfBtn').textContent = free ? '💾 PDF로 저장 (보고서·수정 기록·시간)' : '💾 PDF로 저장';
+  $('pdfBtn').classList.toggle('only', free);
+  $('rptHint').innerHTML = free
+    ? `수행평가는 <b>PDF 한 가지</b>로만 저장합니다. 실험 설계부터 결과 정리까지
+       <b>고쳐 쓴 내용 전부</b>와 <b>걸린 시간</b>이 보고서 뒤에 함께 담깁니다.`
+    : `실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
+       한 장의 보고서로 저장합니다. PDF 파일이 바로 내려받아집니다.`;
+}
+
+/* 첫 화면에서는 감춘다 — 이미 그 화면이기 때문이다 */
+function renderHomeBtn(){
+  const el = $('homeBtn');
+  if (!el) return;
+  el.hidden = !inLabNow() && state.planPick === null;
+}
+
 function renderPlan(){
+  renderHomeBtn();
   const pick = state.planPick;
+  const who = getWho();
+  /* 학번을 적기 전에는 탐구를 고를 수 없다.
+     기록이 학번을 따라가므로, 먼저 누구인지 정해야 이전에 쓴 내용을
+     제자리에 되돌릴 수 있다. */
+  const gated = !(who && who.no);
+  $('idGate').hidden = !gated;
+  $('idBox').classList.toggle('need', gated);
+  if (gated){
+    $('planGrid').hidden = $('methodBox').hidden = $('extras').hidden = true;
+    return;
+  }
   $('planGrid').hidden  = pick !== null;
   $('methodBox').hidden = pick === null;
   $('extras').hidden    = pick !== null;
@@ -2444,7 +2810,7 @@ function renderTopics(){
       return `
       <button class="topic free ${planReady(3) ? 'done' : ''}" data-topic="3" style="--hue:${p.hue}">
         <span class="tp-em">🔍</span>
-        <span class="tp-no">자유 탐구</span>
+        <span class="tp-no">자유 탐구 · 수행평가</span>
         <span class="tp-q">${k ? TABS[3].name + '는 광합성에 어떤 영향을 미칠까?'
                               : '내가 직접 설계하는 탐구'}</span>
         <span class="tp-go">${k ? '이어서 하기 →' : '조작 변인부터 정하기 →'}</span>
@@ -2464,8 +2830,12 @@ function renderTopics(){
     b.addEventListener('click', () => {
       state.planPick = Number(b.dataset.topic);
       Sfx.tick();
+      // 수행평가를 처음 펼친 순간부터 시간을 잰다
+      if (state.planPick === ASSESS_TAB && !state.log.length)
+        logAssess('시작', '수행평가(자유 탐구)를 시작했습니다');
       saveSession();
       renderPlan();
+      timerSync();
       scrollTo({ top:0, behavior:'smooth' });
     }));
 }
@@ -2568,6 +2938,8 @@ function bindBlanks(i){
     if (!sl) return;
     if (!sl.pool.includes(word)) return;
     state.blanks[slotId] = word;
+    logAssess('실험 방법 빈칸',
+      `${slotId}: “${word}” ${word === sl.ans ? '(맞음)' : '(다시 생각함)'}`);
     saveSession();
     if (word === sl.ans){ Sfx.bloop(1.2, 0.14); }
     else Sfx.warn();
@@ -2630,7 +3002,8 @@ function renderSetup(i){
     <div class="setup" style="--hue:${p.hue}">
       <div class="su-head">
         <span class="su-em">${p.em}</span>
-        <div><span class="su-no">탐구 ${i + 1} · ${cfg.name}</span><b>${p.q}</b></div>
+        <div><span class="su-no">${tabTitle(i)}</span><b>${
+          p.free && !state.freeKey ? '내가 직접 설계하는 탐구' : p.q}</b></div>
       </div>
 
       ${p.free ? `
@@ -2646,10 +3019,15 @@ function renderSetup(i){
         <p class="su-why">조작 변인은 <b>하나만</b> 고릅니다. 나머지는 통제 변인이 됩니다.</p>
       </section>` : ''}
 
-      ${p.free && !state.freeKey ? '' : `
+      ${p.free && !state.freeKey ? `
+      <p class="su-why">조작 변인을 고르면 <b>통제 변인 · 가설 · 실험 방법</b> 칸이 이어서 열립니다.</p>
+      <div class="m-btns">
+        <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
+      </div>
+    </div>` : `
       <section class="su-sec">
         <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small>
-          ${p.free && state.ctrl[i].length ? '<button class="sec-clr" data-clr="ctrl">지우기</button>' : ''}</h4>`}
+          ${p.free && state.ctrl[i].length ? '<button class="sec-clr" data-clr="ctrl">지우기</button>' : ''}</h4>
         <div class="cvars">
           ${['light','co2','temp'].map(k => {
             const isManip = k === cfg.key;
@@ -2712,13 +3090,33 @@ function renderSetup(i){
         </p>
       </section>
 
-      ${p.free && !state.freeKey ? '' : `
       <section class="su-sec">
         <h4>🔬 실험 방법${p.free ? '<small>빈칸을 채워 완성하세요</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
         ${p.free ? renderBlanks(i)
                  : `<ol class="m-steps">${steps.map(t => `<li>${t}</li>`).join('')}</ol>`}
-      </section>`}
+      </section>
+
+      <!-- 실험 장치를 어떻게 꾸몄는지 사진이나 그림으로 남긴다 (선택) -->
+      <section class="su-sec">
+        <h4>📷 실험 장치 사진·그림<small>선택 — 올리지 않아도 실험을 시작할 수 있어요</small>
+          ${state.photo[i] ? '<button class="sec-clr" data-clr="photo">지우기</button>' : ''}</h4>
+        <div class="photo">
+          <label class="ph-pick">
+            <input type="file" accept="image/*" id="photoFile" hidden>
+            <span aria-hidden="true">📎</span>
+            ${state.photo[i] ? '다른 사진으로 바꾸기' : '사진·그림 파일 고르기'}
+          </label>
+          ${state.photo[i] ? `
+            <span class="ph-shot">
+              <img src="${state.photo[i]}" alt="내가 올린 실험 장치 사진">
+              <button class="ph-del" id="photoDel" aria-label="사진 지우기">✕</button>
+            </span>` : ''}
+          <p class="ph-note">직접 꾸민 실험 장치를 찍은 사진이나 그린 그림을 올리면
+            보고서의 <b>실험 방법</b> 아래에 함께 실립니다.
+            사람 얼굴이나 이름은 담지 마세요.</p>
+        </div>
+      </section>
 
       <div class="m-btns">
         <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
@@ -2728,18 +3126,34 @@ function renderSetup(i){
               : !hypReady(i) ? '가설을 완성해 주세요' : '실험 방법을 완성해 주세요')}
         </button>
       </div>
-    </div>`;
+    </div>`}`;
 
   const bindChip = (sel, field) =>
     $('methodBox').querySelectorAll(sel).forEach(b =>
       b.addEventListener('click', () => {
         const [n, k] = b.dataset[field].split('-').map(Number);
         state.hyp[n][field] = state.hyp[n][field] === k ? null : k;
+        logAssess('가설', hypReady(n) ? `“${hypText(n)} 것이다.”`
+                                      : '가설을 고르는 중 (아직 미완성)');
         saveSession(); Sfx.tick(); renderPlan();
       }));
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
   if (PLANS[i].free && state.freeKey) bindBlanks(i);
+
+  /* 실험 장치 사진 — 올리기 / 지우기 */
+  const pf = $('methodBox').querySelector('#photoFile');
+  if (pf) pf.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';                       // 같은 파일을 다시 골라도 반응하도록
+    readPhoto(f, i);
+  });
+  const pd = $('methodBox').querySelector('#photoDel');
+  if (pd) pd.addEventListener('click', () => {
+    state.photo[i] = null;
+    logAssess('실험 장치 사진', '올린 사진을 지웠습니다');
+    saveSession(); Sfx.tick(); renderPlan();
+  });
 
   /* 자유 탐구 — 조작 변인 고르기 */
   $('methodBox').querySelectorAll('[data-fk]').forEach(b =>
@@ -2753,6 +3167,7 @@ function renderSetup(i){
       state.ctrl[3] = [];
       state.hyp[3] = { op:null, dep:null };
       newBlankSet();
+      logAssess('조작 변인', `${LABEL[k]} 로 정했습니다`);
       if (had){
         state.data.manual[3] = {}; state.data.auto[3] = {};
         state.graphed.manual[3] = false; state.graphed.auto[3] = true;
@@ -2771,6 +3186,9 @@ function renderSetup(i){
     const k = btn.dataset.ck, list = state.ctrl[i];
     const at = list.indexOf(k);
     if (at >= 0) list.splice(at, 1); else list.push(k);
+    logAssess('통제 변인', list.length
+      ? `${list.map(x => `${LABEL[x]} ${state.ctrlVal[i][x]}${UNIT[x]}`).join(', ')} 로 같게 두기`
+      : '고른 통제 변인 없음');
     saveSession(); Sfx.tick(); renderPlan();
   });
   // 통제값 슬라이더 — 드래그 중에는 숫자만 갱신하고, 놓을 때 다시 그린다
@@ -2783,7 +3201,12 @@ function renderSetup(i){
     if (box) box.querySelector('.cv-val').textContent = v + UNIT[k];
     Sfx.tick();
   });
-  if (cvars) cvars.addEventListener('change', () => { saveSession(); });
+  if (cvars) cvars.addEventListener('change', e => {
+    const sl = e.target.closest('[data-cv]');
+    if (sl) logAssess('통제값', `${LABEL[sl.dataset.cv]} 를 ` +
+      `${state.ctrlVal[i][sl.dataset.cv]}${UNIT[sl.dataset.cv]} 로 맞춤`);
+    saveSession();
+  });
 
   /* 항목별 지우기 — 그 부분만 처음 상태로 되돌린다 */
   $('methodBox').querySelectorAll('[data-clr]').forEach(b =>
@@ -2799,6 +3222,9 @@ function renderSetup(i){
       else if (what === 'ctrl')  state.ctrl[i] = [];
       else if (what === 'hyp')   state.hyp[i] = { op:null, dep:null };
       else if (what === 'blank') newBlankSet();   // 다시 뽑아 새 문제로
+      else if (what === 'photo') state.photo[i] = null;
+      logAssess('지우고 다시', ({ fk:'조작 변인부터 다시 정하기', ctrl:'통제 변인 지움',
+        hyp:'가설 지움', blank:'실험 방법 빈칸 다시 뽑기', photo:'사진 지움' })[what] || what);
       saveSession(); Sfx.tick(); renderPlan();
     }));
 
@@ -2809,11 +3235,10 @@ function renderSetup(i){
     scrollTo({ top:0, behavior:'smooth' });
   });
 
-  $('goLab').addEventListener('click', () => {
-    if (PLANS[i].free && !state.freeKey){
-      toast('🔍', '조작 변인을 먼저 고르세요', '무엇을 바꿔가며 알아볼지 정해야 실험을 시작할 수 있어요.');
-      return;
-    }
+  /* 자유 탐구에서 조작 변인을 고르기 전에는 시작 버튼이 없다
+     (무엇을 바꿀지 정하기 전에는 설계할 것이 없기 때문이다) */
+  const goBtn = $('goLab');
+  if (goBtn) goBtn.addEventListener('click', () => {
     if (!ctrlReady(i)){
       const miss = ctrlNeed(i).filter(k => !state.ctrl[i].includes(k)).map(k => LABEL[k]);
       toast('⚖️', '통제 변인을 모두 골라 주세요',
@@ -2828,6 +3253,10 @@ function renderSetup(i){
     if (PLANS[i].free && !blanksDone(i)){
       toast('📋', '실험 방법을 완성해 주세요', '빈칸에 알맞은 낱말을 모두 넣어야 시작할 수 있어요.');
       return;
+    }
+    if (PLANS[i].free){
+      logAssess('실험 시작', `조작 변인 ${TABS[i].name} · 통제 ` +
+        ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', '));
     }
     openLab(i);
   });
@@ -2844,7 +3273,9 @@ function openLab(tab){
   $('viewTabs').hidden = false;
   setView('lab');
   switchTab(tab);
+  renderHomeBtn();
   saveSession();
+  timerSync();
   scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -2863,6 +3294,7 @@ function backToPlan(toTopics){
   $('plan').hidden = false;
   renderPlan();
   saveSession();
+  timerSync();
   scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -2886,7 +3318,7 @@ function renderMyHyp(){
 }
 
 $('backPlan').addEventListener('click', () => backToPlan(false));   // 이 탐구의 설계 화면
-$('backHome').addEventListener('click', () => backToPlan(true));    // 탐구 고르는 처음 화면
+$('backHome').addEventListener('click', goMain);                    // 탐구 고르는 메인 화면
 
 /* 좁은 화면(태블릿 세로 이하)에서 실험/결과 화면 전환 */
 function setView(v){
@@ -3323,6 +3755,9 @@ function startMeasure(){
       ? (miss === 0 ? `정확! ${counted}개 모두 셌어요` : `${counted}개 셈 (실제 ${actual}개)`)
       : `측정값 ${fmt(actual)} ${M().unit}`;
 
+    logAssess('측정 기록', `${cfg.name} ${x}${cfg.unit} — ${st[key].m.length}회째: ` +
+      `${fmt(recorded)}${M().unit}${manual ? ` (실제 ${fmt(actual)}${M().unit})` : ''}`);
+
     bar.classList.remove('run');
     clearBubbles();
     const tag = document.getElementById('feverTag');
@@ -3406,6 +3841,8 @@ function recordCount(counted, actual, cfg){
     ? `정확! ${counted}개 맞았어요`
     : `${counted}개로 셌어요 (실제 ${actual}개)`;
 
+  logAssess('측정 기록', `${TABS[state.activeTab].name} ${x}${TABS[state.activeTab].unit} — ` +
+    `${st[key].m.length}회째: ${counted}${M().unit} (실제 ${actual}${M().unit})`);
   saveSession();
   renderCondWarn(); renderTable(); renderChart(); renderHint(); renderMyHyp();
   renderProg(); renderLimit(); renderConcl(); renderSynth(); renderReview();
@@ -4197,7 +4634,7 @@ function renderConcl(){
           : `그래프의 <b>왼쪽 끝과 오른쪽 끝</b>을 견주어 보고,
              중간에서 기울기가 달라지는 곳이 있는지 살펴보세요.`}
       </div>`}
-    ${p.free && right ? interpretHTML(i) : ''}`;
+    ${right ? interpretHTML(i) : ''}`;
 
   $('conclBox').querySelectorAll('[data-cc]').forEach(b =>
     b.addEventListener('click', () => {
@@ -4206,13 +4643,14 @@ function renderConcl(){
       if (!state.conclTried[i]) state.conclTried[i] = [];
       if (k !== ans && !state.conclTried[i].includes(k)) state.conclTried[i].push(k);
       state.concl[i] = k;
+      logAssess('결론', `“${p.deps[k].t}” 를 골랐습니다 ${k === ans ? '(맞음)' : '(다시 생각함)'}`);
       saveSession();
       renderConcl();
       if (state.concl[i] === ans){ Sfx.fanfare(); confetti(70); }
       else Sfx.warn();
     }));
 
-  if (p.free && picked !== null) bindInterpret(i);
+  if (right) bindInterpret(i);
 }
 
 /* ---------------------------------------------------------------
@@ -4222,7 +4660,20 @@ function renderConcl(){
 ----------------------------------------------------------------*/
 /* 가설이 맞았는지에 따라 세 번째 질문이 달라진다.
    틀렸다면 결과에 맞는 가설을 다시 세워 보게 한다 — 그것이 탐구다. */
-function interpretQs(hit){
+function interpretQs(hit, i = state.activeTab){
+  const cfg = TABS[i];
+  /* 예측 질문 — 잰 구간 밖에서는 어떻게 될지 미리 말해 보게 한다.
+     측정한 것을 설명하는 것과, 재지 않은 곳을 근거로 내다보는 것은 다른 일이다.
+     조작 변인마다 물어볼 자리가 달라 문장을 따로 둔다. */
+  const AHEAD = {
+    light: { q:`빛의 세기를 ${cfg.max}${cfg.unit} 보다 더 세게 한다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
+             hint:'그래프의 오른쪽 끝 기울기를 보세요. 빛이 아니라 <b>다른 것</b>이 한계가 되지는 않을까요?' },
+    co2:   { q:`CO₂ 농도를 ${cfg.max}${cfg.unit} 보다 더 높인다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
+             hint:'그래프의 오른쪽 끝 기울기를 보세요. CO₂가 충분해지면 무엇이 한계가 될까요?' },
+    temp:  { q:`온도를 ${cfg.max}${cfg.unit} 보다 더 높인다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
+             hint:'광합성은 효소가 하는 일입니다. 효소는 뜨거워지면 어떻게 될까요?' },
+  }[cfg.key];
+
   return [
     { id:'q1', icon:'📈',
       q:'그래프의 모양을 말로 설명해 보세요.',
@@ -4240,13 +4691,15 @@ function interpretQs(hit){
           q:'가설이 결과와 달랐습니다. 결과에 맞게 가설을 다시 세워 보세요.',
           hint:'“○○를 ~하면 산소 발생량은 ~할 것이다” 처럼 문장으로 적고, ' +
                '처음 예상이 왜 빗나갔는지도 함께 적어 보세요.' },
+    { id:'q5', icon:'🔮', predict:true, q:AHEAD.q, hint:AHEAD.hint },
     { id:'q4', icon:'🔬',
       q:'이 실험에서 아쉬웠던 점이나, 더 알아보고 싶은 것은?',
       hint:'측정 범위가 좁지는 않았나요? 다음에는 무엇을 바꿔 보고 싶나요?' },
   ];
 }
 
-state.interpret = {};      // { qId: 학생이 쓴 글 }
+/* 탐구마다 따로 보관한다 — [탐구1, 탐구2, 탐구3, 자유 탐구] 각각 { qId: 글 } */
+state.interpret = [{}, {}, {}, {}];
 
 /* 가설을 확정형 결론 문장으로 바꾼다.
    "~할 것이다"(예상) → "~한다"(확인된 사실) */
@@ -4256,34 +4709,46 @@ function conclusionSentence(i){
   return `${cfg.name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}.`;
 }
 
-/* 해석을 다 썼는가 — 보고서 저장의 조건 */
+/* 해석을 다 썼는가 — 수행평가(자유 탐구) 보고서 저장의 조건 */
 const MIN_CHARS = 10;
-function interpretDone(){
-  return interpretQs(true).every(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS);
+/* 탐구 i 의 해석 저장소 (없으면 만들어 준다) */
+function ipOf(i){
+  if (!Array.isArray(state.interpret)) state.interpret = normInterpret(state.interpret);
+  if (!state.interpret[i]) state.interpret[i] = {};
+  return state.interpret[i];
+}
+function interpretDone(i = state.activeTab){
+  const ip = ipOf(i);
+  return interpretQs(true, i).every(q => (ip[q.id] || '').trim().length >= MIN_CHARS);
 }
 
 function interpretHTML(i){
-  const cfg = TABS[i];
+  const cfg = TABS[i], p = PLANS[i], ip = ipOf(i);
   const hit = state.hyp[i].dep === state.concl[i];
-  const QS = interpretQs(hit);
-  const written = QS.filter(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS).length;
+  const QS = interpretQs(hit, i);
+  const written = QS.filter(q => (ip[q.id] || '').trim().length >= MIN_CHARS).length;
   return `
     <div class="interp">
       <div class="ip-head">
         <b>✍️ 결과 해석 쓰기</b>
         <span class="ip-cnt ${written === QS.length ? 'full' : ''}">${written} / ${QS.length}</span>
       </div>
-      <p class="ip-lead">스스로 설계한 실험입니다.
+      <p class="ip-lead">${p.free
+        ? '스스로 설계한 실험입니다.' : '표와 그래프에서 읽은 것을 정리해 봅시다.'}
         <b>${cfg.name}</b>와 산소 발생량의 관계를 자기 말로 정리해 보세요.
-        <b>모두 적어야 보고서를 저장할 수 있습니다.</b></p>
+        ${p.free
+          ? '<b>모두 적어야 보고서를 저장할 수 있습니다.</b>'
+          : '적은 내용은 보고서에 함께 실립니다.'}</p>
       ${QS.map(q => {
-        const v = state.interpret[q.id] || '';
+        const v = ip[q.id] || '';
         const ok = v.trim().length >= MIN_CHARS;
         return `
         <div class="ip-item ${ok ? 'ok' : ''}">
           <label for="ip-${q.id}"><span class="ip-em">${q.icon}</span>${q.q}
             ${ok ? '<span class="ip-ok">✓</span>' : ''}</label>
-          <p class="ip-hint">💡 ${q.hint}</p>
+          <p class="ip-hint">💡 ${q.hint}${q.predict
+            ? ' <b>재지 않은 곳</b>이므로 정답을 맞히는 것이 아니라, 근거를 들어 내다보는 것이 중요합니다.'
+            : ''}</p>
           ${q.id === 'q3' && hit ? `
             <button class="ip-fill" data-fill="${esc(conclusionSentence(i))}">
               📝 결론 문장 넣기</button>` : ''}
@@ -4294,12 +4759,13 @@ function interpretHTML(i){
         </div>`;
       }).join('')}
       ${written === QS.length
-        ? `<p class="ip-done">✅ 해석을 모두 적었습니다! 이제 보고서를 저장할 수 있어요.</p>`
+        ? `<p class="ip-done">✅ 해석을 모두 적었습니다!${p.free ? ' 이제 보고서를 저장할 수 있어요.' : ''}</p>`
         : `<p class="ip-note">적은 내용은 자동으로 저장되고, 보고서(PDF·Word)에도 들어갑니다.</p>`}
     </div>`;
 }
 
 function bindInterpret(i){
+  const ip = ipOf(i);
   // 결론 문장 넣기 — 확정형 문장을 넣어 주고 이유를 이어 쓰게 한다
   $('conclBox').querySelectorAll('[data-fill]').forEach(b =>
     b.addEventListener('click', () => {
@@ -4309,7 +4775,7 @@ function bindInterpret(i){
       t.value = t.value.trim() ? `${sentence} ${t.value.trim()}` : `${sentence} 왜냐하면 `;
       t.focus();
       t.setSelectionRange(t.value.length, t.value.length);
-      state.interpret.q3 = t.value;
+      ip.q3 = t.value;
       saveSession();
       Sfx.tick();
     }));
@@ -4317,14 +4783,16 @@ function bindInterpret(i){
   $('conclBox').querySelectorAll('[data-ip]').forEach(t => {
     let timer = null;
     t.addEventListener('input', () => {
-      state.interpret[t.dataset.ip] = t.value;
+      ip[t.dataset.ip] = t.value;
       clearTimeout(timer);
       // 타이핑이 멈춘 뒤 저장한다 (매 글자마다 저장하지 않는다)
       timer = setTimeout(() => {
+        // 고쳐 쓴 것까지 그대로 남긴다 — 보고서 맨 아래 작성 기록에 실린다
+        logAssess(`결과 해석 ${t.dataset.ip}`, t.value.trim());
         saveSession();
         // 글자 수를 채운 항목 수와 체크 표시만 갱신 (입력 중 커서가 튀지 않도록)
-        const QS = interpretQs(state.hyp[i].dep === state.concl[i]);
-        const n = QS.filter(q => (state.interpret[q.id] || '').trim().length >= MIN_CHARS).length;
+        const QS = interpretQs(state.hyp[i].dep === state.concl[i], i);
+        const n = QS.filter(q => (ip[q.id] || '').trim().length >= MIN_CHARS).length;
         const box = $('conclBox').querySelector('.ip-cnt');
         if (box){
           box.textContent = `${n} / ${QS.length}`;
@@ -4354,9 +4822,10 @@ function switchTab(i){
   ctrlNeed(i).forEach(k => { state[k] = state.ctrlVal[i][k] ?? TABS[i].fixed[k]; });
   // 진행 중인 탐구를 머리말에 표시 (탭 대신)
   $('nowEm').textContent    = PLANS[i].em;
-  $('nowTitle').textContent = `탐구 ${i + 1} · ${TABS[i].name}`;
+  $('nowTitle').textContent = tabTitle(i);
   $('nowQ').textContent     = PLANS[i].q;
   $('tankStatus').textContent = '대기 중';
+  renderSaveOpts();
   renderAll();
 }
 
@@ -4364,6 +4833,7 @@ function renderAll(){
   renderControls(); renderTank(); renderCondWarn();
   renderTable(); renderChart(); renderHint(); renderMission(); renderMyHyp();
   renderProg(); renderLimit(); renderConcl(); renderSynth(); renderReview();
+  renderTimer();
 }
 
 /* ---------------------------------------------------------------
@@ -5168,6 +5638,46 @@ function whoPrefix(){
   const w = getWho();
   return w && w.no ? w.no + '_' : '';
 }
+/* 학번 형식 — 파일 이름과 서버 키에 쓰이므로 숫자·영문만 받는다 */
+function cleanNo(v){
+  const no = String(v || '').trim().replace(/\s+/g, '');
+  if (!no) return { err:'학번을 적어 주세요.' };
+  if (!/^[0-9a-zA-Z-]+$/.test(no)) return { err:'학번은 숫자와 영문만 쓸 수 있습니다.' };
+  return { no };
+}
+
+/* ---------------------------------------------------------------
+   📇 학번을 이 기기의 주인으로 정한다.
+   기록은 학번을 따라간다:
+     · 탐구 1·2·3 — 그 학번으로 서버에 저장해 둔 것을 그대로 불러온다.
+     · 수행평가(자유 탐구) — 늘 비워 처음부터 하게 한다.
+   앞 학생의 기록은 먼저 그 학번으로 서버에 올려 두어 잃지 않게 한다.
+----------------------------------------------------------------*/
+function switchToId(no){
+  const prev = getWho();                   // 이 기기를 쓰던 학번 (없을 수 있다)
+  /* 이 기기에 남은 기록을 새 학번이 이어 써도 되는가.
+     · 앞 학번이 있었다 = 다른 학생의 것 → 이어 쓰지 않는다.
+     · 앞 학번이 없었다 = 주인이 정해지지 않은 기록 → 지금 학생의 것으로 본다.
+     · 서버를 쓸 수 없으면 확인할 길이 없으니 이 기기 것을 이어 쓴다. */
+  const keepLocal = !(prev && prev.no) || !cloudOn();
+  const local = keepLocal && hasSaved() ? sessionPayload() : null;
+
+  return flushSave()                       // ① 앞 학생 기록을 그 학번으로 보존
+    .then(() => pullProgress(no))          // ② 새 학번의 기록을 서버에서 찾는다
+    .then(p => {
+      setWho(no);
+      // ③ 탐구 1·2·3 은 그대로 두고 수행평가만 비운다
+      const base = (p && p.v === 1) ? p : local;
+      if (base){
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(wipeAssessment(base))); } catch {}
+      } else {
+        clearSession();                    // 남길 것이 없다 — 깨끗하게 시작
+      }
+      location.reload();
+    })
+    .catch(() => { setWho(no); location.reload(); });
+}
+
 /* 학급·학번을 받은 뒤 이어서 실행한다 */
 function askWho(then){
   const w = getWho();
@@ -5179,34 +5689,25 @@ function askWho(then){
       maxlength:10, preset:[w && w.no ? w.no : ''],
       rule:'숫자와 영문만 쓸 수 있습니다',
       handler: v => {
-        const no = String(v || '').trim().replace(/s+/g, '');
-        if (!no) return '학번을 적어 주세요.';
-        if (!/^[0-9a-zA-Z-]+$/.test(no))
-          return '학번은 숫자와 영문만 쓸 수 있습니다.';
+        const c = cleanNo(v);
+        if (c.err) return c.err;
         const prev = getWho();
-        setWho(no);
-        renderWho();
-        // 학번이 새로 정해졌고 서버에 기록이 있으면 이어서 할지 묻는다
-        if (!prev || prev.no !== no){
-          pullProgress(no).then(p => {
-            if (!p || p.v !== 1){ saveSession(); then && then(); return; }
-            const d = new Date(p.at || Date.now());
-            const when = `${d.getMonth()+1}월 ${d.getDate()}일 ` +
-              `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-            openModal('📥 이전에 하던 기록이 있어요',
-              `학번 <b>${esc(no)}</b> 으로 <b>${when}</b> 에 저장한 기록이 서버에 있습니다.<br><br>
-               불러오면 <b>지금 이 기기의 기록은 사라집니다.</b><br><br>
-               <span style="color:var(--muted)">다른 기기에서 하던 것을 이어서 하려면 불러오세요.
-               처음부터 시작하려면 '지금 것 쓰기'를 누르세요.</span>`);
-            $('modalOk').textContent = '불러오기';
-            $('modalCancel').hidden = false;
-            $('modalCancel').textContent = '지금 것 쓰기';
-            onSubmit = () => { applyPayload(p); return null; };
-          });
+        // 같은 학번을 다시 적은 것이면 하던 일을 그대로 이어 간다
+        if (prev && prev.no === c.no){
+          saveSession();
+          renderWho();
+          then && then();
           return null;
         }
-        saveSession();
-        then && then();
+        /* 학번이 바뀌었다 = 대개 다른 학생이다.
+           기록을 학번에 맞춰 갈아 끼우므로 화면을 다시 불러온다. */
+        openModal('📥 학번으로 기록을 불러옵니다',
+          `<b>${esc(c.no)}</b> 의 <b>탐구 1·2·3</b> 기록을 불러옵니다.<br><br>
+           <span style="color:#8a6a00">⚠️ 수행평가(자유 탐구)는 처음부터 새로 시작합니다.</span>`);
+        $('modalOk').textContent = '불러오기';
+        $('modalCancel').hidden = false;
+        $('modalCancel').textContent = '취소';
+        onSubmit = () => { switchToId(c.no); return null; };
         return null;
       } });
 }
@@ -5216,7 +5717,16 @@ function stamp(){
   return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
+/* 수행평가는 PDF 하나로만 낸다 — 다른 형식에는 수정 기록과 시간이 담기지 않는다 */
+function pdfOnlyGuard(){
+  if (!PLANS[state.activeTab].free) return false;
+  toast('💾', '수행평가는 PDF로만 저장합니다',
+    '보고서 · 수정 기록 · 걸린 시간이 함께 담기는 <b>PDF로 저장</b>을 눌러 주세요.');
+  return true;
+}
+
 function exportCSV(){
+  if (pdfOnlyGuard()) return;
   const cfg = TABS[state.activeTab];
   const data = rows();
   if (!data.length){ openModal('내보낼 데이터 없음', '먼저 산소 생성량을 측정해 주세요.'); return; }
@@ -5241,56 +5751,67 @@ function exportCSV(){
            `${whoPrefix()}광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.csv`);
 }
 
+/* 화면의 그래프를 홀로 서는 SVG 문자열로 만든다 (제목·통제 변인 포함).
+   print=true 면 종이에 맞게 흰 바탕·검은 글씨로 바꾼다.
+   PNG 내보내기와 PDF 저장이 함께 쓴다. */
+function chartSVG(cfg, SCALE = 2, TITLE_H = 34, print = false){
+  // CSS 변수는 SVG를 분리하면 풀리므로 계산된 색으로 치환한다
+  const cs = getComputedStyle(document.body);
+  const KEYS = ['--surface-1','--grid','--baseline','--muted',
+                '--text-primary','--text-secondary','--series-1'];
+  const PAPER = { '--surface-1':'#ffffff', '--grid':'#e0e0e0', '--baseline':'#b0b0b0',
+                  '--muted':'#767676', '--text-primary':'#111111',
+                  '--text-secondary':'#444444', '--series-1':'#2a78d6' };
+  const map = KEYS.reduce((o, k) =>
+    (o[k] = print ? PAPER[k] : cs.getPropertyValue(k).trim(), o), {});
+  const markup = $('chart').innerHTML
+    .replace(/var\((--[a-z0-9-]+)\)/gi, (m, k) => map[k] || m);
+  const FONT = "system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif";
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W*SCALE}" height="${(H+TITLE_H)*SCALE}"
+      viewBox="0 0 ${W} ${H+TITLE_H}">
+      <rect width="${W}" height="${H+TITLE_H}" fill="${map['--surface-1']}"/>
+      <text x="${W/2}" y="21" text-anchor="middle" font-size="14" font-weight="650"
+        fill="${map['--text-primary']}" font-family="${FONT}">${
+          cfg.name}에 따른 산소 생성량</text>
+      <text x="${W/2}" y="${H+TITLE_H-7}" text-anchor="middle" font-size="10"
+        fill="${map['--muted']}" font-family="${FONT}">통제 변인: ${
+          condText(condSig())}</text>
+      <g transform="translate(0,${TITLE_H})" font-family="${FONT}">${markup}</g>
+    </svg>`;
+}
+
 function exportPNG(){
+  if (pdfOnlyGuard()) return;
   const cfg = TABS[state.activeTab];
   if (!rows().filter(r => r.avg !== null && r.cond === condSig()).length){
     openModal('내보낼 그래프 없음', '3회 측정이 완료된 데이터가 있어야 그래프를 저장할 수 있습니다.');
     return;
   }
   const SCALE = 2, TITLE_H = 34;                     // 고해상도 + 제목 여백
-  const src = $('chart');
-
-  // CSS 변수는 SVG를 분리하면 풀리므로 계산된 색으로 치환한다
-  const cs = getComputedStyle(document.body);
-  const map = ['--surface-1','--grid','--baseline','--muted','--text-primary','--text-secondary','--series-1']
-    .reduce((o,k) => (o[k] = cs.getPropertyValue(k).trim(), o), {});
-  let markup = src.innerHTML.replace(/var\((--[a-z0-9-]+)\)/gi, (m,k) => map[k] || m);
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W*SCALE}" height="${(H+TITLE_H)*SCALE}"
-      viewBox="0 0 ${W} ${H+TITLE_H}">
-      <rect width="${W}" height="${H+TITLE_H}" fill="${map['--surface-1']}"/>
-      <text x="${W/2}" y="21" text-anchor="middle" font-size="14" font-weight="650"
-        fill="${map['--text-primary']}"
-        font-family="system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif">${
-          cfg.name}에 따른 산소 생성량</text>
-      <text x="${W/2}" y="${H+TITLE_H-7}" text-anchor="middle" font-size="10"
-        fill="${map['--muted']}"
-        font-family="system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif">통제 변인: ${
-          condText(condSig())}</text>
-      <g transform="translate(0,${TITLE_H})"
-         font-family="system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif">${markup}</g>
-    </svg>`;
-
+  const bg = getComputedStyle(document.body).getPropertyValue('--surface-1').trim();
   const img = new Image();
   img.onload = () => {
     const cv = document.createElement('canvas');
     cv.width = W*SCALE; cv.height = (H+TITLE_H)*SCALE;
     const ctx = cv.getContext('2d');
-    ctx.fillStyle = map['--surface-1'];
+    ctx.fillStyle = bg || '#ffffff';
     ctx.fillRect(0,0,cv.width,cv.height);
     ctx.drawImage(img,0,0,cv.width,cv.height);
     cv.toBlob(b => download(b, `${whoPrefix()}광합성_탐구${state.activeTab+1}_${cfg.name}_${stamp()}.png`), 'image/png');
   };
   img.onerror = () => openModal('내보내기 실패', '그래프를 이미지로 변환하지 못했습니다.');
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  img.src = 'data:image/svg+xml;charset=utf-8,' +
+    encodeURIComponent(chartSVG(cfg, SCALE, TITLE_H, false));
 }
 
 /* ---------------------------------------------------------------
    📄 탐구 보고서 — 계획과 결과를 한 장으로 묶어 저장한다.
-   PDF는 브라우저 인쇄를, Word는 .doc(HTML) 형식을 쓴다.
-   둘 다 외부 라이브러리 없이 오프라인에서 동작한다.
+   PDF는 파일로 바로 내려받고, Word는 .doc(HTML) 형식을 쓴다.
+   opts.chartImg — 그래프를 PNG로 미리 그려 넣을 때 쓴다.
+     (PDF로 옮길 때 SVG보다 안전하다)
 ----------------------------------------------------------------*/
-function reportHTML(){
+function reportHTML(opts = {}){
   const i   = state.activeTab;
   const cfg = TABS[i], p = PLANS[i];
   const cur = condSig();
@@ -5321,24 +5842,46 @@ function reportHTML(){
             <td>${cells[2]}</td><td><b>${r.avg === null ? '–' : fmt(r.avg)}</b></td></tr>`;
   }).join('');
 
-  return `
-<h1>탐구 보고서 — ${p.free ? '자유 탐구' : `탐구 ${i+1}`}</h1>
-<p class="meta">${(() => { const w = getWho(); return w && w.no ? '학번 ' + w.no + ' · ' : ''; })()}${when} · 산소 팡팡! 광합성 타이쿤</p>
+  // 장 번호를 세어 가며 붙인다 (해석·작성 기록은 있을 때만 실린다)
+  let sec = 0;
+  const no = () => ++sec;
 
-<h2>1. 탐구 질문</h2>
+  const ip = ipOf(i);
+  const QS = interpretQs(state.hyp[i].dep === state.concl[i], i);
+  const hasIp = QS.some(q => (ip[q.id] || '').trim());
+
+  // 수행평가는 잰 시간을 함께 남긴다
+  const took = p.free ? (state.timer.total ?? timerElapsed()) : null;
+
+  const w = getWho();
+  const chart = pts.length
+    ? (opts.chartImg
+        ? `<div class="chart"><img src="${opts.chartImg}" width="460" alt="실험 결과 그래프"></div>`
+        : `<div class="chart">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 280"
+                  width="460" height="280" style="max-width:100%">${svg}</svg>
+           </div>`)
+    : '';
+
+  return `
+<h1>탐구 보고서 — ${p.free ? '자유 탐구 (수행평가)' : `탐구 ${i+1}`}</h1>
+<p class="meta">${w && w.no ? '학번 ' + esc(w.no) + ' · ' : ''}${when} · 산소 팡팡! 광합성 타이쿤${
+  took !== null ? ` · <b>수행평가 소요 시간 ${clockKo(took)}</b>` : ''}</p>
+
+<h2>${no()}. 탐구 질문</h2>
 <p>${p.q}</p>
 
-<h2>2. 변인</h2>
+<h2>${no()}. 변인</h2>
 <table class="vars">
   <tr><th>조작 변인</th><td>${cfg.name} (${cfg.min}${cfg.unit} ~ ${cfg.max}${cfg.unit})</td></tr>
   <tr><th>통제 변인</th><td>${ctrlTxt || '(정하지 않음)'}</td></tr>
   <tr><th>종속 변인</th><td>산소 발생량 (${M().unit})</td></tr>
 </table>
 
-<h2>3. 가설</h2>
+<h2>${no()}. 가설</h2>
 <p class="quote">"${hyp} 것이다."</p>
 
-<h2>4. 실험 방법</h2>
+<h2>${no()}. 실험 방법</h2>
 <ol>
   <li>검정말을 깔때기로 덮고, 그 위에 물을 채운 시험관을 거꾸로 씌운다.</li>
   <li>통제 변인을 ${ctrlTxt || '정한 값'} 으로 맞추고 실험 내내 바꾸지 않는다.</li>
@@ -5347,38 +5890,73 @@ function reportHTML(){
   <li>같은 조건에서 3번 반복해 평균을 낸다.</li>
   <li>조건을 5가지 이상 모아 표를 채운 뒤 그래프로 바꾼다.</li>
 </ol>
+${state.photo[i] ? `
+<figure class="shot">
+  <img src="${state.photo[i]}" alt="내가 꾸민 실험 장치">
+  <figcaption>내가 꾸민 실험 장치 (직접 올린 사진·그림)</figcaption>
+</figure>` : ''}
 
-<h2>5. 실험 결과</h2>
+<h2>${no()}. 실험 결과</h2>
 ${data.length ? `
 <table class="data">
   <thead><tr><th>${cfg.name}</th><th>1회</th><th>2회</th><th>3회</th>
     <th>평균 (${M().unit})</th></tr></thead>
   <tbody>${tableRows}</tbody>
 </table>` : '<p>(측정한 데이터가 없습니다)</p>'}
+${chart}
 
-${pts.length ? `<div class="chart">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 280"
-       width="460" height="280" style="max-width:100%">${svg}</svg>
-</div>` : ''}
-
-<h2>6. 결론</h2>
+<h2>${no()}. 결론</h2>
 <p>${cfg.name}를 크게 하면 산소 발생량은 <b>${conclTxt}</b>.</p>
 ${state.concl[i] !== null ? `<p class="why">${p.why.replace(/<\/?b>/g, '')}</p>` : ''}
 
-${PLANS[i].free ? `
-<h2>7. 결과 해석</h2>
-${interpretQs(state.hyp[i].dep === state.concl[i]).map(q => `
-  <p class="ipq"><b>${q.q}</b></p>
-  <p class="ipa">${esc(state.interpret[q.id] || '(적지 않음)')}</p>`).join('')}
+${p.free || hasIp ? `
+<h2>${no()}. 결과 해석</h2>
+${QS.map(q => `
+  <p class="ipq"><b>${q.predict ? '[예측] ' : ''}${q.q}</b></p>
+  <p class="ipa">${esc((ip[q.id] || '').trim() || '(적지 않음)')}</p>`).join('')}
 ` : ''}
 
-<h2>${PLANS[i].free ? '8' : '7'}. 가설과 비교</h2>
+<h2>${no()}. 가설과 비교</h2>
 <p>${!hypReady(i) ? '가설을 정하지 않았습니다.'
    : state.concl[i] === null ? '아직 결론을 정리하지 않았습니다.'
    : (state.hyp[i].dep === (p.free ? 1 : p.answer.dep)
       ? '예상대로였습니다. 가설이 실험 결과와 일치했습니다.'
       : '예상과 달랐습니다. 예상과 다른 결과에서 더 많은 것을 배웁니다.')}</p>
+${p.free ? logHTML(no()) : ''}
 `;
+}
+
+/* ---------------------------------------------------------------
+   📝 수행평가 작성 기록 — 자유 탐구에서 입력하고 고친 것을 순서대로
+   보고서 맨 아래에 붙인다. 결과만이 아니라 생각을 다듬은 과정이 남는다.
+----------------------------------------------------------------*/
+function logHTML(n){
+  const L = state.log || [];
+  const took = state.timer.total ?? timerElapsed();
+  if (!L.length) return `
+<h2>${n}. 수행평가 작성 기록</h2>
+<p>총 소요 시간: <b>${clockKo(took)}</b></p>
+<p>(기록된 입력·수정 내역이 없습니다)</p>`;
+
+  const pad = x => String(x).padStart(2, '0');
+  const rowsHtml = L.map(r => {
+    const d = new Date(r.t);
+    return `<tr>
+      <td class="lt">${clock(r.e || 0)}</td>
+      <td class="lw">${pad(d.getHours())}:${pad(d.getMinutes())}</td>
+      <td class="lk">${esc(r.k || '')}</td>
+      <td class="ld">${esc(r.d || '')}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+<h2>${n}. 수행평가 작성 기록</h2>
+<p>총 소요 시간 <b>${clockKo(took)}</b> · 입력·수정 <b>${L.length}</b>번
+  <span class="lnote">(경과 = 수행평가를 시작한 뒤 흐른 시간)</span></p>
+<table class="log">
+  <thead><tr><th>경과</th><th>시각</th><th>항목</th><th>입력·수정한 내용</th></tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table>`;
 }
 
 const REPORT_CSS = `
@@ -5399,31 +5977,167 @@ th{background:#eef4fb}
 table.vars th{width:110px;text-align:left;background:#f5f5f5}
 table.vars td{text-align:left}
 .chart{text-align:center;margin:14px 0}
+.chart img{max-width:100%;height:auto}
 ol{padding-left:22px;margin:0 0 10px}
 li{margin-bottom:5px}
+/* 내가 올린 실험 장치 사진 */
+figure.shot{margin:12px 0 16px;text-align:center}
+figure.shot img{max-width:80%;max-height:300px;border:1px solid #ccc;border-radius:6px}
+figure.shot figcaption{margin-top:5px;font-size:9.5pt;color:#767676}
+/* 수행평가 작성 기록 */
+table.log{table-layout:fixed}
+table.log th,table.log td{font-size:9pt;padding:5px 7px;word-break:break-word}
+table.log td.lt,table.log td.lw{text-align:center;color:#767676;white-space:nowrap}
+table.log th:nth-child(1),table.log th:nth-child(2){width:52px}
+table.log th:nth-child(3){width:110px}
+table.log td.lk{text-align:center;font-weight:bold}
+table.log td.ld{text-align:left}
+.lnote{color:#767676;font-size:9pt;font-weight:normal}
 @page{margin:15mm}
 `;
 
-function exportPDF(){
+/* ---------------------------------------------------------------
+   💾 PDF 저장 — 인쇄 창을 거치지 않고 .pdf 파일을 바로 내려받는다.
+   보고서를 화면 밖에 그려 그림으로 뜬 뒤 A4 크기로 잘라 붙인다.
+   글꼴을 PDF에 심을 필요가 없어 한글이 그대로 나온다.
+   라이브러리를 받아 오지 못하면(오프라인 등) 인쇄 창으로 대신한다.
+----------------------------------------------------------------*/
+const PDF_LIBS = [
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+];
+let pdfLibs = null;                       // 한 번만 받아 온다
+
+function loadScript(src){
+  return new Promise((ok, no) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = ok;
+    s.onerror = () => no(new Error(src));
+    document.head.appendChild(s);
+  });
+}
+function ensurePdfLibs(){
+  if (window.html2canvas && window.jspdf) return Promise.resolve(true);
+  if (!pdfLibs) pdfLibs = Promise.all(PDF_LIBS.map(loadScript))
+    .then(() => !!(window.html2canvas && window.jspdf))
+    .catch(() => { pdfLibs = null; return false; });
+  return pdfLibs;
+}
+
+/* 그래프를 PNG(data URL)로 뜬다 — PDF 에는 SVG 보다 안전하게 들어간다 */
+function chartPNG(){
+  const cfg = TABS[state.activeTab];
+  if (!rows().filter(r => r.avg !== null && r.cond === condSig()).length)
+    return Promise.resolve(null);
+  const SCALE = 2, TITLE_H = 34;
+  return new Promise(ok => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width = W * SCALE; cv.height = (H + TITLE_H) * SCALE;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      ok(cv.toDataURL('image/png'));
+    };
+    img.onerror = () => ok(null);
+    img.src = 'data:image/svg+xml;charset=utf-8,' +
+      encodeURIComponent(chartSVG(cfg, SCALE, TITLE_H, true));
+  });
+}
+
+/* 인쇄 창으로 대신하기 — 라이브러리를 받지 못했을 때만 쓴다 */
+function printFallback(){
   const w = window.open('', '_blank');
-  if (!w){ openModal('팝업이 막혔어요', '브라우저에서 이 사이트의 팝업을 허용해 주세요.'); return; }
+  if (!w){
+    openModal('PDF를 만들지 못했습니다',
+      `인터넷 연결이 없어 PDF 파일을 만들 수 없고, 팝업도 막혀 있습니다.<br><br>
+       <b>Word로 저장</b>을 쓰거나, 인터넷에 연결한 뒤 다시 시도해 주세요.`);
+    return;
+  }
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
     <title>탐구 보고서</title><style>${REPORT_CSS}</style></head>
     <body>${reportHTML()}</body></html>`);
   w.document.close();
   w.focus();
   setTimeout(() => w.print(), 400);
-  toast('📄', 'PDF로 저장하기', '인쇄 창에서 <b>대상</b>을 "PDF로 저장"으로 고르세요.');
+  toast('📄', 'PDF 만들기로 대신합니다',
+    '인터넷 연결이 없어 파일을 바로 만들지 못했어요. 창에서 <b>대상</b>을 "PDF로 저장"으로 고르세요.');
+}
+
+function exportPDF(){
+  const cfg = TABS[state.activeTab];
+  const took = PLANS[state.activeTab].free ? timerStamp() : null;   // 총 시간을 확정한다
+  toast('💾', 'PDF를 만들고 있어요', '잠시만 기다려 주세요…');
+
+  Promise.all([ensurePdfLibs(), chartPNG()]).then(([ok, chartImg]) => {
+    if (!ok){ printFallback(); return; }
+
+    // 보고서를 화면 밖(왼쪽 멀리)에 A4 폭으로 그려 둔다
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:-10000px;top:0;width:760px;background:#fff;z-index:-1';
+    box.innerHTML = `<div class="rpt-page">${reportHTML({ chartImg })}</div>`;
+    // 보고서용 CSS 를 .rpt-page 안으로 가둔다 — 그러지 않으면 h1·table 규칙이
+    // 지금 보고 있는 화면까지 바꿔 버린다. body 규칙은 겉면에 직접 준다.
+    const st = document.createElement('style');
+    st.textContent = REPORT_CSS
+      .replace(/\/\*[\s\S]*?\*\//g, '')                     // 주석 지우기
+      .replace(/@page\{[^}]*\}/g, '')                       // 종이 여백은 화면에서 뜻이 없다
+      .replace(/(^|\})\s*([^{}@]+)\{/g, (m, close, sel) =>
+        close + sel.split(',').map(s => `.rpt-page ${s.trim()}`).join(',') + '{');
+    box.appendChild(st);
+    const page = box.querySelector('.rpt-page');
+    page.style.cssText = "font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11pt;" +
+      'line-height:1.7;color:#111;padding:28px;background:#fff;width:760px;box-sizing:border-box';
+    document.body.appendChild(box);
+
+    const done = () => box.remove();
+    window.html2canvas(page, { scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false })
+      .then(canvas => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit:'mm', format:'a4', compress:true });
+        const PW = 210, PH = 297, MG = 10;               // A4 · 여백 10mm
+        const w = PW - MG * 2, pageH = PH - MG * 2;
+        // 한 장에 담을 높이만큼 잘라 여러 장으로 붙인다
+        const sliceH = Math.floor(canvas.width * pageH / w);
+        const pages = Math.max(1, Math.ceil(canvas.height / sliceH));
+        for (let n = 0; n < pages; n++){
+          const sh = Math.min(sliceH, canvas.height - n * sliceH);
+          const part = document.createElement('canvas');
+          part.width = canvas.width; part.height = sh;
+          const c = part.getContext('2d');
+          c.fillStyle = '#ffffff'; c.fillRect(0, 0, part.width, part.height);
+          c.drawImage(canvas, 0, n * sliceH, canvas.width, sh, 0, 0, canvas.width, sh);
+          if (n) pdf.addPage();
+          pdf.addImage(part.toDataURL('image/jpeg', 0.92), 'JPEG',
+                       MG, MG, w, sh * w / canvas.width);
+        }
+        pdf.save(`${whoPrefix()}탐구보고서_${cfg.name}_${stamp()}.pdf`);
+        done();
+        toast('💾', 'PDF 파일로 저장했습니다',
+          took !== null
+            ? `수행평가 소요 시간 <b>${clockKo(took)}</b> 도 보고서에 함께 실렸습니다.`
+            : '내려받은 파일을 선생님께 제출하세요.', true);
+      })
+      .catch(() => { done(); printFallback(); });
+  });
 }
 
 function exportDoc(){
+  if (pdfOnlyGuard()) return;
+  const took = PLANS[state.activeTab].free ? timerStamp() : null;   // 총 시간을 확정한다
   const html = `<!DOCTYPE html><html xmlns:w="urn:schemas-microsoft-com:office:word"
     lang="ko"><head><meta charset="utf-8"><title>탐구 보고서</title>
     <style>${REPORT_CSS}</style></head><body>${reportHTML()}</body></html>`;
   const cfg = TABS[state.activeTab];
   download(new Blob(['\ufeff' + html], { type:'application/msword' }),
     `${whoPrefix()}탐구보고서_${cfg.name}_${stamp()}.doc`);
-  toast('📝', 'Word 문서로 저장했습니다', '한글(HWP)에서도 열 수 있습니다.');
+  toast('📝', 'Word 문서로 저장했습니다',
+    took !== null
+      ? `수행평가 소요 시간 <b>${clockKo(took)}</b> 도 함께 적혔습니다. 한글(HWP)에서도 열 수 있습니다.`
+      : '한글(HWP)에서도 열 수 있습니다.');
 }
 
 /* ---------------------------------------------------------------
@@ -5438,10 +6152,11 @@ function canExport(){
     return false;
   }
   if (!interpretDone()){
-    const QS = interpretQs(state.hyp[state.activeTab].dep === state.concl[state.activeTab]);
-    const left = QS.filter(q => (state.interpret[q.id] || '').trim().length < MIN_CHARS).length;
+    const i = state.activeTab, ip = ipOf(i);
+    const QS = interpretQs(state.hyp[i].dep === state.concl[i], i);
+    const left = QS.filter(q => (ip[q.id] || '').trim().length < MIN_CHARS).length;
     openModal('✍️ 결과 해석을 먼저 써 주세요',
-      `자유 탐구 보고서에는 <b>결과 해석</b>이 들어갑니다.<br><br>
+      `수행평가(자유 탐구) 보고서에는 <b>결과 해석</b>이 들어갑니다.<br><br>
        아직 <b>${left}개</b> 항목이 비어 있어요. (각 ${MIN_CHARS}자 이상)<br><br>
        <span style="color:var(--muted)">그래프 아래 <b>결과 해석 쓰기</b>에서 적을 수 있습니다.</span>`);
     $('modalOk').textContent = '해석 쓰러 가기';
@@ -5490,6 +6205,7 @@ function askWipe(){
 }
 $('wipeBtn').addEventListener('click', askWipe);
 $('wipeBtn2').addEventListener('click', askWipe);
+$('homeBtn').addEventListener('click', goMain);
 
 $('whoBtn').addEventListener('click', () => askWho(() => {
   const w = getWho();
@@ -5506,67 +6222,51 @@ function renderWho(){
     box.classList.toggle('saved', !!(w && w.no));
     $('idInput').value = (w && w.no) || '';
     $('idState').textContent = w && w.no ? '✅ 저장됨' : '';
-    $('idHint').textContent = w && w.no
-      ? '다른 기기에서 같은 학번을 적으면 이어서 할 수 있어요.'
-      : '학번을 적어 두면 다른 기기에서도 이어서 할 수 있어요.';
+    $('idHint').innerHTML = w && w.no
+      ? '다른 기기에서 같은 학번을 적으면 탐구 1·2·3 을 이어서 할 수 있어요.'
+      : '학번을 적으면 <b>탐구 1·2·3</b> 에 전에 작성한 내용이 모두 불러와집니다.';
   }
 }
 
-/* 첫 화면 학번 저장 — 서버에 기록이 있으면 불러올지 묻는다 */
+/* 첫 화면 학번 입력 — 이것을 적어야 탐구를 고를 수 있다.
+   적으면 탐구 1·2·3 은 그대로 불러오고, 수행평가는 새로 시작한다. */
 $('idBox').addEventListener('submit', e => {
   e.preventDefault();
-  const raw = $('idInput').value.trim().replace(/\s+/g, '');
-  if (!raw){ toast('📇', '학번을 적어 주세요', '기록을 이어 가려면 학번이 필요합니다.'); return; }
-  if (!/^[0-9a-zA-Z-]+$/.test(raw)){
-    toast('⚠️', '학번은 숫자와 영문만', '파일 이름에 쓰이므로 기호는 넣을 수 없어요.');
+  const c = cleanNo($('idInput').value);
+  if (c.err){ toast('📇', '학번을 다시 확인해 주세요', c.err); return; }
+  const raw = c.no, prev = getWho();
+
+  // 같은 학번을 다시 저장한 것뿐이면 하던 것을 그대로 이어 간다
+  if (prev && prev.no === raw){
+    saveSession(); renderWho(); renderPlan(); Sfx.bloop(1.2, 0.14);
+    toast('📇', '학번을 저장했습니다', '하던 탐구를 골라 이어서 하세요.');
     return;
   }
-  const prev = getWho();
-  // 같은 학번을 다시 저장한 것뿐이면 그대로 둔다
-  if (prev && prev.no === raw){ saveSession(); Sfx.bloop(1.2, 0.14); return; }
 
-  /* 학번이 바뀌었다 = 대개 다른 학생이다.
-     앞 학생의 기록을 그대로 물려받지 않도록, 이전 기록을 먼저 서버에
-     올려 두고 이 기기는 비운 뒤 새 학번으로 시작한다. */
-  const hadWork = hasSaved();
-
-  const startFresh = () => {
-    flushSave().then(() => {          // 앞 학생 기록을 그 학번으로 보존
-      clearSession();
-      setWho(raw);
-      pullProgress(raw).then(p => {
-        if (p && p.v === 1){ applyPayload(p); return; }
-        location.reload();            // 서버에도 없으면 깨끗한 상태로 시작
-      });
-    });
+  const load = () => {
+    Sfx.bloop(1.2, 0.14);
+    toast('📥', '기록을 불러오는 중…', `학번 <b>${esc(raw)}</b> 의 탐구 1·2·3 을 찾고 있어요.`);
+    switchToId(raw);
   };
 
-  if (!hadWork){
-    // 기록이 없으면 물어볼 것 없이 바로 적용
-    setWho(raw);
-    renderWho();
-    Sfx.bloop(1.2, 0.14);
-    pullProgress(raw).then(p => {
-      if (p && p.v === 1) applyPayload(p);
-      else { saveSession();
-        toast('📇', '학번을 저장했습니다',
-          `앞으로 저장하는 파일에 <b>${esc(raw)}</b> 가 붙습니다.`); }
-    });
+  /* 이 기기에 앞 학생의 기록이 남아 있으면 한 번 확인한다.
+     (앞 학생의 기록은 그 학번으로 서버에 올려 두므로 잃지 않는다) */
+  if (prev && prev.no && prev.no !== raw && hasSaved()){
+    openModal('👤 다른 학생인가요?',
+      `이 기기에 <b>학번 ${esc(prev.no)}</b> 의 실험 기록이 남아 있습니다.<br><br>
+       <b>${esc(raw)}</b> 로 바꾸면 이 기기 화면은 <b>${esc(raw)}</b> 의 기록으로 채워집니다.
+       ${cloudOn()
+         ? `<span style="color:#0a5c0a">앞 기록은 학번 <b>${esc(prev.no)}</b> 으로
+            서버에 저장되니, 나중에 다시 불러올 수 있어요.</span>`
+         : `<span style="color:#8a6a00">서버에 연결되지 않아 앞 기록을 남겨 두지 못합니다.</span>`}
+       <br><br><span style="color:#8a6a00">⚠️ 수행평가(자유 탐구)는 처음부터 새로 시작합니다.</span>`);
+    $('modalOk').textContent = `${esc(raw)} 로 불러오기`;
+    $('modalCancel').hidden = false;
+    $('modalCancel').textContent = '취소';
+    onSubmit = () => { load(); return null; };
     return;
   }
-
-  openModal('👤 다른 학생인가요?',
-    `이 기기에 <b>${prev && prev.no ? '학번 ' + esc(prev.no) : '이전 학생'}</b> 의
-     실험 기록이 남아 있습니다.<br><br>
-     <b>${esc(raw)}</b> 로 새로 시작하면 이 기기의 기록은 지워집니다.
-     ${prev && prev.no && cloudOn()
-       ? `<span style="color:#0a5c0a">이전 기록은 학번 <b>${esc(prev.no)}</b> 으로
-          서버에 저장되니, 나중에 다시 불러올 수 있어요.</span>`
-       : `<span style="color:#8a6a00">이전 학번이 없어 그 기록은 되돌릴 수 없습니다.</span>`}`);
-  $('modalOk').textContent = `${esc(raw)} 로 새로 시작`;
-  $('modalCancel').hidden = false;
-  $('modalCancel').textContent = '취소';
-  onSubmit = () => { startFresh(); return null; };
+  load();
 });
 renderWho();
 $('pngBtn').addEventListener('click', exportPNG);
@@ -5595,6 +6295,7 @@ document.querySelectorAll('.mode').forEach(b =>
     ctrlNeed(state.activeTab).forEach(k => {
       state[k] = state.ctrlVal[state.activeTab][k] ?? TABS[state.activeTab].fixed[k]; });
     $('tankStatus').textContent = '대기 중';
+    logAssess('측정 방식', isManual() ? '직접 세기로 바꿈' : '자동 측정으로 바꿈');
     saveSession();
     setGas(0);
     clearBubbles();
@@ -5607,6 +6308,7 @@ $('resetBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
   state.data[state.mode][state.activeTab] = {};
   state.graphed[state.mode][state.activeTab] = !isManual();
+  logAssess('데이터 초기화', '모은 측정값을 모두 지우고 다시 시작함');
   saveSession();
   $('tankStatus').textContent = '대기 중';
   renderCondWarn(); renderTable(); renderChart(); renderHint();
@@ -5628,6 +6330,8 @@ while (state.ctrl.length      < 4) state.ctrl.push([]);
 while (state.concl.length     < 4) state.concl.push(null);
 while (state.limitDone.length < 4) state.limitDone.push(false);
 while (state.ctrlVal.length   < 4) state.ctrlVal.push({ light:100, co2:100, temp:25 });
+state.interpret = normInterpret(state.interpret);
+state.photo     = normPhoto(state.photo);
 if (state.freeKey) applyFree(state.freeKey);
 renderShelf();
 renderPlan();
@@ -5643,6 +6347,12 @@ if (wasInLab && hasSaved()){
   setTimeout(() => toast('💾', '지난 기록이 남아 있어요',
     '하던 탐구를 고르면 이어서 진행할 수 있습니다.'), 700);
 }
+
+/* ⏱️ 수행평가 타이머 — 1초마다 화면 상태를 보고 켜고 끈다.
+   화면을 덮거나 다른 탐구로 옮기면 저절로 멈춘다. */
+timerSync();
+setInterval(timerSync, 1000);
+addEventListener('visibilitychange', timerSync);
 
 // Firebase 모듈이 준비되면 공유 명단을 켠다 (실패하면 로컬 저장으로 동작)
 if (window.Cloud) initCloud();
