@@ -7,7 +7,7 @@
  *
  * 앱을 고칠 때마다 CACHE 뒤 번호를 올리면 옛 캐시가 정리된다.
  */
-const CACHE = 'photosynthesis-v3';
+const CACHE = 'photosynthesis-v4';
 
 const ASSETS = [
   './',
@@ -47,9 +47,13 @@ self.addEventListener('fetch', e => {
                 (req.headers.get('accept') || '').includes('text/html');
 
   if (isDoc){
-    // 네트워크 우선 — 새 배포가 바로 반영된다. 끊기면 캐시로 되돌아간다.
+    /* 네트워크 우선 — 새 배포가 바로 반영된다. 끊기면 캐시로 되돌아간다.
+       cache:'no-store' 를 붙이는 까닭: GitHub Pages 가 HTML 에
+       Cache-Control: max-age=600 을 달아 보내므로, 그냥 fetch 하면 브라우저의
+       HTTP 캐시가 최대 10분간 옛 문서를 대신 내준다. 수업 중에 앱을 고쳐
+       올려도 학생 기기에는 옛 화면이 그대로 남는 것이 이 때문이었다. */
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache:'no-store' })
         .then(res => {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put('./index.html', copy));
