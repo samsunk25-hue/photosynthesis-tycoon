@@ -514,6 +514,12 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
    ========================================================= */
 .prog{ margin-bottom:16px }
 .prog.done{border-color:#0ca30c;background:rgba(12,163,12,.08)}
+/* 조건 수는 찼지만 구간이 모자란 상태 — 초록으로 축하하지 않고 빨강으로 알린다.
+   한쪽 끝을 비워 둔 채 5가지를 모으면 그래프가 직선처럼 보여 잘못 읽는다. */
+.prog.short,.prog.done.short{border-color:#d03b3b;background:rgba(208,59,59,.09)}
+.prog.short .prog-bar span{background:linear-gradient(90deg,#f08a8a,#d03b3b)}
+.prog.short small,.prog.done.short small{color:#a02a2a;font-weight:700}
+.prog.short .prog-top b{color:#a02a2a}
 .prog-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .prog-top b{font-size:13.5px;font-weight:800}
 .dots{display:flex;gap:5px}
@@ -2324,7 +2330,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 e';
+const BUILD = '2026-07-25 f';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2432,14 +2438,18 @@ function renderTimer(){
 const LOG_MAX = 400;              // 너무 길어지지 않게 최근 것만 남긴다
 state.log = [];
 
-function logAssess(what, detail){
+function logAssess(what, detail, bad){
   // 수행평가(자유 탐구)에서 한 일만 기록한다
   if (!inAssessment()) return;
   const txt = String(detail == null ? '' : detail).slice(0, 300);
   const last = state.log[state.log.length - 1];
-  // 같은 항목을 같은 내용으로 다시 적는 것은 남기지 않는다
-  if (last && last.k === what && last.d === txt) return;
-  state.log.push({ t: Date.now(), e: timerElapsed(), k: what, d: txt });
+  /* 글을 쓰는 칸은 타이핑이 멈출 때마다 불리므로, 같은 글이 잇달아 들어오면
+     한 번만 남긴다. 누르는 일(고르기·빈칸 채우기)은 틀린 것을 포함해
+     누른 그대로 모두 남긴다 — 무엇을 틀리게 넣으려 했는지가 기록의 값이다. */
+  if (/^결과 해석/.test(what) && last && last.k === what && last.d === txt) return;
+  const rec = { t: Date.now(), e: timerElapsed(), k: what, d: txt };
+  if (bad) rec.x = 1;                       // 틀린 시도 — 보고서에서 붉게 보인다
+  state.log.push(rec);
   if (state.log.length > LOG_MAX) state.log.splice(0, state.log.length - LOG_MAX);
 }
 
@@ -3057,29 +3067,37 @@ function freeSteps(i){
   const ctrlAns = ctrls.map(k => LABEL[k]).join('와 ');
   // 단계마다 빈칸은 하나씩. 학생이 판단해야 할 것만 비운다.
   // 15초·3번 같은 값은 앱이 정한 것이라 빈칸으로 적당하지 않다.
+  /* label — 기록에 남길 칸 이름. 's3' 같은 번호만 적어 두면 나중에
+     무엇을 묻는 칸이었는지 알 수 없어, 사람이 읽을 이름을 함께 둔다. */
   return [
     { text:['검정말을 ', ' 로 덮어, 발생한 기체가 한곳으로 모이게 합니다.'],
-      slots:[{ id:'s1', ans:'깔때기', pool:['깔때기','비커','유리막대'] }] },
+      slots:[{ id:'s1', label:'기체를 모으는 도구', ans:'깔때기',
+        pool:['깔때기','비커','유리막대'] }] },
 
     { text:['깔때기 위에 물을 채운 ', ' 을 거꾸로 씌워 기체를 모읍니다.'],
-      slots:[{ id:'s2', ans:'시험관', pool:['시험관','알코올램프','거름종이'] }] },
+      slots:[{ id:'s2', label:'기체를 받는 관', ans:'시험관',
+        pool:['시험관','알코올램프','거름종이'] }] },
 
     { text:['바꿔 가며 알아볼 것은 ', ' 입니다. (조작 변인)'],
-      slots:[{ id:'s3', ans:LABEL[cfg.key], pool:all.map(k => LABEL[k]) }] },
+      slots:[{ id:'s3', label:'조작 변인', ans:LABEL[cfg.key],
+        pool:all.map(k => LABEL[k]) }] },
 
     { text:['이 실험에서 ', ' 은(는) 실험 내내 같게 둡니다. (통제 변인)'],
-      slots:[{ id:'s4', ans:ctrlAns,
+      slots:[{ id:'s4', label:'통제 변인', ans:ctrlAns,
         pool:[ctrlAns, LABEL[cfg.key], all.map(k => LABEL[k]).join(', ')] }] },
 
     { text:['각 조건에서 15초 동안 깔때기 목을 지나는 ', ' 를 셉니다. (종속 변인)'],
-      slots:[{ id:'s5', ans:'기포 수', pool:['기포 수','물의 온도','잎의 색'] }] },
+      slots:[{ id:'s5', label:'종속 변인', ans:'기포 수',
+        pool:['기포 수','물의 온도','잎의 색'] }] },
 
     { text:['같은 조건에서 3번 반복해 평균을 냅니다. 한 번의 측정에는 ',
             ' 가 있기 때문입니다.'],
-      slots:[{ id:'s6', ans:'오차', pool:['오차','정답','평균'] }] },
+      slots:[{ id:'s6', label:'3번 반복하는 까닭', ans:'오차',
+        pool:['오차','정답','평균'] }] },
 
     { text:['조건을 5가지 이상 모아 표를 채운 뒤, ', ' 로 바꿔 관계를 확인합니다.'],
-      slots:[{ id:'s7', ans:'그래프', pool:['그래프','사진','글'] }] },
+      slots:[{ id:'s7', label:'표를 바꿀 것', ans:'그래프',
+        pool:['그래프','사진','글'] }] },
   ];
 }
 
@@ -3144,10 +3162,24 @@ function bindBlanks(i){
   const put = (slotId, word) => {
     const sl = freeSteps(i).flatMap(st => st.slots).find(x => x.id === slotId);
     if (!sl) return;
-    if (!sl.pool.includes(word)) return;
+    /* 다른 칸에 쓰이는 낱말을 넣으려 한 경우.
+       예전에는 아무 반응 없이 그냥 무시해서, 학생은 왜 안 되는지 알 수 없고
+       기록에도 남지 않았다. 무엇을 넣으려 했는지가 중요한 정보이므로 남긴다. */
+    if (!sl.pool.includes(word)){
+      logAssess('실험 방법 빈칸',
+        `${sl.label} 칸에 “${word}” 를 넣으려 했습니다 (이 칸에 쓰이는 낱말이 아님)`, true);
+      saveSession();
+      Sfx.warn();
+      toast('🤔', '이 칸에 넣을 낱말이 아니에요',
+        `“${esc(word)}” 는 다른 칸에 쓰이는 낱말입니다. 다시 골라 보세요.`);
+      pickedSlot = null;
+      renderPlan();
+      return;
+    }
     state.blanks[slotId] = word;
+    const right = word === sl.ans;
     logAssess('실험 방법 빈칸',
-      `${slotId}: “${word}” ${word === sl.ans ? '(맞음)' : '(다시 생각함)'}`);
+      `${sl.label} 칸에 “${word}” ${right ? '— 맞음' : '— 틀림 (다시 고름)'}`, !right);
     saveSession();
     if (word === sl.ans){ Sfx.bloop(1.2, 0.14); }
     else Sfx.warn();
@@ -3184,6 +3216,9 @@ function bindBlanks(i){
     w.addEventListener('dragend', () => w.classList.remove('dragging'));
     w.addEventListener('click', () => {
       if (!pickedSlot){
+        // 순서를 거꾸로 누른 것도 남긴다 (틀린 답은 아니므로 붉게 세지는 않는다)
+        logAssess('실험 방법 빈칸',
+          `빈칸을 고르지 않고 “${w.dataset.word}” 를 눌렀습니다`);
         toast('👆', '빈칸을 먼저 누르세요', '채우고 싶은 빈칸을 누른 뒤 낱말을 고르면 됩니다.');
         return;
       }
@@ -4119,12 +4154,25 @@ function renderProg(){
   /* 조작 변인 슬라이더 바로 위.
      어디를 쟀는지는 눈금으로 보여 주되, 다음에 잴 값은 알려주지 않는다.
      어디가 비었는지 스스로 보고 정하는 것도 실험 설계다. */
+  /* 조건 수를 다 채웠는지와 '구간을 넓게 쟀는지' 는 다른 이야기다.
+     한쪽 끝을 비워 둔 채 5가지를 모으면 그래프가 직선처럼 보여 관계를
+     잘못 읽는다. 그래서 개수가 차더라도 구간이 모자라면 빨강으로 알린다. */
+  const covShort = cov.narrow || !cov.hasLow || !cov.hasHigh;
+  const short = full >= GOAL && covShort;      // 개수는 찼지만 구간이 모자란 상태
+  const missTxt = cov.narrow
+    ? `<b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재어 구간이 좁아요`
+    : !cov.hasLow ? `<b>낮은 쪽(${cfg.min}${cfg.unit} 근처)</b>을 재지 않았어요`
+                  : `<b>높은 쪽(${cfg.max}${cfg.unit} 근처)</b>을 재지 않았어요`;
+
   $('progRange').innerHTML = `
-    <div class="rng ${cov.narrow ? 'warn' : ''}">
+    <div class="rng ${cov.narrow || short ? 'warn' : ''}">
       <div class="rng-msg">${
         full === 0
           ? `${cfg.name}를 <b>${cfg.min}${cfg.unit}</b> 부터 <b>${cfg.max}${cfg.unit}</b> 까지
              넓게 옮겨 가며 재어 보세요.`
+        : short
+          ? `⚠️ 조건 <b>${full}가지</b>를 모았지만 ${missTxt}.
+             이대로는 관계를 잘못 읽을 수 있어요 — 그 구간을 더 재어 보세요.`
         : cov.narrow
           ? `⚠️ <b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재었어요.
              좁은 구간만 보면 관계를 잘못 읽기 쉬워요 — 더 넓게 퍼뜨려 보세요.`
@@ -4140,9 +4188,12 @@ function renderProg(){
       <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
     </div>`;
 
+  box.classList.toggle('short', short);
+
   $('progMsg').innerHTML = full >= GOAL
-    ? (cov.narrow
-        ? '조건은 다 모았지만 구간이 좁습니다. 넓게 더 재면 관계가 또렷해져요.'
+    ? (short
+        ? `⚠️ 조건 ${GOAL}가지는 모았지만 ${missTxt}. 그 구간을 더 재어야
+           관계를 바르게 읽을 수 있어요.`
         : '목표 달성! 이제 그래프에서 관계를 확인해 보세요.')
     : full === 0
       ? `서로 다른 조건 <b>${GOAL}가지</b>를 각각 3번씩 측정하면 그래프를 그릴 수 있어요.<br>
@@ -4855,7 +4906,9 @@ function renderConcl(){
       if (!state.conclTried[i]) state.conclTried[i] = [];
       if (k !== ans && !state.conclTried[i].includes(k)) state.conclTried[i].push(k);
       state.concl[i] = k;
-      logAssess('결론', `“${p.deps[k].t}” 를 골랐습니다 ${k === ans ? '(맞음)' : '(다시 생각함)'}`);
+      logAssess('결론 고르기',
+        `“${p.deps[k].t}” 를 골랐습니다 — ${k === ans ? '맞음' : '틀림 (다시 고름)'}`,
+        k !== ans);
       saveSession();
       renderConcl();
       if (state.concl[i] === ans){ Sfx.fanfare(); confetti(70); }
@@ -6215,18 +6268,21 @@ function logHTML(n){
   const pad = x => String(x).padStart(2, '0');
   const rowsHtml = L.map(r => {
     const d = new Date(r.t);
-    return `<tr>
+    return `<tr${r.x ? ' class="bad"' : ''}>
       <td class="lt">${clock(r.e || 0)}</td>
       <td class="lw">${pad(d.getHours())}:${pad(d.getMinutes())}</td>
       <td class="lk">${esc(r.k || '')}</td>
-      <td class="ld">${esc(r.d || '')}</td>
+      <td class="ld">${r.x ? '✕ ' : ''}${esc(r.d || '')}</td>
     </tr>`;
   }).join('');
 
+  const wrong = L.filter(r => r.x).length;
   return `
 <h2>${n}. 수행평가 작성 기록</h2>
-<p>총 소요 시간 <b>${clockKo(took)}</b> · 입력·수정 <b>${L.length}</b>번
-  <span class="lnote">(경과 = 수행평가를 시작한 뒤 흐른 시간)</span></p>
+<p>총 소요 시간 <b>${clockKo(took)}</b> · 입력·수정 <b>${L.length}</b>번${
+  wrong ? ` · 그중 <b class="lbad">틀린 시도 ${wrong}번</b>` : ''}
+  <span class="lnote">(경과 = 수행평가를 시작한 뒤 흐른 시간${
+    wrong ? ' · 붉은 줄이 틀리게 넣으려 한 것' : ''})</span></p>
 <table class="log">
   <thead><tr><th>경과</th><th>시각</th><th>항목</th><th>입력·수정한 내용</th></tr></thead>
   <tbody>${rowsHtml}</tbody>
@@ -6266,6 +6322,10 @@ table.log th:nth-child(1),table.log th:nth-child(2){width:52px}
 table.log th:nth-child(3){width:110px}
 table.log td.lk{text-align:center;font-weight:bold}
 table.log td.ld{text-align:left}
+/* 틀리게 넣으려 한 줄 — 무엇을 어떻게 고쳐 갔는지 한눈에 보인다 */
+table.log tr.bad td{background:#fdf1f1;color:#a02a2a}
+table.log tr.bad td.lk{color:#a02a2a}
+.lbad{color:#a02a2a}
 .lnote{color:#767676;font-size:9pt;font-weight:normal}
 /* 쪽이 넘어갈 때 줄·칸·그림이 반으로 갈리지 않게 한다 */
 h1,h2{break-after:avoid;page-break-after:avoid}
