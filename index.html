@@ -899,7 +899,10 @@ td.fresh.wrong{animation-name:freshFlashBad}
 }
 
 /* 보고서 내보내기 */
-.report-btns{display:flex;gap:7px;flex-wrap:wrap}
+/* 보고서 버튼 — 학번 / 저장 / 지우기 를 줄로 나눈다.
+   한 줄에 몰아 두면 제목까지 눌려 '탐구 보 / 고서' 처럼 접혔다. */
+.report-btns{display:flex;flex-direction:column;gap:8px;align-items:flex-start;margin:2px 0 12px}
+.rb-row{display:flex;gap:7px;flex-wrap:wrap}
 .rpt{
   display:inline-flex;align-items:center;gap:6px;
   padding:7px 13px;border-radius:9px;cursor:pointer;font:inherit;
@@ -2102,12 +2105,15 @@ td.pending{color:var(--muted)}
     <div class="card">
       <div class="head-row">
         <h2>📄 탐구 보고서</h2>
-        <div class="report-btns">
-          <button class="rpt" id="whoBtn">📇 학번 입력</button>
+      </div>
+      <!-- 세 줄로 나눈다 — 누구 것인지 / 저장 / 지우기 는 하는 일이 서로 다르다 -->
+      <div class="report-btns">
+        <div class="rb-row"><button class="rpt" id="whoBtn">📇 학번 입력</button></div>
+        <div class="rb-row">
           <button class="rpt" id="pdfBtn">💾 PDF로 저장</button>
           <button class="rpt" id="docBtn">💾 Word로 저장</button>
-          <button class="rpt danger" id="wipeBtn">🧹 전체 지우기</button>
         </div>
+        <div class="rb-row"><button class="rpt danger" id="wipeBtn">🧹 전체 지우기</button></div>
       </div>
       <p class="hint" id="rptHint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
         한 장의 보고서로 저장합니다. PDF 파일이 바로 내려받아집니다.</p>
@@ -2361,7 +2367,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 m';
+const BUILD = '2026-07-25 n';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -6934,7 +6940,7 @@ $('whoBtn').addEventListener('click', () => askWho(() => {
 
 function renderWho(){
   const w = getWho();
-  $('whoBtn').textContent = w && w.no ? `📇 ${w.no}` : '📇 학번 입력';
+  $('whoBtn').textContent = w && w.no ? `📇 학번 ${w.no}` : '📇 학번 입력';
   // 첫 화면 입력칸도 함께 맞춘다
   const box = $('idBox');
   if (box){
