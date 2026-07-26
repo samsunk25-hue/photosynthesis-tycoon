@@ -1039,6 +1039,12 @@ td.act{text-align:right;padding-right:0}
   color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:0 5px;
   vertical-align:1px;
 }
+/* 공기 중 농도 표시 — 실험값이 실제와 어디쯤 떨어져 있는지 눈금에서 바로 보인다 */
+.ticks .air{
+  color:var(--series-1);font-weight:750;
+  /* 0.04% 는 0~0.2% 눈금의 20% 지점 */
+  margin-right:auto;margin-left:calc(20% - 34px);
+}
 .ticks{display:flex;justify-content:space-between;color:var(--muted);
   font-size:11px;font-variant-numeric:tabular-nums;margin-top:2px}
 
@@ -2269,18 +2275,31 @@ window.dispatchEvent(new Event('cloud-ready'));
 /* ---------------------------------------------------------------
    탐구 설정 — 조작 변인 1개, 나머지는 통제 변인으로 고정
 ----------------------------------------------------------------*/
+/* 이산화 탄소 눈금 — 실제 값에 맞춘다.
+   공기 중 CO₂ 는 0.04% 뿐이고, 광합성은 0.1~0.15% 쯤에서 더 늘지 않는다(포화).
+   그래서 0~0.20% 를 0.01% 씩 조절한다. 예전에는 0~100% 라는 실제와 동떨어진
+   눈금이라, 공기 중 농도를 그래프 위에 놓아 볼 수가 없었다. */
+const CO2_AIR = 0.04;   // 공기 중 농도
+const CO2_SAT = 0.15;   // 통제 변인으로 쓰는 값 — 포화 구간이라 CO₂가 한계가 되지 않는다
+const CO2_MAX = 0.2;    // 조절 상한
+
 const TABS = [
   // 통제 온도는 실험실에서 유지 가능한 실온 25°C (교과서 표준).
   // Y축 상한은 측정 방식(MODES)이 정한다 — 탐구 3종이 같은 축을 써서 비교할 수 있다.
-  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:25} },
-  { key:'co2',   name:'CO₂ 농도',  unit:'%',  min:0, max:100, step:10, fixed:{light:100, temp:25} },
-  { key:'temp',  name:'온도',      unit:'°C', min:0, max:50,  step:1,  fixed:{light:100, co2:100} },
+  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:CO2_SAT, temp:25} },
+  { key:'co2',   name:'CO₂ 농도',  unit:'%',  min:0, max:CO2_MAX, step:0.01, fixed:{light:100, temp:25} },
+  { key:'temp',  name:'온도',      unit:'°C', min:0, max:50,  step:1,  fixed:{light:100, co2:CO2_SAT} },
   // 자유 탐구 — 조작 변인을 학생이 정한다 (key 는 state.freeKey 를 따라 바뀐다)
-  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:100, temp:25}, free:true },
+  { key:'light', name:'빛의 세기', unit:'%',  min:0, max:100, step:10, fixed:{co2:CO2_SAT, temp:25}, free:true },
 ];
 const LABEL = { light:'빛의 세기', co2:'CO₂ 농도', temp:'온도' };
 const UNIT  = { light:'%', co2:'%', temp:'°C' };
-const RANGE = { light:[0,100,10], co2:[0,100,10], temp:[0,50,1] };
+const RANGE = { light:[0,100,10], co2:[0,CO2_MAX,0.01], temp:[0,50,1] };
+
+/* 값 표기 — CO₂ 는 0.01% 단위라 소수 두 자리로 적어야 눈금이 구분된다 */
+const decOf = st => (st < 1 ? 2 : 0);
+const xf  = (cfg, v) => Number(v).toFixed(decOf(cfg.step));
+const xfk = (k, v)   => Number(v).toFixed(decOf(RANGE[k][2]));
 
 /* ---------------------------------------------------------------
    상태
@@ -2291,7 +2310,7 @@ const AUTO_MS    = 5000;       // 자동 측정 — 부피 측정을 압축해 �
 const state = {
   mode: 'manual',              // 'manual'(직접 세기) | 'auto'(자동 측정)
   activeTab: 0,
-  light: 100, co2: 100, temp: 25,
+  light: 100, co2: CO2_SAT, temp: 25,
   // 측정 방식마다 데이터를 따로 보관한다 (세는 방법이 다르므로 섞으면 안 된다)
   data: { manual: [ {}, {}, {}, {} ], auto: [ {}, {}, {}, {} ] },
   graphed: { manual: [false, false, false, false], auto: [true, true, true, true] },
@@ -2342,7 +2361,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 j';
+const BUILD = '2026-07-25 k';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2491,6 +2510,7 @@ const ASSESS_TAB = 3;
 function sessionPayload(){
   return {
       v: 1,
+      scale: SCALE_V,
       data:    state.data,
       graphed: state.graphed,
       hyp:     state.hyp,
@@ -2602,6 +2622,7 @@ function loadSession(){
   state.interpret = normInterpret(s.interpret);
   state.photo   = normPhoto(s.photo);
   state.log     = Array.isArray(s.log) ? s.log.slice(-LOG_MAX) : [];
+  state.scale   = s.scale;
   // 창을 닫아 둔 시간은 세지 않는다 — 다시 열면 그때부터 이어 잰다
   state.timer = { accum: Number(s.timer && s.timer.accum) || 0, runStart: null,
                   total: (s.timer && typeof s.timer.total === 'number') ? s.timer.total : null };
@@ -2630,8 +2651,8 @@ function wipeAssessment(p){
   });
   if (fill(p.hyp, { op:null, dep:null }))       p.hyp[t] = { op:null, dep:null };
   if (fill(p.ctrl, []))                          p.ctrl[t] = [];
-  if (fill(p.ctrlVal, { light:100, co2:100, temp:25 }))
-                                                 p.ctrlVal[t] = { light:100, co2:100, temp:25 };
+  if (fill(p.ctrlVal, { light:100, co2:CO2_SAT, temp:25 }))
+                                                 p.ctrlVal[t] = { light:100, co2:CO2_SAT, temp:25 };
   if (fill(p.concl, null))                       p.concl[t] = null;
   if (fill(p.conclTried, []))                    p.conclTried[t] = [];
   if (fill(p.limitDone, false))                  p.limitDone[t] = false;
@@ -2672,6 +2693,60 @@ function clearSession(){
    탐구 카드가 사라진 것처럼 보이므로, 그리기 전에 모두 제 모양으로 맞춘다.
    (탐구는 4개 — 탐구 1·2·3 과 자유 탐구)
 ----------------------------------------------------------------*/
+/* ---------------------------------------------------------------
+   🔁 이산화 탄소 눈금 갈이 — 예전 저장본은 0~100% 눈금으로 잰 값이라
+   0~0.20% 눈금 위에 그대로 놓을 수 없다.
+   · 통제값(100 등)은 새 눈금의 값으로 바꾼다.
+   · 탐구 1·3 의 측정값은 살린다 — 그 실험에서는 CO₂가 넉넉해 한계가 아니었으므로
+     새 눈금으로 옮겨도 산소 발생량이 같다. 기록에 붙은 조건 이름만 고쳐 준다.
+   · 탐구 2(그리고 자유 탐구에서 CO₂를 고른 경우)의 측정값은 가로축 자체가
+     달라져 옮길 수 없다. 지우고 다시 재게 한다.
+----------------------------------------------------------------*/
+const SCALE_V = 2;                       // 눈금 판 번호
+const oldCo2 = v => Number(v) > CO2_MAX; // 예전 0~100 눈금인가
+
+function co2Conv(v){
+  const n = Number(v);
+  if (!(n > 0)) return 0;
+  if (n >= 100) return CO2_SAT;          // 예전 기본값(100%) → 포화 구간 값
+  return Math.min(CO2_MAX, Math.max(0.01, Math.round(n / 500 * 100) / 100));
+}
+/* 조건 이름표 안의 co2= 값만 새 눈금으로 바꾼다 */
+function sigConv(sig){
+  return String(sig).split(' · ').map(p => {
+    const [k, v] = p.split('=');
+    return (k === 'co2' && oldCo2(v)) ? `co2=${co2Conv(v)}` : p;
+  }).join(' · ');
+}
+
+function migrateCo2Scale(){
+  let dropped = 0, moved = 0;
+  ['manual','auto'].forEach(m => {
+    (state.data[m] || []).forEach((tab, i) => {
+      const isCo2Tab = (i === 1) || (i === ASSESS_TAB && state.freeKey === 'co2');
+      Object.keys(tab || {}).forEach(key => {
+        const r = tab[key];
+        if (!r) return;
+        if (isCo2Tab && oldCo2(r.x)){ delete tab[key]; dropped++; return; }
+        if (r.cond && r.cond !== sigConv(r.cond)){
+          const nc = sigConv(r.cond);
+          delete tab[key];
+          r.cond = nc;
+          tab[slotKey(r.x, nc)] = r;
+          moved++;
+        }
+      });
+    });
+  });
+  state.ctrlVal.forEach(cv => { if (cv && oldCo2(cv.co2)) cv.co2 = co2Conv(cv.co2); });
+  if (oldCo2(state.co2)) state.co2 = co2Conv(state.co2);
+  state.scale = SCALE_V;
+  if (dropped) setTimeout(() => toast('🔁', 'CO₂ 눈금이 실제 값으로 바뀌었어요',
+    `공기 중 농도(0.04%)에 맞춰 <b>0~0.20%</b> 로 고쳤습니다.
+     예전 눈금으로 잰 CO₂ 측정값 ${dropped}개는 옮길 수 없어 지웠습니다 — 다시 재어 주세요.`), 900);
+  return dropped + moved;
+}
+
 function normalizeState(){
   const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
 
@@ -2694,7 +2769,7 @@ function normalizeState(){
     if (!isObj(state.hyp[i]))         state.hyp[i] = { op:null, dep:null };
     if (!Array.isArray(state.ctrl[i]))       state.ctrl[i] = [];
     if (!Array.isArray(state.conclTried[i])) state.conclTried[i] = [];
-    state.ctrlVal[i] = Object.assign({ light:100, co2:100, temp:25 },
+    state.ctrlVal[i] = Object.assign({ light:100, co2:CO2_SAT, temp:25 },
                                      TABS[i].fixed, isObj(state.ctrlVal[i]) ? state.ctrlVal[i] : {});
     if (state.concl[i] === undefined)  state.concl[i] = null;
     state.limitDone[i] = !!state.limitDone[i];
@@ -2711,6 +2786,8 @@ function normalizeState(){
   state.interpret = normInterpret(state.interpret);
   state.photo     = normPhoto(state.photo);
   if (!Array.isArray(state.log))   state.log = [];
+  // 예전 눈금(0~100%)으로 잰 CO₂ 기록을 새 눈금으로 갈아 끼운다
+  if (state.scale !== SCALE_V) migrateCo2Scale();
   if (!isObj(state.blanks))        state.blanks = {};
   if (!isObj(state.mission))       state.mission = { done:false };
   if (!(state.badges instanceof Set)) state.badges = new Set(Array.isArray(state.badges) ? state.badges : []);
@@ -2730,7 +2807,10 @@ function hasSaved(){
    산소 생성량 모델  (PRD 3.2)
 ----------------------------------------------------------------*/
 const fL = l => l / (l + 15);                       // 포화 곡선
-const fC = c => c / (c + 15);                       // 포화 곡선
+/* CO₂ 포화 곡선. 계수 1.086 은 0.12% 에서 fL(100%) 와 같아지도록 맞춘 값이라,
+   그보다 짙어지면 빛이 한계가 되어 그래프가 평평해진다 — 포화점 0.1~0.15% 와 맞다.
+   공기 중 0.04% 에서는 포화값의 70% 쯤으로, 아직 CO₂가 모자란 상태다. */
+const fC = c => Math.min(1, 1.086 * c / (c + 0.03));
 /* 효소 활성 — 35°C에서 정점, 25~35°C가 모두 적정 구간(88~100%)이 되도록
    완만한 사인 곡선을 쓴다. 35°C를 넘으면 효소가 변성되어 급격히 떨어지고
    45°C에서 0이 된다. (기존 (t/35)²는 25°C에서 51%밖에 나오지 않아
@@ -2780,7 +2860,7 @@ const $ = id => document.getElementById(id);
 const PLANS = [
   { em:'💡', hue:42,
     q:'빛의 세기는 광합성에 어떤 영향을 미칠까?',
-    ctrl:'CO₂ 농도 100%, 온도 25°C',
+    ctrl:`CO₂ 농도 ${CO2_SAT}%, 온도 25°C`,
     // 조작 변인을 어떻게 할 것인가
     ops:[{ em:'🔆', t:'세게 하면' }, { em:'🌙', t:'약하게 하면' }],
     // 그러면 종속 변인은 어떻게 되는가
@@ -2804,11 +2884,11 @@ const PLANS = [
       { em:'📉', t:'줄어든다' },
     ],
     answer:{ op:0, dep:1 },
-    why:'CO₂도 빛과 마찬가지로 <b>포화 곡선</b>을 그립니다. 부족할 때는 크게 늘지만, 충분해지면 다른 요인이 한계가 됩니다.' },
+    why:'CO₂도 빛과 마찬가지로 <b>포화 곡선</b>을 그립니다. 부족할 때는 크게 늘지만, 충분해지면 다른 요인이 한계가 됩니다. 실제 식물도 <b>0.1~0.15%</b> 쯤에서 포화에 이릅니다 — 공기 중 농도(0.04%)의 2~4배입니다.' },
 
   { em:'🌡️', hue:16,
     q:'온도는 광합성에 어떤 영향을 미칠까?',
-    ctrl:'빛의 세기 100%, CO₂ 농도 100%',
+    ctrl:`빛의 세기 100%, CO₂ 농도 ${CO2_SAT}%`,
     ops:[{ em:'🔥', t:'높이면' }, { em:'❄️', t:'낮추면' }],
     deps:[
       { em:'📈', t:'계속 늘어난다' },
@@ -2909,21 +2989,21 @@ function newBlankSet(){
 function applyFree(k){
   state.freeKey = k;
   const base = { light:{name:'빛의 세기',unit:'%',min:0,max:100,step:10},
-                 co2:  {name:'CO₂ 농도', unit:'%',min:0,max:100,step:10},
+                 co2:  {name:'CO₂ 농도', unit:'%',min:0,max:CO2_MAX,step:0.01},
                  temp: {name:'온도',     unit:'°C',min:0,max:50, step:1} }[k];
   Object.assign(TABS[3], { key:k, ...base,
     fixed: Object.fromEntries(['light','co2','temp'].filter(x => x !== k)
-             .map(x => [x, x === 'temp' ? 25 : 100])) });
+             .map(x => [x, x === 'temp' ? 25 : x === 'co2' ? CO2_SAT : 100])) });
   PLANS[3].q = `${base.name}는 광합성에 어떤 영향을 미칠까?`;
   // 통제값 기본치도 다시 잡는다
-  state.ctrlVal[3] = { light:100, co2:100, temp:25, ...TABS[3].fixed };
+  state.ctrlVal[3] = { light:100, co2:CO2_SAT, temp:25, ...TABS[3].fixed };
 }
 
 state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
 state.planPick = null;      // 계획 화면에서 고른 탐구 (null이면 3개 모두 보임)
 state.ctrl = [[], [], [], []];  // 탐구별로 학생이 고른 통제 변인
 // 학생이 정한 통제값 (기본은 권장값)
-state.ctrlVal = [0,1,2,3].map(i => ({ light:100, co2:100, temp:25, ...TABS[i].fixed }));
+state.ctrlVal = [0,1,2,3].map(i => ({ light:100, co2:CO2_SAT, temp:25, ...TABS[i].fixed }));
 state.concl = [null, null, null, null];   // 탐구별 결론
 state.conclTried = [[], [], [], []];      // 눌러 본 오답 (정답은 알려주지 않는다)
 state.limitDone = [false, false, false, false];   // 제한 요인 도전 성공 여부
@@ -3299,7 +3379,7 @@ function figFixed(i){
       <text x="${x + 32}" y="62" font-size="10.5" text-anchor="middle"
             fill="${FIG_ST.ink}">${LABEL[k]}</text>
       <text x="${x + 32}" y="74" font-size="11.5" font-weight="800" text-anchor="middle"
-            fill="hsl(var(--hue) 70% 40%)">${state.ctrlVal[i][k]}${UNIT[k]}</text>
+            fill="hsl(var(--hue) 70% 40%)">${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}</text>
     </g>`;
   return `<svg viewBox="0 0 200 116" role="img"
     aria-label="통제 변인 ${ks.map(k => LABEL[k] + ' ' + state.ctrlVal[i][k] + UNIT[k]).join(', ')} 를 잠가 고정한다">
@@ -3319,7 +3399,7 @@ function figVary(i){
   const steps = [0, 0.25, 0.5, 0.75, 1];
   const val = f => {
     const v = cfg.min + (cfg.max - cfg.min) * f;
-    return (cfg.step < 1 ? v.toFixed(1) : Math.round(v)) + cfg.unit;
+    return xf(cfg, v) + cfg.unit;
   };
   const icon = (f, x) => {
     if (k === 'light')                       // 전등 — 밝기가 세진다
@@ -3364,7 +3444,7 @@ function renderSetup(i){
 
   const steps = [
     `검정말을 <b>깔때기</b>로 덮고, 그 위에 물을 채운 <b>시험관</b>을 거꾸로 씌웁니다.`,
-    `통제 변인을 <b>${ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(", ") || "아직 고르지 않음"}</b> 로 맞추고, 실험 내내 바꾸지 않습니다.`,
+    `통제 변인을 <b>${ctrlNeed(i).map(k => `${LABEL[k]} ${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}`).join(", ") || "아직 고르지 않음"}</b> 로 맞추고, 실험 내내 바꾸지 않습니다.`,
     `조작 변인인 <b>${cfg.name}</b>를 ${cfg.min}${cfg.unit}부터 ${cfg.max}${cfg.unit}까지 바꿔 가며 실험합니다.`,
     `각 조건에서 <b>15초</b> 동안 깔때기 목을 지나는 <b>기포 수</b>를 셉니다.`,
     `같은 조건에서 <b>3번</b> 반복해 평균을 냅니다. 한 번의 측정에는 오차가 있기 때문입니다.`,
@@ -3419,16 +3499,16 @@ function renderSetup(i){
                   <span class="cv-box">${on ? '✓' : ''}</span>
                   <span class="cv-em">${VAR_EM[k]}</span>
                   <span class="cv-name">${LABEL[k]}</span>
-                  <span class="cv-val">${on ? v + UNIT[k] : '고르기'}</span>
+                  <span class="cv-val">${on ? xfk(k, v) + UNIT[k] : '고르기'}</span>
                 </button>
                 ${on ? `
                 <div class="cv-set">
                   <span class="cv-hint">얼마로 일정하게 둘까요?</span>
                   <input type="range" data-cv="${k}" min="${mn}" max="${mx}" step="${st}"
                          value="${v}" aria-label="${LABEL[k]} 통제값">
-                  <div class="cv-ticks"><span>${mn}${UNIT[k]}</span>
-                    <span class="rec">권장 ${TABS[i].fixed[k]}${UNIT[k]}</span>
-                    <span>${mx}${UNIT[k]}</span></div>
+                  <div class="cv-ticks"><span>${xfk(k, mn)}${UNIT[k]}</span>
+                    <span class="rec">권장 ${xfk(k, TABS[i].fixed[k])}${UNIT[k]}</span>
+                    <span>${xfk(k, mx)}${UNIT[k]}</span></div>
                 </div>` : ''}
               </div>`;
           }).join('')}
@@ -3565,7 +3645,7 @@ function renderSetup(i){
     const at = list.indexOf(k);
     if (at >= 0) list.splice(at, 1); else list.push(k);
     logAssess('통제 변인', list.length
-      ? `${list.map(x => `${LABEL[x]} ${state.ctrlVal[i][x]}${UNIT[x]}`).join(', ')}로 같게 두기`
+      ? `${list.map(x => `${LABEL[x]} ${xfk(x, state.ctrlVal[i][x])}${UNIT[x]}`).join(', ')}로 같게 두기`
       : '고른 통제 변인 없음');
     saveSession(); Sfx.tick(); renderPlan();
   });
@@ -3582,7 +3662,7 @@ function renderSetup(i){
   if (cvars) cvars.addEventListener('change', e => {
     const sl = e.target.closest('[data-cv]');
     if (sl) logAssess('통제값', `${LABEL[sl.dataset.cv]} 를 ` +
-      `${state.ctrlVal[i][sl.dataset.cv]}${UNIT[sl.dataset.cv]}로 맞춤`);
+      `${xfk(sl.dataset.cv, state.ctrlVal[i][sl.dataset.cv])}${UNIT[sl.dataset.cv]}로 맞춤`);
     saveSession();
   });
 
@@ -3634,7 +3714,7 @@ function renderSetup(i){
     }
     if (PLANS[i].free){
       logAssess('실험 시작', `조작 변인 ${TABS[i].name} · 통제 ` +
-        ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', '));
+        ctrlNeed(i).map(k => `${LABEL[k]} ${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}`).join(', '));
     }
     openLab(i);
   });
@@ -3730,7 +3810,11 @@ function renderControls(){
                  value="${state[k]}" aria-label="${LABEL[k]}">
           <span class="thumb">${ICON[k]}</span>
         </div>
-        <div class="ticks"><span>${mn}${UNIT[k]}</span><span>${mx}${UNIT[k]}</span></div>
+        <div class="ticks">
+          <span>${xfk(k, mn)}${UNIT[k]}</span>
+          ${k === 'co2' ? `<span class="air">공기 중 ${CO2_AIR}%</span>` : ''}
+          <span>${xfk(k, mx)}${UNIT[k]}</span>
+        </div>
       </div>`;
   }).join('');
 
@@ -3762,7 +3846,7 @@ function syncControls(){
     const off   = isCtl && state[k] !== target;
     const pct   = (state[k] - mn) / (mx - mn);
 
-    box.querySelector('.ctrl-val').textContent = `${state[k]}${UNIT[k]}`;
+    box.querySelector('.ctrl-val').textContent = `${xfk(k, state[k])}${UNIT[k]}`;
     const badge = box.querySelector('.badge');
     badge.textContent = isCtl ? '통제 변인' : '조작 변인';
     badge.classList.toggle('ctl', isCtl);
@@ -3790,7 +3874,7 @@ function condSig(){
 }
 function condText(sig){
   return sig.split(' · ')
-    .map(p => { const [k,v] = p.split('='); return `${LABEL[k]} ${v}${UNIT[k]}`; })
+    .map(p => { const [k,v] = p.split('='); return `${LABEL[k]} ${xfk(k, v)}${UNIT[k]}`; })
     .join(', ');
 }
 
@@ -4295,7 +4379,7 @@ function renderProg(){
   const covShort = cov.narrow || !cov.hasLow || !cov.hasHigh;
   const short = full >= GOAL && covShort;      // 개수는 찼지만 구간이 모자란 상태
   const missTxt = cov.narrow
-    ? `<b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재어 구간이 좁아요`
+    ? `<b>${xf(cfg, cov.lo)}${cfg.unit}~${xf(cfg, cov.hi)}${cfg.unit}</b> 만 재어 구간이 좁아요`
     : !cov.hasLow ? `<b>낮은 쪽(${cfg.min}${cfg.unit} 근처)</b>을 재지 않았어요`
                   : `<b>높은 쪽(${cfg.max}${cfg.unit} 근처)</b>을 재지 않았어요`;
 
@@ -4309,7 +4393,7 @@ function renderProg(){
           ? `⚠️ 조건 <b>${full}가지</b>를 모았지만 ${missTxt}.
              이대로는 관계를 잘못 읽을 수 있어요 — 그 구간을 더 재어 보세요.`
         : cov.narrow
-          ? `⚠️ <b>${cov.lo}${cfg.unit}~${cov.hi}${cfg.unit}</b> 만 재었어요.
+          ? `⚠️ <b>${xf(cfg, cov.lo)}${cfg.unit}~${xf(cfg, cov.hi)}${cfg.unit}</b> 만 재었어요.
              좁은 구간만 보면 관계를 잘못 읽기 쉬워요 — 더 넓게 퍼뜨려 보세요.`
         : !cov.hasLow
           ? `👉 <b>낮은 쪽</b>은 아직 재지 않았어요.`
@@ -4320,7 +4404,7 @@ function renderProg(){
           : `👍 ${cfg.min}${cfg.unit} 부터 ${cfg.max}${cfg.unit} 까지 고르게 재었어요.`
       }</div>
       <div class="rng-bar">${marks}</div>
-      <div class="rng-ends"><span>${cfg.min}${cfg.unit}</span><span>${cfg.max}${cfg.unit}</span></div>
+      <div class="rng-ends"><span>${xf(cfg, cfg.min)}${cfg.unit}</span><span>${xf(cfg, cfg.max)}${cfg.unit}</span></div>
     </div>`;
 
   box.classList.toggle('short', short);
@@ -4399,7 +4483,7 @@ function renderTable(){
         const hasErr = manual && (r.actual || []).some((a, i) => a !== r.m[i]);
         return `
         <tr title="${bad ? condText(r.cond) + ' 조건에서 측정' : ''}">
-          <td class="${bad ? 'mismatch' : ''}">${r.x}${bad ? '<span class="flag">다른 조건</span>' : ''}</td>
+          <td class="${bad ? 'mismatch' : ''}">${xf(cfg, r.x)}${bad ? '<span class="flag">다른 조건</span>' : ''}</td>
           ${[0,1,2].map(i => {
             if (r.m[i] === undefined) return `<td class="pending">–</td>`;
             // 직접 세기 — 실제 발생 수와 다르면 빨간색으로 표시하고 차이를 알려준다
@@ -4565,7 +4649,7 @@ function renderChart(){
   for (let i = 0; i <= xTicks; i++){
     const v = cfg.min + (cfg.max - cfg.min) * i / xTicks, x = sx(v);
     s += `<text x="${x}" y="${PAD.t+PH+18}" text-anchor="middle" font-size="11"
-            fill="var(--muted)" style="font-variant-numeric:tabular-nums">${Math.round(v)}</text>`;
+            fill="var(--muted)" style="font-variant-numeric:tabular-nums">${xf(cfg, v)}</text>`;
   }
   // 축선
   s += `<line x1="${PAD.l}" y1="${PAD.t+PH}" x2="${PAD.l+PW}" y2="${PAD.t+PH}"
@@ -4666,9 +4750,9 @@ const REVIEWS = [
         '온도 때문인지 알 수 없습니다. 조작 변인은 <b>한 번에 하나만</b> 바꿔야 합니다.' },
 
   { who:'지현', em:'🙋‍♀️',
-    plan:'CO₂ 농도를 20%, 40%, 60%로 바꾸며 각각 <b>한 번씩만</b> 측정했다.',
+    plan:'CO₂ 농도를 0.04%, 0.08%, 0.12%로 바꾸며 각각 <b>한 번씩만</b> 측정했다.',
     result:'40%일 때가 60%보다 높게 나왔다.',
-    claim:'그래서 <b>“CO₂는 40%가 가장 좋다”</b>고 결론지었다.',
+    claim:'그래서 <b>“CO₂는 0.08%가 가장 좋다”</b>고 결론지었다.',
     opts:['맞는 결론이다', '틀렸다 — 통제 변인을 정하지 않았다',
           '틀렸다 — 한 번만 재서 오차일 수 있다', '틀렸다 — 온도를 재지 않았다'],
     ans:2,
@@ -4677,7 +4761,7 @@ const REVIEWS = [
 
   { who:'서준', em:'🧑‍🔬',
     plan:'온도를 10°C, 20°C, 30°C로 바꾸며 3번씩 측정했다. ' +
-         '빛과 CO₂는 100%로 고정했다.',
+         `빛은 100%, CO₂는 ${CO2_SAT}%로 고정했다.`,
     result:'온도가 높을수록 산소가 늘었다.',
     claim:'그래서 <b>“온도가 높을수록 광합성이 계속 활발해진다”</b>고 결론지었다.',
     opts:['설계는 옳지만, 더 높은 온도까지 재봐야 한다',
@@ -4902,8 +4986,8 @@ function renderSynth(){
    100%로만 두면 학생이 이를 겪을 일이 없으므로, 일부러 낮춰 보게 한다.
 ----------------------------------------------------------------*/
 const LIMITS = [
-  { tab:0, key:'co2',   to:20,
-    title:'CO₂를 20%로 낮추고 빛 실험을 다시 해보세요',
+  { tab:0, key:'co2',   to:CO2_AIR,
+    title:`CO₂를 공기 중 농도(${CO2_AIR}%)로 낮추고 빛 실험을 다시 해보세요`,
     ask:'빛을 아무리 세게 해도 산소가 더 늘지 않는 지점이 생깁니다. 왜 그럴까요?',
     why:'빛이 충분해지면 이제는 <b>CO₂가 부족해서</b> 광합성이 더 빨라지지 못합니다. ' +
         '이렇게 가장 부족한 요인이 전체 속도를 정하는 것을 <b>제한 요인</b>이라고 합니다.' },
@@ -4923,7 +5007,8 @@ const LIMITS = [
 function limitActive(){
   if (state.activeTab > 2) return false;
   const L = LIMITS[state.activeTab];
-  return L && state.ctrlVal[state.activeTab][L.key] <= 30;
+    // 조절 범위의 30% 아래로 낮췄을 때 도전이 열린다 (눈금이 달라도 같은 뜻)
+  return L && state.ctrlVal[state.activeTab][L.key] <= RANGE[L.key][1] * 0.3;
 }
 
 function renderLimit(){
@@ -4949,7 +5034,7 @@ function renderLimit(){
     ? `<div class="limit ok">
          <div class="lm-head"><span class="lm-em">🧩</span>
            <div><b>제한 요인을 찾았습니다!</b>
-             <small>${LABEL[L.key]}를 ${state.ctrlVal[i][L.key]}${UNIT[L.key]}로 낮춘 실험</small></div>
+             <small>${LABEL[L.key]}를 ${xfk(L.key, state.ctrlVal[i][L.key])}${UNIT[L.key]}로 낮춘 실험</small></div>
          </div>
          <p class="lm-why">${L.why}</p>
        </div>`
@@ -4967,7 +5052,7 @@ function renderLimit(){
   const go = document.getElementById('limitGo');
   if (go) go.addEventListener('click', () => {
     toast('⚖️', '계획서에서 통제값을 낮춰 보세요',
-      `<b>${LABEL[L.key]}</b>를 <b>${L.to}${UNIT[L.key]}</b> 정도로 낮추면 됩니다.`);
+      `<b>${LABEL[L.key]}</b>를 <b>${xfk(L.key, L.to)}${UNIT[L.key]}</b> 정도로 낮추면 됩니다.`);
     backToPlan(false);
   });
 }
@@ -5180,7 +5265,8 @@ function interpretQs(hit, i = state.activeTab){
       q:'공기 중 이산화 탄소는 <b>0.04%</b> 정도밖에 되지 않습니다. ' +
         '이 값을 그래프에 놓아 보면 어디쯤일까요? 그렇다면 공기 중에서 자라는 ' +
         '식물의 광합성은 무엇 때문에 제한되고 있을까요?',
-      hint:`0.04%는 그래프의 <b>맨 왼쪽 끝</b>에 붙어 있는 아주 낮은 값입니다.
+      hint:`0.04% 는 <b>슬라이더에 표시된 자리</b>이니 직접 재어 보고, 그 값을 함께 적어도 좋습니다.
+        그래프에서 0.04% 쯤의 기울기를 보세요.
         그 구간의 기울기를 보세요 — 농도가 조금만 올라도 산소 발생량이 크게 늘었나요?
         그렇다면 자연에서는 이산화 탄소가 <b>부족해서</b> 광합성이 느려지고 있다는 뜻입니다.
         농부들이 비닐하우스에 이산화 탄소를 더 넣어 주는 까닭과 이어서 적어 보세요.`,
@@ -5210,6 +5296,16 @@ function interpretQs(hit, i = state.activeTab){
     { id:'q2', icon:'❓', q:WHY.q, hint:WHY.hint },
     // 오차가 실제로 있었을 때만 그 숫자를 들어 원인을 묻는다
     ...(ERR.has ? [{ id:'q6', icon:'📏', q:ERR.q, hint:ERR.hint }] : []),
+    /* 그래프에서 읽은 것을 스스로 결론 문장으로 맺는 칸.
+       고르기(4지선다)는 읽었는지 확인할 뿐이고, 근거를 들어 한 문장으로 맺는 것은
+       또 다른 일이다. 가설이 맞았든 틀렸든 반드시 쓰게 한다 —
+       예전에는 가설이 틀리면 결론을 쓸 칸이 아예 없었다. */
+    { id:'q9', icon:'🧾',
+      q:`그래프에서 읽은 것을 바탕으로 <b>결론을 한 문장</b>으로 쓰고, ` +
+        `그렇게 판단한 <b>근거</b>를 그래프에서 찾아 함께 적어 보세요.`,
+      hint:`“${cfg.name}를 ~하면 산소 발생량은 ~한다” 처럼 <b>“~한다”</b>로 단정해 적습니다.` +
+        ` 그다음 “왜냐하면 그래프에서 ○○${cfg.unit} 부터 ○○${cfg.unit} 까지는 ~하고,` +
+        ` 그 뒤로는 ~했기 때문이다” 처럼 <b>구간과 값</b>을 들어 근거를 적어 보세요.` },
     hit
       ? { id:'q3', icon:'✅',
           q:'가설이 맞았습니다. 이제 확인된 사실로 결론을 써 보세요.',
@@ -5269,7 +5365,7 @@ function interpretHTML(i){
   return `
     <div class="interp">
       <div class="ip-head">
-        <b>✍️ 결과 해석 쓰기</b>
+        <b>✍️ 그래프 해석과 결론 쓰기</b>
         <span class="ip-cnt ${written === QS.length ? 'full' : ''}">${written} / ${QS.length}</span>
       </div>
       <p class="ip-lead">${p.free
@@ -5604,7 +5700,7 @@ function renderMascot(){
 }
 
 /* 완벽한 최적 조건인가 — 🌈 피버 타임 */
-const isFever = () => state.light === 100 && state.co2 === 100 && state.temp === 35;
+const isFever = () => state.light === 100 && state.co2 >= CO2_SAT && state.temp === 35;
 
 /* ---------------------------------------------------------------
    🏆 업적 · 미션
@@ -5619,7 +5715,7 @@ const BADGES = [
     how :'광합성이 완전히 멈추는 조건을 만들어 보세요. ' +
          '효소가 견디지 못할 만큼 온도를 올리면 어떻게 될까요?' },
   { id:'fever',     em:'🌈', name:'슈퍼 광합성',
-    desc:'빛 100% · CO₂ 100% · 온도 35°C — 광합성이 가장 활발한 완벽한 조건을 찾아냈습니다.',
+    desc:`빛 100% · CO₂ ${CO2_SAT}% · 온도 35°C — 광합성이 가장 활발한 완벽한 조건을 찾아냈습니다.`,
     how :'검정말이 가장 좋아하는 완벽한 조건을 찾아 측정해 보세요. 세 가지 요인이 모두 딱 맞아야 합니다.' },
   { id:'designer',  em:'🕵️', name:'설계 감식가',
     desc:'남의 실험 설계에서 잘못된 점을 모두 찾아냈습니다.',
@@ -6298,7 +6394,7 @@ function exportCSV(){
     [],
     [q(`${cfg.name} (${cfg.unit})`), q('1회'), q('2회'), q('3회'), q(`평균 (${M().unit})`), q('통제 변인')],
     ...data.map(r => [
-      r.x,
+      xf(cfg, r.x),
       ...[0,1,2].map(i => r.m[i] === undefined ? '' : fmt(r.m[i])),
       r.avg === null ? '' : fmt(r.avg),
       q(condText(r.cond)),
@@ -6392,12 +6488,12 @@ function reportHTML(opts = {}){
     .replace(/var\(--series-1\)/g, '#2a78d6');
 
   const hyp = hypReady(i) ? hypText(i) : '(정하지 않음)';
-  const ctrlTxt = ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', ');
+  const ctrlTxt = ctrlNeed(i).map(k => `${LABEL[k]} ${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}`).join(', ');
   const conclTxt = state.concl[i] === null ? '(아직 정리하지 않음)' : p.deps[state.concl[i]].t;
 
   const tableRows = data.map(r => {
     const cells = [0,1,2].map(k => r.m[k] === undefined ? '–' : fmt(r.m[k]));
-    return `<tr><td>${r.x}${cfg.unit}</td><td>${cells[0]}</td><td>${cells[1]}</td>
+    return `<tr><td>${xf(cfg, r.x)}${cfg.unit}</td><td>${cells[0]}</td><td>${cells[1]}</td>
             <td>${cells[2]}</td><td><b>${r.avg === null ? '–' : fmt(r.avg)}</b></td></tr>`;
   }).join('');
 
@@ -6881,7 +6977,7 @@ $('pngBtn').addEventListener('click', exportPNG);
 $('restoreBtn').addEventListener('click', () => {
   if (state.isMeasuring) return;
   const i = state.activeTab;
-  const now = ctrlNeed(i).map(k => `${LABEL[k]} ${state.ctrlVal[i][k]}${UNIT[k]}`).join(', ');
+  const now = ctrlNeed(i).map(k => `${LABEL[k]} ${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}`).join(', ');
   openModal('⚖️ 통제 변인을 바꾸시겠어요?',
     `지금 통제값은 <b>${now}</b> 입니다.<br><br>
      실험 도중에는 바꿀 수 없습니다. 통제 변인이 중간에 바뀌면
