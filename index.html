@@ -2361,7 +2361,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 k';
+const BUILD = '2026-07-25 m';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2557,7 +2557,9 @@ function saveSession(){
   if (w && w.no && cloudOn() && window.Cloud.saveProgress){
     clearTimeout(cloudSaveTimer);
     cloudSaveTimer = setTimeout(() => {
-      window.Cloud.saveProgress(w.no, payload).catch(() => {});
+      // 서버가 거절해도 이 기기의 기록은 남는다 — 조용히 넘긴다
+      try { window.Cloud.saveProgress(w.no, payload).catch(() => {}); }
+      catch (e){ console.warn('서버 저장 실패', e); }
     }, 1500);
   }
 }
@@ -2568,8 +2570,10 @@ function flushSave(){
   clearTimeout(cloudSaveTimer);
   const w = getWho();
   if (!(w && w.no && cloudOn() && window.Cloud.saveProgress)) return Promise.resolve(false);
-  return window.Cloud.saveProgress(w.no, sessionPayload())
-    .then(() => true).catch(() => false);
+  try {
+    return window.Cloud.saveProgress(w.no, sessionPayload())
+      .then(() => true).catch(() => false);
+  } catch (e){ console.warn('서버 저장 실패', e); return Promise.resolve(false); }
 }
 
 // 창을 닫거나 다른 곳으로 갈 때도 대기 중인 저장을 흘려보낸다
@@ -2756,6 +2760,14 @@ function normalizeState(){
     for (let i = 0; i < 4; i++){
       if (!isObj(state.data[m][i]))          state.data[m][i] = {};
       if (typeof state.graphed[m][i] !== 'boolean') state.graphed[m][i] = (m === 'auto');
+      /* 칸 이름을 늘 지금 규칙으로 다시 매긴다.
+         예전에 저장된 이름에 점이 섞여 있으면 서버가 통째로 저장을 거부하므로,
+         화면을 그리기 전에 여기서 바로잡아 둔다. (값은 그대로 둔다) */
+      const tab = state.data[m][i], fixed = {};
+      Object.values(tab).forEach(r => {
+        if (r && typeof r === 'object' && r.x !== undefined) fixed[slotKey(r.x, r.cond)] = r;
+      });
+      state.data[m][i] = fixed;
     }
   });
 
@@ -4070,7 +4082,11 @@ function renderBubbles(n){
 }
 
 /* 저장 키 = 조작 변인값 + 통제 조건 (조건마다 독립적으로 3회를 쌓는다) */
-const slotKey = (x, cond) => `${cond}|${x}`;
+/* 측정값을 담는 칸 이름.
+   서버(Firebase)의 키에는 . # $ / [ ] 를 쓸 수 없다. CO₂ 농도가 0.15 처럼
+   소수가 되면서 이름에 점이 섞여 서버 저장이 통째로 실패했다.
+   값 자체는 r.x · r.cond 에 그대로 남으므로, 이름에서만 점을 바꾼다. */
+const slotKey = (x, cond) => `${cond}|${x}`.replace(/[.#$/[\]]/g, '_');
 
 /* 현재 조작 변인값 + 현재 통제 조건에서의 측정 기록 */
 function currentSlot(){
