@@ -2550,7 +2550,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-26 b';
+const BUILD = '2026-07-26 c';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -5995,8 +5995,10 @@ function conclusionSentence(i){
   return `${cfg.name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}.`;
 }
 
-/* 해석을 다 썼는가 — 수행평가(자유 탐구) 보고서 저장의 조건 */
-const MIN_CHARS = 10;
+/* 해석 한 칸의 최소 글자 수.
+   수행평가 채점기준과 같은 잣대로 둔다 — 탐구 1·2·3 에서 연습한 그대로
+   수행평가를 치르게 하려면, 연습의 기준이 더 헐거워서는 안 된다. */
+const MIN_CHARS = A_MIN;
 /* 탐구 i 의 해석 저장소 (없으면 만들어 준다) */
 function ipOf(i){
   if (!Array.isArray(state.interpret)) state.interpret = normInterpret(state.interpret);
