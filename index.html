@@ -356,6 +356,87 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   color:var(--text-secondary);
 }
 .m-steps li b{color:var(--text-primary)}
+
+/* =========================================================
+   수행평가 문항 — 가설 20 · 변인 30 · 과정 50
+   ========================================================= */
+.aq{margin:4px 0 12px}
+.aq label,.aq-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font-size:13px;font-weight:750;margin-bottom:5px}
+.aq-hint{margin:0 0 6px;font-size:11.5px;line-height:1.55;color:var(--muted)}
+.aq-hint b{color:var(--text-secondary)}
+.aq textarea,.asteps textarea{
+  width:100%;box-sizing:border-box;padding:9px 11px;border-radius:10px;resize:vertical;
+  font:inherit;font-size:13px;line-height:1.6;
+  border:1.5px solid var(--border);background:var(--page);color:var(--text-primary);
+}
+.aq textarea:focus,.asteps textarea:focus{outline:none;border-color:var(--series-1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--series-1) 18%,transparent)}
+.aq.ok textarea,.asteps li.ok textarea{border-color:rgba(12,163,12,.5);background:rgba(12,163,12,.05)}
+.aq-len{margin:3px 0 0;text-align:right;font-size:11px;font-weight:700;color:#8a6a00}
+.aq-len.ok{color:#0a8a0a}
+.pt{padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;
+  background:var(--grid);color:var(--text-secondary)}
+.pt.ok{background:#0ca30c;color:#fff}
+.aq-cnt{margin-left:auto;padding:2px 10px;border-radius:99px;font-size:11.5px;font-weight:800;
+  background:var(--page);border:1px solid var(--border);color:var(--text-secondary)}
+.aq-cnt.full{background:#0ca30c;border-color:#0ca30c;color:#fff}
+
+/* 준비물 세트 */
+.kit{padding:11px 13px;border-radius:12px;margin-bottom:12px;
+  background:rgba(250,178,25,.1);border:1.5px solid rgba(250,178,25,.45)}
+.kit > b{display:block;font-size:12.5px;margin-bottom:7px}
+.kit-list{display:flex;flex-wrap:wrap;gap:6px}
+.kit-list span{padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:650;
+  background:var(--surface-1);border:1px solid var(--border)}
+.kit-note{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--text-secondary)}
+
+/* 여섯 단계 */
+.asteps{margin:0;padding:0;list-style:none;counter-reset:as;display:flex;
+  flex-direction:column;gap:8px}
+.asteps li{position:relative;padding-left:30px}
+.asteps li::before{counter-increment:as;content:counter(as);position:absolute;left:0;top:9px;
+  width:22px;height:22px;border-radius:50%;background:var(--baseline);color:#fff;
+  font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.asteps li.ok::before{background:#0ca30c}
+.as-len{position:absolute;right:9px;bottom:7px;font-size:10.5px;font-weight:700;color:var(--muted)}
+.as-len.ok{color:#0a8a0a}
+
+/* 학생이 적는 통제 변인 */
+.uctrl{padding:11px 13px;border-radius:12px;margin:4px 0 10px;
+  background:color-mix(in srgb,var(--series-1) 5%,var(--surface-1));
+  border:1.5px solid color-mix(in srgb,var(--series-1) 25%,var(--border))}
+.uc-lead{margin:0 0 9px;font-size:12.5px;line-height:1.6}
+.uc-lead small{color:var(--muted)}
+.uc-cnt{margin-left:6px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;
+  background:var(--page);border:1px solid var(--border)}
+.uc-cnt.full{background:#0ca30c;border-color:#0ca30c;color:#fff}
+.uc-list{margin:0 0 9px;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.uc-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;
+  background:var(--surface-1);border:1px solid var(--border);font-size:12.5px}
+.uc-how{color:var(--text-secondary);font-size:11.5px}
+.uc-how::before{content:'— '}
+.uc-del{margin-left:auto;width:24px;height:24px;border-radius:50%;border:0;cursor:pointer;
+  background:transparent;color:#a83232;font-size:13px;font-weight:800;flex:none}
+.uc-del:hover{background:#d03b3b;color:#fff}
+.uc-add{display:flex;gap:6px;flex-wrap:wrap}
+.uc-add input{flex:1;min-width:130px;padding:8px 10px;border-radius:9px;font:inherit;font-size:12.5px;
+  border:1.5px solid var(--border);background:var(--page);color:var(--text-primary)}
+.uc-add input:focus{outline:none;border-color:var(--series-1)}
+.uc-go{padding:8px 15px;border:0;border-radius:9px;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:750;background:var(--series-1);color:#fff;flex:none}
+.uc-tips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.uc-chip{padding:4px 10px;border-radius:99px;cursor:pointer;font:inherit;font-size:11px;
+  font-weight:650;background:transparent;border:1px dashed var(--baseline);color:var(--text-secondary)}
+.uc-chip:hover{border-color:var(--series-1);color:var(--series-1)}
+.uc-note{margin:0;font-size:11.5px;color:var(--muted)}
+/* 수행평가 상황 제시 */
+.sit{padding:13px 15px;border-radius:14px;
+  background:color-mix(in srgb,var(--series-1) 8%,var(--surface-1));
+  border:1.5px solid color-mix(in srgb,var(--series-1) 30%,var(--border))}
+.sit > b{display:block;font-size:13.5px;margin-bottom:6px}
+.sit p{margin:0;font-size:12.5px;line-height:1.7;color:var(--text-secondary)}
+.sit-pt{margin-top:8px!important;font-weight:800;color:var(--text-primary)!important}
 /* 실험 방법 그림 — 글 아래에 붙여, 읽고 나서 장치를 확인하게 한다 */
 .m-steps li.hasfig{margin-bottom:2px}
 .mfig{
@@ -2367,10 +2448,61 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 n';
+const BUILD = '2026-07-25 p';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
+
+/* ---------------------------------------------------------------
+   ⚖️ 학생이 직접 적는 통제 변인 (수행평가 전용)
+   앱이 흉내 내는 것은 빛·CO₂·온도 셋뿐이지만, 실제 장치에서 같게 두어야 할 것은
+   더 많다 — 검정말의 양, 물의 양, 시험관 크기… 무엇을 같게 둘지 스스로 찾아
+   적는 것이 설계의 핵심이라, 자유 탐구에서 직접 더할 수 있게 한다.
+   (여기 적은 것은 실험 결과를 바꾸지 않는다. 보고서와 작성 기록에 함께 남는다)
+----------------------------------------------------------------*/
+const UCTRL_MAX = 6;
+state.userCtrl = [];        // [{ name:'검정말의 양', how:'모두 10cm' }]
+
+/* 고르기 쉽도록 자주 쓰는 것을 미리 보여 준다 */
+const UCTRL_TIPS = ['시금치 잎 조각의 크기·개수', '수용액의 농도와 부피', '전등과의 거리',
+                    '물의 온도', '재는 시간', '잎의 신선도'];
+
+/* ---------------------------------------------------------------
+   📝 수행평가 답안 — 「식물과 에너지」 수행평가 채점기준을 그대로 따른다.
+   가설 20점 · 변인 30점 · 과정 50점, 총 100점.
+   고르기(칩)만으로는 채점할 수 없으므로, 문항마다 학생이 직접 서술한다.
+----------------------------------------------------------------*/
+const A_MIN = 20;          // 서술 한 칸의 최소 글자 수
+const A_STEPS = 6;         // 실험 과정은 여섯 단계
+const UCTRL_MIN = 3;       // 통제 변인은 3가지 이상 (채점기준)
+
+state.assess = { hyp:'', indep:'', dep:'', steps:['', '', '', '', '', ''] };
+
+/* 문항 3 — 요인별로 제공되는 준비물. 모두 써서 과정을 설계해야 한다. */
+const KITS = {
+  light:['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(100mL) 3개',
+         'LED 전등 3개', '30cm 자', '초시계', '펀치(지름 5mm 조각용)', '온도계',
+         '물이 담긴 수조(열 차단용)'],
+  co2:  ['시금치 잎', '밀폐 용기 3개', '디지털 산소 센서 3개', '스마트 기기(MBL 앱)',
+         'LED 전등 3개', '어둠상자', '탄산수소 나트륨 수용액(0.5%·1.5%·3.0%)',
+         '거름종이', '핀셋', '전자저울'],
+  temp: ['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(250mL) 3개',
+         'LED 전등 3개', '얼음물', '실온의 물', '따뜻한 물(50℃)', '온도계 3개',
+         '초시계', '펀치(지름 5mm 조각용)'],
+};
+
+/* 문항별로 다 썼는지 — 채점기준의 요구를 그대로 옮긴다 */
+const aLen = v => String(v || '').trim().length;
+function assessScore(){
+  const a = state.assess, u = state.userCtrl;
+  const q1 = aLen(a.hyp) >= A_MIN;
+  const q2 = aLen(a.indep) >= 10 && aLen(a.dep) >= 10 &&
+             u.length >= UCTRL_MIN && u.every(x => aLen(x.how) >= 5);
+  const q3 = a.steps.filter(s => aLen(s) >= A_MIN).length >= A_STEPS;
+  return { q1, q2, q3, done: q1 && q2 && q3,
+           n: [q1, q2, q3].filter(Boolean).length };
+}
+const assessDone = () => assessScore().done;
 
 /* ---------------------------------------------------------------
    ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 시간이 흐른다.
@@ -2527,6 +2659,8 @@ function sessionPayload(){
       blankSeed: state.blankSeed,
       interpret: state.interpret,
       photo:   state.photo,
+      userCtrl: state.userCtrl,
+      assess:  state.assess,
       timer:   { accum: timerElapsed(), total: state.timer.total },
       log:     state.log,
       concl:   state.concl,
@@ -2599,6 +2733,24 @@ function normInterpret(v){
   return [{}, {}, {}, {}];
 }
 
+/* 학생이 직접 적은 통제 변인 — [{name, how}] 만 남긴다 */
+function normUctrl(v){
+  if (!Array.isArray(v)) return [];
+  return v.filter(x => x && typeof x === 'object' && String(x.name || '').trim())
+          .slice(0, UCTRL_MAX)
+          .map(x => ({ name: String(x.name).trim().slice(0, 20),
+                       how:  String(x.how || '').trim().slice(0, 30) }));
+}
+
+/* 수행평가 답안 — 칸이 비어 있어도 모양은 늘 갖춰 둔다 */
+function normAssess(v){
+  const o = (v && typeof v === 'object') ? v : {};
+  const st = Array.isArray(o.steps) ? o.steps.slice(0, A_STEPS) : [];
+  while (st.length < A_STEPS) st.push('');
+  return { hyp:String(o.hyp || ''), indep:String(o.indep || ''), dep:String(o.dep || ''),
+           steps: st.map(x => String(x || '')) };
+}
+
 /* 사진은 탐구마다 하나 (data URL) */
 function normPhoto(v){
   const a = Array.isArray(v) ? v.slice(0, 4).map(x => (typeof x === 'string' ? x : null)) : [];
@@ -2631,6 +2783,8 @@ function loadSession(){
   state.blankSeed = s.blankSeed || state.blankSeed;
   state.interpret = normInterpret(s.interpret);
   state.photo   = normPhoto(s.photo);
+  state.userCtrl = normUctrl(s.userCtrl);
+  state.assess   = normAssess(s.assess);
   state.log     = Array.isArray(s.log) ? s.log.slice(-LOG_MAX) : [];
   state.scale   = s.scale;
   // 창을 닫아 둔 시간은 세지 않는다 — 다시 열면 그때부터 이어 잰다
@@ -2668,6 +2822,8 @@ function wipeAssessment(p){
   if (fill(p.limitDone, false))                  p.limitDone[t] = false;
   p.interpret = normInterpret(p.interpret); p.interpret[t] = {};
   p.photo     = normPhoto(p.photo);         p.photo[t]     = null;
+  p.userCtrl  = [];
+  p.assess    = { hyp:'', indep:'', dep:'', steps:['','','','','',''] };
   p.freeKey   = null;
   p.blanks    = {};
   p.blankSeed = Math.floor(Math.random() * 100000);
@@ -2803,6 +2959,8 @@ function normalizeState(){
 
   state.interpret = normInterpret(state.interpret);
   state.photo     = normPhoto(state.photo);
+  state.userCtrl  = normUctrl(state.userCtrl);
+  state.assess    = normAssess(state.assess);
   if (!Array.isArray(state.log))   state.log = [];
   // 예전 눈금(0~100%)으로 잰 CO₂ 기록을 새 눈금으로 갈아 끼운다
   if (state.scale !== SCALE_V) migrateCo2Scale();
@@ -3036,7 +3194,7 @@ function ctrlNeed(i){ return ['light','co2','temp'].filter(k => k !== TABS[i].ke
 function ctrlReady(i){ return ctrlNeed(i).every(k => state.ctrl[i].includes(k)); }
 const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
 const planReady = i => hypReady(i) && ctrlReady(i) &&
-  !(PLANS[i].free && (!state.freeKey || !blanksDone(i)));
+  !(PLANS[i].free && (!state.freeKey || !assessDone()));
 
 /* 화면에 쓸 탐구 이름.
    자유 탐구는 조작 변인을 학생이 정하므로, 정하기 전에는 어떤 변인도 내세우지
@@ -3455,6 +3613,74 @@ function figVary(i){
   </svg>`;
 }
 
+/* ---------------------------------------------------------------
+   📝 수행평가 문항 — 채점기준(가설 20 · 변인 30 · 과정 50)을 화면에 그대로 옮긴다.
+   고르기만으로는 채점할 수 없으므로 문항마다 학생이 직접 서술한다.
+----------------------------------------------------------------*/
+const scoreTag = (pt, ok) =>
+  `<span class="pt ${ok ? 'ok' : ''}">${pt}점${ok ? ' ✓' : ''}</span>`;
+
+/* 문항 1 — 가설 서술 (20점) */
+function assessHyp(){
+  const a = state.assess, ok = aLen(a.hyp) >= A_MIN;
+  const name = state.freeKey ? LABEL[state.freeKey] : '고른 환경 요인';
+  return `
+    <div class="aq ${ok ? 'ok' : ''}">
+      <label for="aHyp">가설을 <b>한 문장</b>으로 서술하세요 ${scoreTag(20, ok)}</label>
+      <p class="aq-hint">💡 <b>${name}</b>를 어떻게 바꾸면 <b>광합성량</b>이 어떻게 되는지,
+        <b>변화의 방향(늘어난다·줄어든다·일정해진다)</b>까지 드러나야 만점입니다.
+        “영향을 미칠 것이다” 처럼 방향이 없으면 감점됩니다.</p>
+      <textarea id="aHyp" data-a="hyp" rows="3"
+        placeholder="예) 빛의 세기가 강할수록 광합성이 활발해져 잎 조각이 떠오르는 시간이 짧아지고, 어느 밝기를 넘으면 더 짧아지지 않을 것이다.">${esc(a.hyp)}</textarea>
+      <p class="aq-len ${ok ? 'ok' : ''}">${lenNote(a.hyp, A_MIN)}</p>
+    </div>`;
+}
+
+/* 문항 2 — 변인 구분과 정의 (30점 중 일부) */
+function assessVars(){
+  const a = state.assess;
+  const okI = aLen(a.indep) >= 10, okD = aLen(a.dep) >= 10;
+  const box = (id, key, title, hint, ph, ok) => `
+    <div class="aq ${ok ? 'ok' : ''}">
+      <label for="${id}">${title}</label>
+      <p class="aq-hint">💡 ${hint}</p>
+      <textarea id="${id}" data-a="${key}" rows="2" placeholder="${ph}">${esc(a[key])}</textarea>
+      <p class="aq-len ${ok ? 'ok' : ''}">${lenNote(a[key], 10)}</p>
+    </div>`;
+  return box('aIndep', 'indep', '독립 변인(조작 변인) 정의',
+      '무엇을 <b>어떻게 다르게</b> 할 것인지까지 적습니다. 요인 이름만 쓰면 감점입니다.',
+      '예) 전등과 비커 사이의 거리를 10·30·50cm로 바꾸어 빛의 세기를 다르게 한다', okI) +
+    box('aDep', 'dep', '종속 변인 정의',
+      '‘광합성량’ 이라고만 쓰지 말고, 이 실험에서 <b>실제로 잴 수 있는 것</b>으로 적습니다.',
+      '예) 잎 조각 5개가 모두 떠오르는 데 걸리는 시간(초)', okD);
+}
+
+/* 문항 3 — 준비물 + 여섯 단계 과정 (50점) */
+function assessSteps(){
+  const a = state.assess, kit = KITS[state.freeKey] || [];
+  const done = a.steps.filter(x => aLen(x) >= A_MIN).length;
+  return `
+    <div class="kit">
+      <b>🧰 제공된 준비물 — 아래 것을 <u>모두</u> 써서 과정을 설계합니다</b>
+      <div class="kit-list">${kit.map(x => `<span>${x}</span>`).join('')}</div>
+      <p class="kit-note">빠뜨리거나 없는 물건을 새로 들여오면 감점됩니다.
+        특히 <b>통제 변인을 맞추려고 준 물건</b>(예: 열을 막는 물 수조)을 꼭 쓰세요.</p>
+    </div>
+    <div class="aq-head">실험 과정을 <b>순서대로 ${A_STEPS}단계</b> 서술하세요
+      ${scoreTag(50, done >= A_STEPS)}
+      <span class="aq-cnt ${done >= A_STEPS ? 'full' : ''}">${done} / ${A_STEPS}</span></div>
+    <p class="aq-hint">💡 <b>대조군</b>을 어떻게 두는지, <b>몇 초·몇 번</b> 재는지가
+      과정 안에 드러나야 만점입니다.</p>
+    <ol class="asteps">${a.steps.map((v, n) => {
+      const ok = aLen(v) >= A_MIN;
+      return `<li class="${ok ? 'ok' : ''}">
+        <textarea data-astep="${n}" rows="2"
+          placeholder="${n + 1}단계 — 무엇을 어떻게 하는지 적으세요">${esc(v)}</textarea>
+        <span class="as-len ${ok ? 'ok' : ''}">${aLen(v)}자</span>
+      </li>`;
+    }).join('')}</ol>`;
+}
+
 /* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
 function renderSetup(i){
   const p = PLANS[i], cfg = TABS[i], h = state.hyp[i];
@@ -3476,10 +3702,18 @@ function renderSetup(i){
         <div><span class="su-no">${tabTitle(i)}</span><b>${
           p.free && !state.freeKey ? '내가 직접 설계하는 탐구' : p.q}</b></div>
       </div>
+      ${p.free ? `
+      <div class="sit" style="order:0">
+        <b>🌱 탐구 상황</b>
+        <p>스마트팜에서 채소를 기르는데, 흐린 날이나 겨울에도 잘 자라게 하려면
+          내부 환경을 어떻게 맞춰 주어야 할까요? <b>빛의 세기 · 이산화 탄소 농도 · 온도</b>
+          가운데 <b>하나만</b> 골라, 그 요인과 광합성량의 관계를 알아볼 실험을 설계해 봅시다.</p>
+        <p class="sit-pt">가설 <b>20점</b> · 변인 <b>30점</b> · 과정 <b>50점</b> = 100점</p>
+      </div>` : ''}
 
       ${p.free ? `
-      <section class="su-sec">
-        <h4>🔍 조작 변인 정하기<small>무엇을 바꿔가며 알아볼까요?</small>
+      <section class="su-sec" style="order:1">
+        <h4>[문항 1] ① 환경 요인 고르기<small>셋 중 하나만 고릅니다</small>
           ${state.freeKey ? '<button class="sec-clr" data-clr="fk">지우기</button>' : ''}</h4>
         <div class="chips">
           ${['light','co2','temp'].map(k => `
@@ -3496,8 +3730,8 @@ function renderSetup(i){
         <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
       </div>
     </div>` : `
-      <section class="su-sec">
-        <h4>⚖️ 통제 변인 정하기<small>같게 둘 것을 고르고, 얼마로 맞출지 정하세요</small>
+      <section class="su-sec" ${p.free ? 'style="order:3"' : ''}>
+        <h4>${p.free ? '[문항 2] 변인 구분과 통제' : '⚖️ 통제 변인 정하기'}<small>${p.free ? '30점 — 통제 변인 3가지 이상과 그 방안까지' : '같게 둘 것을 고르고, 얼마로 맞출지 정하세요'}</small>
           ${p.free && state.ctrl[i].length ? '<button class="sec-clr" data-clr="ctrl">지우기</button>' : ''}</h4>
         <div class="cvars">
           ${['light','co2','temp'].map(k => {
@@ -3531,12 +3765,38 @@ function renderSetup(i){
               </div>`;
           }).join('')}
         </div>
+        ${p.free ? assessVars() : ''}
+        ${p.free ? `
+        <!-- 앱이 흉내 내지 못하는 것까지 스스로 찾아 적는다 -->
+        <div class="uctrl">
+          <p class="uc-lead">🔎 실험 내내 <b>같게 유지할 것</b>을 <b>${UCTRL_MIN}가지 이상</b> 적고,
+            <b>어떻게 같게 유지할지</b>도 함께 적으세요.
+            <small>(이름만 적고 방안이 없으면 감점됩니다)</small>
+            <span class="uc-cnt ${state.userCtrl.length >= UCTRL_MIN ? 'full' : ''}">${state.userCtrl.length} / ${UCTRL_MIN}</span></p>
+          ${state.userCtrl.length ? `
+            <ul class="uc-list">${state.userCtrl.map((u, n) => `
+              <li class="uc-item">
+                <b>${esc(u.name)}</b>${u.how ? `<span class="uc-how">${esc(u.how)}</span>` : ''}
+                <button class="uc-del" data-ucdel="${n}" aria-label="지우기">✕</button>
+              </li>`).join('')}</ul>` : ''}
+          ${state.userCtrl.length >= UCTRL_MAX ? `
+            <p class="uc-note">${UCTRL_MAX}개까지 적을 수 있어요.</p>` : `
+            <div class="uc-add">
+              <input type="text" id="ucName" maxlength="24" placeholder="통제 변인 (예: 잎 조각의 크기)">
+              <input type="text" id="ucHow" maxlength="40" placeholder="어떻게 같게 유지할지 (예: 모든 비커에 50mL씩)">
+              <button class="uc-go" id="ucAdd">추가</button>
+            </div>
+            <div class="uc-tips">${UCTRL_TIPS
+              .filter(t => !state.userCtrl.some(u => u.name === t))
+              .map(t => `<button class="uc-chip" data-uctip="${esc(t)}">+ ${t}</button>`).join('')}</div>`}
+        </div>` : ''}
+
         <p class="su-why">${cfg.name} 말고 다른 것도 함께 바뀌면,
           결과가 무엇 때문인지 알 수 없습니다.</p>
       </section>
 
-      <section class="su-sec">
-        <h4>🎯 가설 만들기<small>결과를 예상해 보세요</small>
+      <section class="su-sec" ${p.free ? 'style="order:2"' : ''}>
+        <h4>${p.free ? '[문항 1] ② 가설 서술' : '🎯 가설 만들기'}<small>${p.free ? '20점 — 방향까지 드러나게 서술합니다' : '결과를 예상해 보세요'}</small>
           ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
         <div class="hyp-line">
           <span class="hyp-fix">${cfg.name}를</span>
@@ -3559,12 +3819,13 @@ function renderSetup(i){
         <p class="hyp-said ${hypReady(i) ? 'on' : ''}">
           ${hypReady(i) ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
         </p>
+        ${p.free ? assessHyp() : ''}
       </section>
 
-      <section class="su-sec">
-        <h4>🔬 실험 방법${p.free ? '<small>빈칸을 채워 완성하세요</small>' : ''}
+      <section class="su-sec" ${p.free ? 'style="order:4"' : ''}>
+        <h4>${p.free ? '[문항 3] 실험 과정 설계' : '🔬 실험 방법'}${p.free ? '<small>50점 — 준비물을 모두 써서 6단계로</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
-        ${p.free ? renderBlanks(i)
+        ${p.free ? assessSteps()
                  : `<ol class="m-steps">${steps.map((t, n) => {
                       // 앞 세 단계는 그림을 함께 보여 준다
                       const fig = n === 0 ? figRig() : n === 1 ? figFixed(i) : n === 2 ? figVary(i) : '';
@@ -3574,7 +3835,7 @@ function renderSetup(i){
       </section>
 
       <!-- 실험 장치를 어떻게 꾸몄는지 사진이나 그림으로 남긴다 (선택) -->
-      <section class="su-sec">
+      <section class="su-sec" ${p.free ? 'style="order:5"' : ''}>
         <h4>📷 실험 장치 사진·그림<small>선택 — 올리지 않아도 실험을 시작할 수 있어요</small>
           ${state.photo[i] ? '<button class="sec-clr" data-clr="photo">지우기</button>' : ''}</h4>
         <div class="photo">
@@ -3594,12 +3855,17 @@ function renderSetup(i){
         </div>
       </section>
 
-      <div class="m-btns">
+      <div class="m-btns" ${p.free ? 'style="order:6"' : ''}>
         <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? '실험 시작하기 →'
-                  : (!ctrlReady(i) ? '통제 변인을 골라 주세요'
-              : !hypReady(i) ? '가설을 완성해 주세요' : '실험 방법을 완성해 주세요')}
+            : p.free
+              ? (!state.freeKey ? '환경 요인을 먼저 고르세요'
+                : !hypReady(i) ? '가설 칩을 골라 주세요'
+                : !ctrlReady(i) ? '시뮬레이션 통제값을 골라 주세요'
+                : `문항 ${assessScore().n} / 3 작성 — 남은 칸을 채워 주세요`)
+              : (!ctrlReady(i) ? '통제 변인을 골라 주세요'
+                : !hypReady(i) ? '가설을 완성해 주세요' : '실험 방법을 완성해 주세요')}
         </button>
       </div>
     </div>`}`;
@@ -3616,6 +3882,81 @@ function renderSetup(i){
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
   if (PLANS[i].free && state.freeKey) bindBlanks(i);
+
+  /* ── 수행평가 답안 칸 ── */
+  if (PLANS[i].free){
+    const box = $('methodBox');
+    // 서술칸 — 타이핑이 멈추면 저장하고, 고쳐 쓴 것도 기록에 남긴다
+    box.querySelectorAll('[data-a], [data-astep]').forEach(t => {
+      let timer = null;
+      const put = () => {
+        const st = t.dataset.astep;
+        if (st !== undefined) state.assess.steps[Number(st)] = t.value;
+        else state.assess[t.dataset.a] = t.value;
+      };
+      t.addEventListener('input', () => {
+        put();
+        // 글자 수만 바로 갱신한다 (다시 그리면 커서가 튄다)
+        const len = t.parentElement.querySelector('.aq-len, .as-len');
+        const min = t.dataset.astep !== undefined ? A_MIN
+                  : t.dataset.a === 'hyp' ? A_MIN : 10;
+        const ok = aLen(t.value) >= min;
+        if (len){
+          len.textContent = t.dataset.astep !== undefined ? `${aLen(t.value)}자` : lenNote(t.value, min);
+          len.classList.toggle('ok', ok);
+        }
+        (t.closest('li') || t.closest('.aq'))?.classList.toggle('ok', ok);
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          const what = t.dataset.astep !== undefined
+            ? `실험 과정 ${Number(t.dataset.astep) + 1}단계`
+            : ({ hyp:'가설 서술', indep:'독립 변인 정의', dep:'종속 변인 정의' })[t.dataset.a];
+          logAssess(what, t.value.trim());
+          saveSession();
+        }, 700);
+      });
+    });
+
+    /* 통제 변인 더하기 — 이름과 방안을 함께 받는다 */
+    const addU = (name, how) => {
+      const nm = String(name || '').trim().slice(0, 24);
+      if (!nm){ toast('⚖️', '통제 변인을 적어 주세요', '무엇을 같게 둘지 이름을 먼저 적습니다.'); return; }
+      if (state.userCtrl.some(u => u.name === nm)){
+        toast('⚖️', '이미 적은 것이에요', `“${esc(nm)}” 은(는) 이미 목록에 있습니다.`); return;
+      }
+      if (state.userCtrl.length >= UCTRL_MAX){
+        toast('⚖️', '더 적을 수 없어요', `통제 변인은 ${UCTRL_MAX}가지까지 적을 수 있습니다.`); return;
+      }
+      state.userCtrl.push({ name:nm, how:String(how || '').trim().slice(0, 40) });
+      logAssess('통제 변인 추가', `${nm} — ${String(how || '').trim() || '(방안 미작성)'}`);
+      saveSession(); Sfx.bloop(1.2, 0.14); renderPlan();
+    };
+    const ucAdd = box.querySelector('#ucAdd');
+    if (ucAdd) ucAdd.addEventListener('click', () =>
+      addU(box.querySelector('#ucName').value, box.querySelector('#ucHow').value));
+    const ucName = box.querySelector('#ucName');
+    if (ucName) ucName.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){ e.preventDefault(); box.querySelector('#ucHow').focus(); }
+    });
+    const ucHow = box.querySelector('#ucHow');
+    if (ucHow) ucHow.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){ e.preventDefault(); addU(ucName.value, ucHow.value); }
+    });
+    box.querySelectorAll('[data-uctip]').forEach(b =>
+      b.addEventListener('click', () => {
+        const n = box.querySelector('#ucName');
+        n.value = b.dataset.uctip;
+        box.querySelector('#ucHow').focus();
+        Sfx.tick();
+      }));
+    box.querySelectorAll('[data-ucdel]').forEach(b =>
+      b.addEventListener('click', () => {
+        const u = state.userCtrl[Number(b.dataset.ucdel)];
+        state.userCtrl.splice(Number(b.dataset.ucdel), 1);
+        logAssess('통제 변인 지움', u ? u.name : '');
+        saveSession(); Sfx.tick(); renderPlan();
+      }));
+  }
 
   /* 실험 장치 사진 — 올리기 / 지우기 */
   const pf = $('methodBox').querySelector('#photoFile');
@@ -3726,8 +4067,11 @@ function renderSetup(i){
       toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
       return;
     }
-    if (PLANS[i].free && !blanksDone(i)){
-      toast('📋', '실험 방법을 완성해 주세요', '빈칸에 알맞은 낱말을 모두 넣어야 시작할 수 있어요.');
+    if (PLANS[i].free && !assessDone()){
+      const sc = assessScore();
+      toast('📝', '수행평가 문항을 마저 써 주세요',
+        `${!sc.q1 ? '문항 1(가설) ' : ''}${!sc.q2 ? '문항 2(변인) ' : ''}${!sc.q3 ? '문항 3(과정) ' : ''}` +
+        '이(가) 아직 남았습니다. 다 써야 실험을 시작할 수 있어요.');
       return;
     }
     if (PLANS[i].free){
@@ -5372,11 +5716,11 @@ function interpretDone(i = state.activeTab){
 }
 
 /* 몇 자를 썼고 몇 자가 더 필요한지 알려 주는 문구 */
-function lenNote(v){
+function lenNote(v, min = MIN_CHARS){
   const n = (v || '').trim().length;
-  return n >= MIN_CHARS
-    ? `${n}자 — 최소 ${MIN_CHARS}자를 넘겼습니다 ✓`
-    : `${n}자 / ${MIN_CHARS}자 — ${MIN_CHARS - n}자 더 적어 주세요`;
+  return n >= min
+    ? `${n}자 — 최소 ${min}자를 넘겼습니다 ✓`
+    : `${n}자 / ${min}자 — ${min - n}자 더 적어 주세요`;
 }
 
 function interpretHTML(i){
@@ -6548,17 +6892,40 @@ function reportHTML(opts = {}){
 <h2>${no()}. 탐구 질문</h2>
 <p>${p.q}</p>
 
+${p.free ? `
+<h2>${no()}. [문항 1] 가설 설정 <span class="pts">20점</span></h2>
+<p class="ipa">${esc(state.assess.hyp.trim() || '(적지 않음)')}</p>
+<p class="sub2">고른 환경 요인: <b>${cfg.name}</b>${
+  hypReady(i) ? ` · 요약: ${esc(hypText(i))} 것이다.` : ''}</p>
+
+<h2>${no()}. [문항 2] 변인 구분과 통제 <span class="pts">30점</span></h2>
+<table class="vars">
+  <tr><th>독립 변인<br>(조작 변인)</th><td>${esc(state.assess.indep.trim() || '(적지 않음)')}</td></tr>
+  <tr><th>종속 변인</th><td>${esc(state.assess.dep.trim() || '(적지 않음)')}</td></tr>
+</table>
+<p class="sub2">통제 변인과 유지 방안 (${state.userCtrl.length}가지)</p>
+${state.userCtrl.length ? `<table class="data">
+  <thead><tr><th style="width:34%">통제 변인</th><th>구체적인 통제 방안</th></tr></thead>
+  <tbody>${state.userCtrl.map(u => `<tr><td>${esc(u.name)}</td>
+    <td style="text-align:left">${esc(u.how || '(방안 미작성)')}</td></tr>`).join('')}</tbody>
+</table>` : '<p>(적지 않음)</p>'}
+<p class="sub2">시뮬레이션에서 고정한 값: ${ctrlTxt || '(정하지 않음)'}</p>
+
+<h2>${no()}. [문항 3] 실험 과정 설계 <span class="pts">50점</span></h2>
+<p class="sub2">제공된 준비물: ${(KITS[state.freeKey] || []).join(', ')}</p>
+<ol>${state.assess.steps.map(v => `<li>${esc(v.trim() || '(적지 않음)')}</li>`).join('')}</ol>
+` : `
 <h2>${no()}. 변인</h2>
 <table class="vars">
   <tr><th>조작 변인</th><td>${cfg.name} (${cfg.min}${cfg.unit} ~ ${cfg.max}${cfg.unit})</td></tr>
   <tr><th>통제 변인</th><td>${ctrlTxt || '(정하지 않음)'}</td></tr>
   <tr><th>종속 변인</th><td>산소 발생량 (${M().unit})</td></tr>
-</table>
+</table>`}
 
-<h2>${no()}. 가설</h2>
-<p class="quote">"${hyp} 것이다."</p>
+${p.free ? '' : `<h2>${no()}. 가설</h2>
+<p class="quote">"${hyp} 것이다."</p>`}
 
-<h2>${no()}. 실험 방법</h2>
+${p.free ? '' : `<h2>${no()}. 실험 방법</h2>
 <ol>
   <li>검정말을 깔때기로 덮고, 그 위에 물을 채운 시험관을 거꾸로 씌운다.</li>
   <li>통제 변인을 ${ctrlTxt || '정한 값'} 으로 맞추고 실험 내내 바꾸지 않는다.</li>
@@ -6566,7 +6933,7 @@ function reportHTML(opts = {}){
   <li>각 조건에서 ${isManual() ? '15초 동안 기포 수를 센다' : '산소 발생량을 측정한다'}.</li>
   <li>같은 조건에서 3번 반복해 평균을 낸다.</li>
   <li>조건을 5가지 이상 모아 표를 채운 뒤 그래프로 바꾼다.</li>
-</ol>
+</ol>`}
 ${state.photo[i] ? `
 <figure class="shot">
   <img src="${state.photo[i]}" alt="내가 꾸민 실험 장치">
@@ -6683,6 +7050,8 @@ table.log tr.bad td{background:#fdf1f1;color:#a02a2a}
 table.log tr.bad td.lk{color:#a02a2a}
 .lbad{color:#a02a2a}
 .lnote{color:#767676;font-size:9pt;font-weight:normal}
+.pts{float:right;font-size:10pt;color:#fff;background:#2a78d6;border-radius:99px;padding:1px 10px}
+.sub2{margin:6px 0;font-size:10pt;color:#444}
 /* 쪽이 넘어갈 때 줄·칸·그림이 반으로 갈리지 않게 한다 */
 h1,h2{break-after:avoid;page-break-after:avoid}
 tr,li,figure,.quote,.why,.ipq,.ipa,.meta{break-inside:avoid;page-break-inside:avoid}
