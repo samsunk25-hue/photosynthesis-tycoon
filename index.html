@@ -406,6 +406,11 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .uctrl{padding:11px 13px;border-radius:12px;margin:4px 0 10px;
   background:color-mix(in srgb,var(--series-1) 5%,var(--surface-1));
   border:1.5px solid color-mix(in srgb,var(--series-1) 25%,var(--border))}
+.plan-save{padding:12px 14px;border-radius:13px;
+  background:color-mix(in srgb,#0ca30c 7%,var(--surface-1));border:1.5px solid rgba(12,163,12,.4)}
+.plan-save p{margin:0 0 9px;font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.ps-done{display:block;margin-top:4px;color:#0a8a0a}
+.ps-btns{display:flex;gap:8px;flex-wrap:wrap}
 .uc-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:750;margin-bottom:5px}
 .uc-lead small{color:var(--muted)}
 .uc-cnt{margin-left:6px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;
@@ -2539,7 +2544,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 y';
+const BUILD = '2026-07-25 z';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -4051,7 +4056,18 @@ function renderSetup(i){
           <span class="tq">문항 ${m.q}</span>${m.t}</button></li>`).join('')}</ul>
       </div>`; })() : ''}
 
-      <div class="m-btns" ${p.free ? 'style="order:7"' : ''}>
+      ${p.free && state.freeKey ? `
+      <div class="plan-save" style="order:7">
+        <p>실험까지 가지 않아도 <b>설계만 먼저</b> 내거나 저장할 수 있어요.
+          ${state.submitted ? '<b class="ps-done">✅ 이미 제출했습니다 — 다시 내면 새로 덮어씁니다.</b>' : ''}</p>
+        <div class="ps-btns">
+          <button class="rpt submit ${state.submitted ? 'done' : ''}" id="planSub">
+            ${state.submitted ? '✅ 제출함 — 다시 내기' : '📤 설계 제출하기'}</button>
+          <button class="rpt" id="planPdf">💾 PDF로 저장</button>
+        </div>
+      </div>` : ''}
+
+      <div class="m-btns" ${p.free ? 'style="order:8"' : ''}>
         ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? '실험 시작하기 →'
@@ -4161,6 +4177,18 @@ function renderSetup(i){
           refreshTodo();
         }, 700);
       });
+    });
+
+    const ps = box.querySelector('#planSub');
+    if (ps) ps.addEventListener('click', () => { state.activeTab = ASSESS_TAB; submitWork(); });
+    const pp = box.querySelector('#planPdf');
+    if (pp) pp.addEventListener('click', () => {
+      state.activeTab = ASSESS_TAB;
+      if (!assessDone()){
+        toast('📝', '아직 다 쓰지 않았어요',
+          '지금 저장하면 빈칸이 그대로 실립니다. 그래도 내려받습니다.');
+      }
+      exportPDF();
     });
 
     /* 남은 칸 목록 — 누르면 그 칸으로 데려간다 */
