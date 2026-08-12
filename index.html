@@ -411,6 +411,11 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .plan-save p{margin:0 0 9px;font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
 .ps-done{display:block;margin-top:4px;color:#0a8a0a}
 .ps-btns{display:flex;gap:8px;flex-wrap:wrap}
+.pend{margin:6px 0 0;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;
+  background:rgba(250,178,25,.14);border:1px solid rgba(250,178,25,.5);color:#8a6a00}
+.pend[hidden]{display:none}
+.pend-go{margin-left:6px;padding:4px 10px;border:0;border-radius:7px;cursor:pointer;
+  font:inherit;font-size:11.5px;font-weight:750;background:#8a6a00;color:#fff}
 .uc-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:750;margin-bottom:5px}
 .uc-lead small{color:var(--muted)}
 .uc-cnt{margin-left:6px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;
@@ -2252,6 +2257,7 @@ td.pending{color:var(--muted)}
       <div class="report-btns">
         <div class="rb-row"><button class="rpt" id="whoBtn">📇 학번 입력</button></div>
         <div class="rb-row"><button class="rpt submit" id="subBtn" hidden>📤 제출하기</button></div>
+        <p class="pend" hidden></p>
         <div class="rb-row">
           <button class="rpt" id="pdfBtn">💾 PDF로 저장</button>
           <button class="rpt" id="docBtn">💾 Word로 저장</button>
@@ -2544,7 +2550,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-26 a';
+const BUILD = '2026-07-26 b';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -4063,6 +4069,7 @@ function renderSetup(i){
       <div class="plan-save" style="order:7">
         <p>실험까지 가지 않아도 <b>설계만 먼저</b> 내거나 저장할 수 있어요.
           ${state.submitted ? '<b class="ps-done">✅ 이미 제출했습니다 — 다시 내면 새로 덮어씁니다.</b>' : ''}</p>
+        <p class="pend" hidden></p>
         <div class="ps-btns">
           <button class="rpt submit ${state.submitted ? 'done' : ''}" id="planSub">
             ${state.submitted ? '✅ 제출함 — 다시 내기' : '📤 설계 제출하기'}</button>
@@ -7139,6 +7146,56 @@ function sendToSheet(payload){
   } catch (e){ console.warn('시트 전송 실패', e); return Promise.resolve(false); }
 }
 
+/* ---------------------------------------------------------------
+   📬 못 보낸 제출 — 인터넷이 끊긴 채 낸 것을 이 기기에 쌓아 두었다가,
+   연결이 돌아오면 저절로 보낸다. 학생이 다시 누르기를 기다리면 그대로
+   묻혀 버리기 때문이다.
+----------------------------------------------------------------*/
+const PEND_KEY = 'photosynthesis.pendingSubmits';
+const pendGet = () => { try { return JSON.parse(localStorage.getItem(PEND_KEY) || '[]'); } catch { return []; } };
+const pendSet = a => { try { localStorage.setItem(PEND_KEY, JSON.stringify(a.slice(-30))); } catch {} };
+
+/* 하나 보내기 — 서버에 닿았을 때만 성공으로 친다 (시트는 답을 읽을 수 없어 덤) */
+function sendOne(p){
+  sendToSheet(p);
+  if (!(window.Cloud && window.Cloud.submitWork)) return Promise.resolve(false);
+  try { return window.Cloud.submitWork(p.no, p).then(() => true).catch(() => false); }
+  catch { return Promise.resolve(false); }
+}
+
+/* 쌓인 것을 차례로 보낸다 */
+function flushPending(){
+  const list = pendGet();
+  if (!list.length){ renderPend(); return Promise.resolve(0); }
+  return list.reduce((chain, p) => chain.then(left =>
+    sendOne(p).then(ok => ok ? left : left.concat([p]))), Promise.resolve([]))
+    .then(left => {
+      pendSet(left);
+      const sent = list.length - left.length;
+      renderPend();
+      if (sent) toast('📬', `밀렸던 제출 ${sent}건을 보냈습니다`,
+        '인터넷이 돌아와 선생님께 전달했습니다.');
+      return sent;
+    });
+}
+
+/* 아직 못 보낸 것이 있으면 눈에 보이게 알린다 */
+function renderPend(){
+  const n = pendGet().length;
+  document.querySelectorAll('.pend').forEach(el => {
+    el.hidden = !n;
+    el.innerHTML = n
+      ? `📭 아직 선생님께 전달되지 않은 제출 <b>${n}건</b> — 인터넷이 연결되면 저절로 보냅니다.
+         <button class="pend-go" id="pendRetry">지금 보내기</button>`
+      : '';
+  });
+  const b = document.getElementById('pendRetry');
+  if (b) b.addEventListener('click', () => flushPending().then(sent => {
+    if (!sent) toast('📭', '아직 보내지 못했습니다', '인터넷 연결을 확인한 뒤 다시 눌러 주세요.');
+  }));
+}
+addEventListener('online', () => flushPending());
+
 function submitWork(){
   const w = getWho();
   if (!(w && w.no)){ askWho(submitWork); return; }
@@ -7165,7 +7222,6 @@ function submitWork(){
     wrong: (state.log || []).filter(r => r.x).length,
     build: BUILD,
   };
-  sendToSheet(payload);        // 선생님 시트로 (덤)
   const finish = () => {
     state.submitted = at;
     logAssess('제출', `수행평가를 제출했습니다 (소요 ${clockKo(took)})`);
@@ -7174,13 +7230,15 @@ function submitWork(){
     toast('📤', '제출했습니다', `소요 시간 <b>${clockKo(took)}</b>.
       이제 다른 탐구로 갈 수 있어요. <b>PDF로 저장</b> 도 잊지 마세요.`, true);
   };
-  if (window.Cloud && window.Cloud.submitWork){
-    window.Cloud.submitWork(w.no, payload).then(finish).catch(() => {
-      finish();
-      toast('⚠️', '서버에 올리지 못했어요',
-        '이 기기에는 저장했습니다. 인터넷을 확인한 뒤 다시 눌러 주세요.');
-    });
-  } else { finish(); toast('⚠️', '서버에 연결되지 않았어요', '이 기기에만 저장했습니다.'); }
+  sendOne(payload).then(ok => {
+    if (ok){ finish(); flushPending(); return; }
+    // 못 보냈다 — 쌓아 두었다가 연결되면 저절로 보낸다
+    pendSet(pendGet().concat([payload]));
+    finish();
+    renderPend();
+    toast('📭', '아직 선생님께 전달되지 않았어요',
+      '이 기기에 담아 두었습니다. <b>인터넷이 연결되면 저절로</b> 보냅니다.');
+  });
 }
 $('subBtn').addEventListener('click', submitWork);
 
@@ -7891,6 +7949,8 @@ $('buildTag').textContent = `산소 팡팡! 광합성 타이쿤 · 판 ${BUILD}`
 
 /* ⏱️ 수행평가 타이머 — 1초마다 화면 상태를 보고 켜고 끈다.
    화면을 덮거나 다른 탐구로 옮기면 저절로 멈춘다. */
+renderPend();
+flushPending();          // 지난번에 못 보낸 제출이 있으면 지금 보낸다
 timerSync();
 setInterval(timerSync, 1000);
 addEventListener('visibilitychange', timerSync);
