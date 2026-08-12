@@ -572,11 +572,11 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .cv-ticks .rec{font-weight:700;color:#0a8a0a}
 /* 고른 통제 변인마다 '어떻게 같게 유지할지' 를 함께 보여 준다 */
 .cv-how{
-  margin:8px 0 0;padding:8px 10px;border-radius:9px;
+  margin:8px 0 0;padding:9px 11px;border-radius:9px;
   background:var(--page);border:1px dashed rgba(12,163,12,.45);
-  font-size:11.5px;line-height:1.55;color:var(--text-secondary);
+  font-size:12.5px;line-height:1.6;color:var(--text-primary);
 }
-.cv-how b{display:block;font-size:10.5px;color:#0a8a0a;margin-bottom:2px}
+.cv-how b{display:block;font-size:11.5px;color:#0a8a0a;margin-bottom:3px}
 
 .hyp-box{
   padding:11px;border-radius:14px;background:var(--page);
@@ -585,14 +585,16 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .hyp-title{margin:0;font-size:12.5px;font-weight:800}
 .hyp-line{display:flex;flex-direction:column;gap:6px}
 .hyp-fix{font-size:12px;font-weight:700;color:var(--text-secondary)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{
-  display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:99px;
+  display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;
   border:1.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);
-  font:inherit;font-size:12px;font-weight:600;cursor:pointer;
+  font:inherit;font-size:12px;font-weight:600;cursor:pointer;max-width:100%;
   transition:transform .14s cubic-bezier(.2,1.6,.4,1), border-color .14s, background .14s;
 }
-.chip .em{font-size:14px}
+/* 좁은 화면에서 칩이 줄어들 때 그림칸까지 함께 줄어들면, 그림이 줄어들지 못해
+   옆 글자 위로 삐져나온다. 그림칸은 줄이지 않고 글자만 줄바꿈하게 둔다. */
+.chip .em{font-size:14px;flex:none;line-height:1}
 .chip:hover{transform:translateY(-2px) scale(1.03);
   border-color:hsl(var(--hue) 70% 62%)}
 .chip[aria-pressed="true"]{
@@ -601,7 +603,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   box-shadow:0 3px 0 hsl(var(--hue) 80% 42%);
 }
 .hyp-said{
-  margin:2px 0 0;font-size:12.5px;line-height:1.5;text-align:center;
+  margin:0;font-size:12.5px;line-height:1.5;text-align:center;
   padding:9px 10px;border-radius:11px;color:var(--muted);
   background:transparent;border:1.5px dashed var(--border);
 }
@@ -2560,7 +2562,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-08-12 a';
+const BUILD = '2026-08-12 b';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3990,7 +3992,7 @@ function renderSetup(i){
                     <span class="rec">권장 ${xfk(k, TABS[i].fixed[k])}${UNIT[k]}</span>
                     <span>${xfk(k, mx)}${UNIT[k]}</span></div>
                   <!-- 값만 정하고 끝내면 '어떻게 같게 두었는가' 가 빠진다 -->
-                  <p class="cv-how"><b>어떻게 같게 유지할지</b>
+                  <p class="cv-how"><b>어떻게 같게 유지할까?</b>
                     <span>${ctrlHow(i, k)}</span></p>
                 </div>` : ''}
               </div>`;
@@ -4031,6 +4033,11 @@ function renderSetup(i){
         <h4>${p.free ? '[문항 1] ② 가설 서술' : '🎯 가설 만들기'}<small>${p.free ? '20점 — 방향까지 드러나게 서술합니다' : '결과를 예상해 보세요'}</small>
           ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
         ${p.free ? '' : `
+        <!-- 만들어지고 있는 문장을 제목 바로 아래에 둔다 — 무엇을 만드는 중인지
+             보면서 낱말을 고를 수 있고, 고를 때마다 문장이 눈앞에서 자란다. -->
+        <p class="hyp-said ${hypReady(i) ? 'on' : ''}">
+          ${hypReady(i) ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
+        </p>
         <div class="hyp-line">
           <span class="hyp-fix">${cfg.name}를</span>
           <div class="chips">
@@ -4048,10 +4055,7 @@ function renderSetup(i){
                 <span class="em">${d.em}</span>${d.t}
               </button>`).join('')}
           </div>
-        </div>
-        <p class="hyp-said ${hypReady(i) ? 'on' : ''}">
-          ${hypReady(i) ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
-        </p>`}
+        </div>`}
         ${p.free ? assessHyp() : ''}
       </section>
 
