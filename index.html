@@ -502,6 +502,8 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .sit-pt{margin-top:8px!important;font-weight:800;color:var(--text-primary)!important}
 /* 실험 방법 그림 — 글 아래에 붙여, 읽고 나서 장치를 확인하게 한다 */
 .m-steps li.hasfig{margin-bottom:2px}
+/* 빈칸으로 방법을 채운 뒤, 글은 그림을 보이기 위한 자리로만 남긴다 */
+.m-steps.figs-only li{color:var(--muted);font-size:12px}
 .mfig{
   margin:8px 0 4px;padding:8px 6px;border-radius:12px;
   background:color-mix(in srgb,var(--series-1) 5%,var(--surface-1));
@@ -2550,7 +2552,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-26 c';
+const BUILD = '2026-07-26 d';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3336,7 +3338,7 @@ const hypReady = i => PLANS[i].free
   ? aLen(state.assess.hyp) >= A_MIN
   : (state.hyp[i].op !== null && state.hyp[i].dep !== null);
 const planReady = i => hypReady(i) && ctrlReady(i) &&
-  !(PLANS[i].free && (!state.freeKey || !assessDone()));
+  (PLANS[i].free ? (!!state.freeKey && assessDone()) : blanksDone(i));
 
 /* 화면에 쓸 탐구 이름.
    자유 탐구는 조작 변인을 학생이 정하므로, 정하기 전에는 어떤 변인도 내세우지
@@ -3375,11 +3377,20 @@ function hypTruth(i){
 }
 
 /* 고른 가설을 한 문장으로 */
+/* 고른 낱말을 이어 붙인 것이 그대로 채점 기준에 맞는 가설이 되어야 한다.
+   그래서 종속 변인을 실제로 재는 값(15초당 기포 수 · ml/분)으로 적고,
+   맺음말도 '~할 것이다' 로 이어지는 꼴(관형형)을 쓴다. */
+const DEP_FORM = { '계속 늘어난다':'계속 늘어날', '늘다가 일정해진다':'늘다가 일정해질',
+  '늘다가 급히 줄어든다':'늘다가 급히 줄어들', '변하지 않는다':'변하지 않을',
+  '줄어든다':'줄어들', '계속 줄어든다':'계속 줄어들' };
+const depVar = () => isManual() ? '산소 발생량(15초간 기포 수)' : '산소 발생량(ml/분)';
+
 function hypText(i){
   const h = state.hyp[i], p = PLANS[i];
   if (p.free) return state.assess.hyp.trim();     // 직접 쓴 문장
   if (!hypReady(i)) return '';
-  return `${TABS[i].name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}`;
+  const dep = p.deps[h.dep].t;
+  return `${TABS[i].name}를 ${p.ops[h.op].t} ${depVar()}은 ${DEP_FORM[dep] || dep}`;
 }
 
 /* ---------------------------------------------------------------
@@ -4027,7 +4038,7 @@ function renderSetup(i){
         <h4>${p.free ? '[문항 3] 실험 과정 설계' : '🔬 실험 방법'}${p.free ? '<small>50점 — 준비물을 모두 써서 6단계로</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
         ${p.free ? assessSteps()
-                 : `<ol class="m-steps">${steps.map((t, n) => {
+                 : renderBlanks(i) + `<ol class="m-steps figs-only">${steps.map((t, n) => {
                       // 앞 세 단계는 그림을 함께 보여 준다
                       const fig = n === 0 ? figRig() : n === 1 ? figFixed(i) : n === 2 ? figVary(i) : '';
                       return `<li${fig ? ' class="hasfig"' : ''}>${t}${
@@ -4081,6 +4092,7 @@ function renderSetup(i){
         ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? (p.free && !state.submitted ? '설계 제출하고 실험 시작 →' : '실험 시작하기 →')
+            : !p.free && !blanksDone(i) ? '실험 방법 빈칸을 채워 주세요'
             : p.free
               ? (!state.freeKey ? '환경 요인을 먼저 고르세요'
                 : !hypReady(i) ? '가설 칩을 골라 주세요'
@@ -4103,7 +4115,7 @@ function renderSetup(i){
       }));
   bindChip('[data-op]', 'op');
   bindChip('[data-dep]', 'dep');
-  if (PLANS[i].free && state.freeKey) bindBlanks(i);
+  if (PLANS[i].free ? state.freeKey : true) bindBlanks(i);
 
   /* ── 수행평가 답안 칸 ── */
   if (PLANS[i].free){
