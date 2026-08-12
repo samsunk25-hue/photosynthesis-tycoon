@@ -2539,7 +2539,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 w';
+const BUILD = '2026-07-25 x';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3780,11 +3780,13 @@ function assessHyp(){
   return `
     <div class="aq ${ok ? 'ok' : ''}">
       <label for="aHyp">가설을 <b>한 문장</b>으로 서술하세요 ${scoreTag(20, ok)}</label>
-      <p class="aq-hint">💡 <b>${name}</b>를 어떻게 바꾸면 <b>광합성량</b>이 어떻게 되는지,
-        <b>변화의 방향(늘어난다·줄어든다·일정해진다)</b>까지 드러나야 만점입니다.
+      <p class="aq-hint">💡 <b>${name}</b>를 어떻게 바꾸면
+        <b>내가 실제로 잴 값</b>이 어떻게 되는지 적습니다.
+        ‘광합성량’ 이라고만 쓰지 말고 <b>측정할 값(종속 변인)</b>으로 적어야 만점입니다.
+        <b>변화의 방향</b>(늘어난다·줄어든다·일정해진다)도 드러나야 하며,
         “영향을 미칠 것이다” 처럼 방향이 없으면 감점됩니다.</p>
       <textarea id="aHyp" data-a="hyp" rows="3"
-        placeholder="“○○을 ~하면 광합성량은 ~할 것이다” 처럼 한 문장으로 적으세요">${esc(a.hyp)}</textarea>
+        placeholder="“○○을 ~하면 (내가 잴 값)이 ~할 것이다” 처럼 한 문장으로 적으세요">${esc(a.hyp)}</textarea>
       <p class="aq-len ${ok ? 'ok' : ''}">${lenNote(a.hyp, A_MIN)}</p>
     </div>`;
 }
