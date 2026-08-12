@@ -430,6 +430,47 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
   font-weight:650;background:transparent;border:1px dashed var(--baseline);color:var(--text-secondary)}
 .uc-chip:hover{border-color:var(--series-1);color:var(--series-1)}
 .uc-note{margin:0;font-size:11.5px;color:var(--muted)}
+/* 잠긴 수행평가 카드 */
+.topic.locked{filter:grayscale(.55);opacity:.75;cursor:not-allowed}
+.topic.locked:hover{transform:none;box-shadow:0 4px 0 hsl(var(--hue) 60% 88%)}
+.topic.locked .tp-go{color:var(--muted)}
+/* 교사용 수행평가 여닫이 */
+#assessBox{margin-bottom:12px;padding:12px 14px;border-radius:12px;
+  background:var(--page);border:1.5px solid var(--border)}
+#assessBox[hidden]{display:none}
+.ab-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ab-row b{display:block;font-size:13px}
+.ab-row small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted)}
+.ab-btn{margin-left:auto;padding:8px 18px;border:0;border-radius:9px;cursor:pointer;
+  font:inherit;font-size:12.5px;font-weight:750;background:var(--series-1);color:#fff}
+.ab-btn.on{background:#d03b3b}
+.uc-howin{
+  flex:1;min-width:120px;padding:5px 9px;border-radius:8px;font:inherit;font-size:11.5px;
+  border:1.5px dashed var(--baseline);background:var(--page);color:var(--text-primary);
+}
+.uc-howin:focus{outline:none;border-style:solid;border-color:var(--series-1)}
+.uc-item.ok{border-color:rgba(12,163,12,.5);background:rgba(12,163,12,.06)}
+.uc-item.ok .uc-howin{border-style:solid;border-color:rgba(12,163,12,.4)}
+
+/* 아직 남은 칸 — 어디가 비었는지 짚어 주고 그 칸으로 데려간다 */
+.todo{padding:12px 14px;border-radius:13px;
+  background:rgba(250,178,25,.12);border:1.5px solid rgba(250,178,25,.5)}
+.todo > b{display:block;font-size:12.5px;margin-bottom:8px;color:#8a6a00}
+.todo ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.todo-go{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;
+  padding:7px 10px;border-radius:9px;font:inherit;font-size:12.5px;font-weight:650;
+  background:var(--surface-1);border:1px solid var(--border);color:var(--text-primary);
+}
+.todo-go:hover{border-color:var(--series-1);color:var(--series-1)}
+.tq{padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:800;flex:none;
+  background:var(--grid);color:var(--text-secondary)}
+/* 데려간 칸을 잠깐 빛나게 한다 */
+.flash{animation:fieldFlash 1.6s ease-out}
+@keyframes fieldFlash{
+  0%,100%{box-shadow:none}
+  20%,60%{box-shadow:0 0 0 4px rgba(250,178,25,.5)}
+}
 /* 수행평가 상황 제시 */
 .sit{padding:13px 15px;border-radius:14px;
   background:color-mix(in srgb,var(--series-1) 8%,var(--surface-1));
@@ -2224,6 +2265,17 @@ td.pending{color:var(--muted)}
     <p class="hint" id="hallHint">명단은 화면을 보는 모두에게 공개됩니다. 개인정보는 적지 마세요.</p>
 
     <!-- 교사 전용: 승인 대기열 -->
+    <!-- 교사 전용: 수행평가 여닫기 -->
+    <div id="assessBox" hidden>
+      <div class="ab-row">
+        <div>
+          <b>📝 수행평가(자유 탐구)</b>
+          <small id="assessState">닫혀 있음 — 학생 화면에서 잠깁니다</small>
+        </div>
+        <button class="ab-btn" id="assessToggle">열기</button>
+      </div>
+    </div>
+
     <div id="pendingBox" hidden>
       <div class="pending-head">
         <b>승인 대기</b>
@@ -2341,6 +2393,12 @@ try {
   Cloud.dropProgress = no =>
     db.remove(db.ref(rtdb, `progress/${no}`));
 
+  /* 수행평가를 열지 말지 — 선생님이 켜야 학생 화면에서 쓸 수 있다 */
+  Cloud.watchAssess = cb =>
+    db.onValue(db.ref(rtdb, 'config/assessOpen'), snap => cb(snap.val() === true), () => cb(null));
+  Cloud.setAssess = open =>
+    db.set(db.ref(rtdb, 'config/assessOpen'), open === true);
+
   Cloud.signIn  = (email, pw) => auth.signInWithEmailAndPassword(au, email, pw);
   Cloud.signOut = () => auth.signOut(au);
   Cloud.onAuth  = cb => auth.onAuthStateChanged(au, u => {
@@ -2448,7 +2506,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 p';
+const BUILD = '2026-07-25 s';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2464,8 +2522,8 @@ const UCTRL_MAX = 6;
 state.userCtrl = [];        // [{ name:'검정말의 양', how:'모두 10cm' }]
 
 /* 고르기 쉽도록 자주 쓰는 것을 미리 보여 준다 */
-const UCTRL_TIPS = ['시금치 잎 조각의 크기·개수', '수용액의 농도와 부피', '전등과의 거리',
-                    '물의 온도', '재는 시간', '잎의 신선도'];
+/* 답을 알려 주지 않는다 — 어디를 살펴볼지 갈래만 짚어 준다 */
+const UCTRL_TIPS = ['식물', '용액', '빛', '온도', '시간·횟수', '그릇·장치'];
 
 /* ---------------------------------------------------------------
    📝 수행평가 답안 — 「식물과 에너지」 수행평가 채점기준을 그대로 따른다.
@@ -2503,6 +2561,22 @@ function assessScore(){
            n: [q1, q2, q3].filter(Boolean).length };
 }
 const assessDone = () => assessScore().done;
+
+/* 남은 칸을 낱낱이 알려 준다 — '문항 2가 남았다' 만으로는 어디를 채워야 할지
+   찾을 수 없다. 각 항목은 그 칸으로 데려갈 선택자를 함께 들고 다닌다. */
+function assessMissing(){
+  const a = state.assess, u = state.userCtrl, out = [];
+  const more = (v, min) => `${Math.max(0, min - aLen(v))}자 더`;
+  if (aLen(a.hyp) < A_MIN)   out.push({ q:1, t:`가설 문장 — ${more(a.hyp, A_MIN)}`, s:'[data-a="hyp"]' });
+  if (aLen(a.indep) < 10)    out.push({ q:2, t:`독립 변인 정의 — ${more(a.indep, 10)}`, s:'[data-a="indep"]' });
+  if (aLen(a.dep) < 10)      out.push({ q:2, t:`종속 변인 정의 — ${more(a.dep, 10)}`, s:'[data-a="dep"]' });
+  if (u.length < UCTRL_MIN)  out.push({ q:2, t:`통제 변인 ${UCTRL_MIN - u.length}가지 더 적기`, s:'#ucName' });
+  u.forEach((x, n) => { if (aLen(x.how) < 5)
+    out.push({ q:2, t:`“${x.name}” 을(를) 어떻게 같게 둘지`, s:`[data-uchow="${n}"]` }); });
+  a.steps.forEach((v, n) => { if (aLen(v) < A_MIN)
+    out.push({ q:3, t:`실험 과정 ${n + 1}단계 — ${more(v, A_MIN)}`, s:`[data-astep="${n}"]` }); });
+  return out;
+}
 
 /* ---------------------------------------------------------------
    ⏱️ 수행평가 타이머 — 자유 탐구를 하는 동안만 시간이 흐른다.
@@ -2644,6 +2718,16 @@ let restoring = false;                 // 복원 중에는 저장하지 않는�
 /* 수행평가 = 자유 탐구(네 번째 탐구). 학번을 입력하면 탐구 1·2·3은
    그대로 불러오지만 이 칸은 늘 비워, 수행평가는 언제나 처음부터 한다. */
 const ASSESS_TAB = 3;
+
+/* 수행평가를 열었는가 — 선생님이 관리자 화면에서 켠다.
+   서버를 읽을 수 없을 때는 이 기기가 마지막으로 알던 값을 쓴다(처음에는 닫힘). */
+const OPEN_KEY = 'photosynthesis.assessOpen';
+function assessOpen(){
+  try { return localStorage.getItem(OPEN_KEY) === '1'; } catch { return false; }
+}
+function setAssessOpen(v){
+  try { localStorage.setItem(OPEN_KEY, v ? '1' : '0'); } catch {}
+}
 
 function sessionPayload(){
   return {
@@ -3076,7 +3160,7 @@ const PLANS = [
     why:'광합성은 <b>효소</b>가 하는 일입니다. 35°C 부근까지는 활발해지지만, 그보다 뜨거워지면 효소가 변성되어 급격히 멈춥니다.' },
 
   { em:'🔍', hue:270, free:true,
-    q:'내가 직접 설계하는 탐구',
+    q:'환경 요인이 광합성량에 미치는 영향은?',
     ctrl:'내가 정한 값',
     ops:[{ em:'⬆️', t:'크게 하면' }, { em:'⬇️', t:'작게 하면' }],
     deps:[
@@ -3170,7 +3254,8 @@ function applyFree(k){
   Object.assign(TABS[3], { key:k, ...base,
     fixed: Object.fromEntries(['light','co2','temp'].filter(x => x !== k)
              .map(x => [x, x === 'temp' ? 25 : x === 'co2' ? CO2_SAT : 100])) });
-  PLANS[3].q = `${base.name}는 광합성에 어떤 영향을 미칠까?`;
+  // 수행평가의 제목은 고른 요인과 상관없이 하나로 둔다 (구체적인 물음은 학생의 가설이다)
+  PLANS[3].q = '환경 요인이 광합성량에 미치는 영향은?';
   // 통제값 기본치도 다시 잡는다
   state.ctrlVal[3] = { light:100, co2:CO2_SAT, temp:25, ...TABS[3].fixed };
 }
@@ -3192,7 +3277,10 @@ const VAR_EM = { light:'💡', co2:'🫧', temp:'🌡️' };
 /* 통제 변인을 바르게 골랐는가 — 조작 변인을 뺀 나머지 둘을 모두 골라야 한다 */
 function ctrlNeed(i){ return ['light','co2','temp'].filter(k => k !== TABS[i].key); }
 function ctrlReady(i){ return ctrlNeed(i).every(k => state.ctrl[i].includes(k)); }
-const hypReady = i => state.hyp[i].op !== null && state.hyp[i].dep !== null;
+/* 가설을 세웠는가 — 수행평가는 직접 쓴 문장으로, 나머지는 고른 칩으로 본다 */
+const hypReady = i => PLANS[i].free
+  ? aLen(state.assess.hyp) >= A_MIN
+  : (state.hyp[i].op !== null && state.hyp[i].dep !== null);
 const planReady = i => hypReady(i) && ctrlReady(i) &&
   !(PLANS[i].free && (!state.freeKey || !assessDone()));
 
@@ -3215,11 +3303,14 @@ function tabTitle(i){
 const hypAnswer = i => PLANS[i].answer;          // { op, dep }
 
 function hypHit(i){
+  // 수행평가의 가설은 문장이라 앱이 옳고 그름을 가릴 수 없다 — 모름(null)
+  if (PLANS[i].free) return null;
   const h = state.hyp[i], a = hypAnswer(i);
   return h.op !== null && h.dep !== null && h.op === a.op && h.dep === a.dep;
 }
 /* 모양은 맞혔지만 방향만 거꾸로 잡았는가 — 무엇이 어긋났는지 짚어 주기 위해 */
 function hypFlipped(i){
+  if (PLANS[i].free) return false;
   const h = state.hyp[i], a = hypAnswer(i);
   return h.op !== null && h.dep === a.dep && h.op !== a.op;
 }
@@ -3232,6 +3323,7 @@ function hypTruth(i){
 /* 고른 가설을 한 문장으로 */
 function hypText(i){
   const h = state.hyp[i], p = PLANS[i];
+  if (p.free) return state.assess.hyp.trim();     // 직접 쓴 문장
   if (!hypReady(i)) return '';
   return `${TABS[i].name}를 ${p.ops[h.op].t} 산소 발생량은 ${p.deps[h.dep].t}`;
 }
@@ -3304,13 +3396,15 @@ function renderTopics(){
   $('planGrid').innerHTML = PLANS.map((p, i) => {
     if (p.free){
       const k = state.freeKey;
+      const open = assessOpen();
       return `
-      <button class="topic free ${isDone(3) ? "done" : ""}" data-topic="3" style="--hue:${p.hue}">
-        <span class="tp-em">🔍</span>
+      <button class="topic free ${isDone(3) ? "done" : ""} ${open ? '' : 'locked'}"
+              data-topic="3" style="--hue:${p.hue}" aria-disabled="${!open}">
+        <span class="tp-em">${open ? '🔍' : '🔒'}</span>
         <span class="tp-no">자유 탐구 · 수행평가</span>
-        <span class="tp-q">${k && TABS[3].name ? TABS[3].name + "는 광합성에 어떤 영향을 미칠까?"
-                              : '내가 직접 설계하는 탐구'}</span>
-        <span class="tp-go">${k ? '이어서 하기 →' : '조작 변인부터 정하기 →'}</span>
+        <span class="tp-q">${p.q}</span>
+        <span class="tp-go">${!open ? '선생님이 열어 주면 시작할 수 있어요'
+          : k ? `이어서 하기 (${TABS[3].name}) →` : '환경 요인부터 고르기 →'}</span>
       </button>`;
     }
     const done = isDone(i);
@@ -3325,7 +3419,14 @@ function renderTopics(){
 
   $('planGrid').querySelectorAll('[data-topic]').forEach(b =>
     b.addEventListener('click', () => {
-      state.planPick = Number(b.dataset.topic);
+      const pick = Number(b.dataset.topic);
+      if (pick === ASSESS_TAB && !assessOpen()){
+        Sfx.warn();
+        toast('🔒', '아직 열리지 않은 수행평가예요',
+          '선생님이 <b>선생님 모드</b>에서 수행평가를 열면 시작할 수 있습니다.');
+        return;
+      }
+      state.planPick = pick;
       Sfx.tick();
       // 수행평가를 처음 펼친 순간부터 시간을 잰다
       if (state.planPick === ASSESS_TAB && !state.log.length)
@@ -3631,7 +3732,7 @@ function assessHyp(){
         <b>변화의 방향(늘어난다·줄어든다·일정해진다)</b>까지 드러나야 만점입니다.
         “영향을 미칠 것이다” 처럼 방향이 없으면 감점됩니다.</p>
       <textarea id="aHyp" data-a="hyp" rows="3"
-        placeholder="예) 빛의 세기가 강할수록 광합성이 활발해져 잎 조각이 떠오르는 시간이 짧아지고, 어느 밝기를 넘으면 더 짧아지지 않을 것이다.">${esc(a.hyp)}</textarea>
+        placeholder="“○○을 ~하면 광합성량은 ~할 것이다” 처럼 한 문장으로 적으세요">${esc(a.hyp)}</textarea>
       <p class="aq-len ${ok ? 'ok' : ''}">${lenNote(a.hyp, A_MIN)}</p>
     </div>`;
 }
@@ -3649,10 +3750,10 @@ function assessVars(){
     </div>`;
   return box('aIndep', 'indep', '독립 변인(조작 변인) 정의',
       '무엇을 <b>어떻게 다르게</b> 할 것인지까지 적습니다. 요인 이름만 쓰면 감점입니다.',
-      '예) 전등과 비커 사이의 거리를 10·30·50cm로 바꾸어 빛의 세기를 다르게 한다', okI) +
+      '무엇을 · 어떤 값으로 · 몇 가지로 다르게 할 것인지 적으세요', okI) +
     box('aDep', 'dep', '종속 변인 정의',
       '‘광합성량’ 이라고만 쓰지 말고, 이 실험에서 <b>실제로 잴 수 있는 것</b>으로 적습니다.',
-      '예) 잎 조각 5개가 모두 떠오르는 데 걸리는 시간(초)', okD);
+      '무엇을 · 어떤 단위로 잴 것인지 적으세요', okD);
 }
 
 /* 문항 3 — 준비물 + 여섯 단계 과정 (50점) */
@@ -3681,6 +3782,34 @@ function assessSteps(){
     }).join('')}</ol>`;
 }
 
+/* 남은 칸 목록과 시작 버튼만 조용히 다시 그린다.
+   글을 쓰는 도중에 화면 전체를 다시 그리면 커서가 튀므로, 이 두 곳만 손본다. */
+function refreshTodo(){
+  const box = $('methodBox');
+  const el = box && box.querySelector('.todo');
+  if (!el) return;
+  const miss = assessMissing();
+  const go = box.querySelector('#goLab');
+  if (!miss.length){
+    el.hidden = true;
+    if (go){ go.textContent = '실험 시작하기 →'; go.classList.remove('dim'); }
+    return;
+  }
+  el.hidden = false;
+  el.innerHTML = `<b>✍️ 아직 남은 칸 ${miss.length}개 — 누르면 그 칸으로 갑니다</b>
+    <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}">
+      <span class="tq">문항 ${m.q}</span>${m.t}</button></li>`).join('')}</ul>`;
+  el.querySelectorAll('[data-goto]').forEach(b =>
+    b.addEventListener('click', () => {
+      const t = box.querySelector(b.dataset.goto);
+      if (!t) return;
+      t.scrollIntoView({ behavior:'smooth', block:'center' });
+      setTimeout(() => { t.focus(); t.classList.add('flash'); }, 260);
+      setTimeout(() => t.classList.remove('flash'), 1800);
+    }));
+  if (go) go.textContent = `문항 ${assessScore().n} / 3 작성 — 남은 칸 ${miss.length}개`;
+}
+
 /* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
 function renderSetup(i){
   const p = PLANS[i], cfg = TABS[i], h = state.hyp[i];
@@ -3699,8 +3828,7 @@ function renderSetup(i){
     <div class="setup" style="--hue:${p.hue}">
       <div class="su-head">
         <span class="su-em">${p.em}</span>
-        <div><span class="su-no">${tabTitle(i)}</span><b>${
-          p.free && !state.freeKey ? '내가 직접 설계하는 탐구' : p.q}</b></div>
+        <div><span class="su-no">${tabTitle(i)}</span><b>${p.q}</b></div>
       </div>
       ${p.free ? `
       <div class="sit" style="order:0">
@@ -3721,22 +3849,19 @@ function renderSetup(i){
               <span class="em">${VAR_EM[k]}</span>${LABEL[k]}
             </button>`).join('')}
         </div>
-        <p class="su-why">조작 변인은 <b>하나만</b> 고릅니다. 나머지는 통제 변인이 됩니다.</p>
+
       </section>` : ''}
 
       ${p.free && !state.freeKey ? `
-      <p class="su-why">조작 변인을 고르면 <b>통제 변인 · 가설 · 실험 방법</b> 칸이 이어서 열립니다.</p>
-      <div class="m-btns">
-        <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
-      </div>
+      <p class="su-why">환경 요인을 고르면 <b>문항 1 · 2 · 3</b> 칸이 이어서 열립니다.</p>
     </div>` : `
       <section class="su-sec" ${p.free ? 'style="order:3"' : ''}>
         <h4>${p.free ? '[문항 2] 변인 구분과 통제' : '⚖️ 통제 변인 정하기'}<small>${p.free ? '30점 — 통제 변인 3가지 이상과 그 방안까지' : '같게 둘 것을 고르고, 얼마로 맞출지 정하세요'}</small>
-          ${p.free && state.ctrl[i].length ? '<button class="sec-clr" data-clr="ctrl">지우기</button>' : ''}</h4>
-        <div class="cvars">
+          ${p.free && state.ctrl[i].length ? '' : ''}</h4>
+        ${p.free ? '' : `<div class="cvars">
           ${['light','co2','temp'].map(k => {
             const isManip = k === cfg.key;
-            const on = state.ctrl[i].includes(k);
+            const on = p.free ? true : state.ctrl[i].includes(k);   // 수행평가는 늘 켜 둔다
             const [mn, mx, st] = RANGE[k];
             const v = state.ctrlVal[i][k];
             if (isManip) return `
@@ -3747,12 +3872,18 @@ function renderSetup(i){
               </div>`;
             return `
               <div class="cvar ${on ? 'on' : ''}">
+                ${p.free ? `
+                <div class="cv-pick as-label">
+                  <span class="cv-em">${VAR_EM[k]}</span>
+                  <span class="cv-name">${LABEL[k]}</span>
+                  <span class="cv-val">${xfk(k, v)}${UNIT[k]}</span>
+                </div>` : `
                 <button class="cv-pick" data-ck="${k}" aria-pressed="${on}">
                   <span class="cv-box">${on ? '✓' : ''}</span>
                   <span class="cv-em">${VAR_EM[k]}</span>
                   <span class="cv-name">${LABEL[k]}</span>
                   <span class="cv-val">${on ? xfk(k, v) + UNIT[k] : '고르기'}</span>
-                </button>
+                </button>`}
                 ${on ? `
                 <div class="cv-set">
                   <span class="cv-hint">얼마로 일정하게 둘까요?</span>
@@ -3764,7 +3895,7 @@ function renderSetup(i){
                 </div>` : ''}
               </div>`;
           }).join('')}
-        </div>
+        </div>`}
         ${p.free ? assessVars() : ''}
         ${p.free ? `
         <!-- 앱이 흉내 내지 못하는 것까지 스스로 찾아 적는다 -->
@@ -3775,29 +3906,30 @@ function renderSetup(i){
             <span class="uc-cnt ${state.userCtrl.length >= UCTRL_MIN ? 'full' : ''}">${state.userCtrl.length} / ${UCTRL_MIN}</span></p>
           ${state.userCtrl.length ? `
             <ul class="uc-list">${state.userCtrl.map((u, n) => `
-              <li class="uc-item">
-                <b>${esc(u.name)}</b>${u.how ? `<span class="uc-how">${esc(u.how)}</span>` : ''}
+              <li class="uc-item ${aLen(u.how) >= 5 ? 'ok' : ''}">
+                <b>${esc(u.name)}</b>
+                <input class="uc-howin" data-uchow="${n}" maxlength="40" value="${esc(u.how)}"
+                       placeholder="어떻게 같게 유지할지 적으세요">
                 <button class="uc-del" data-ucdel="${n}" aria-label="지우기">✕</button>
               </li>`).join('')}</ul>` : ''}
           ${state.userCtrl.length >= UCTRL_MAX ? `
             <p class="uc-note">${UCTRL_MAX}개까지 적을 수 있어요.</p>` : `
             <div class="uc-add">
-              <input type="text" id="ucName" maxlength="24" placeholder="통제 변인 (예: 잎 조각의 크기)">
-              <input type="text" id="ucHow" maxlength="40" placeholder="어떻게 같게 유지할지 (예: 모든 비커에 50mL씩)">
+              <input type="text" id="ucName" maxlength="24" placeholder="같게 유지할 것 (한 가지)">
+              <input type="text" id="ucHow" maxlength="40" placeholder="어떻게 같게 유지할지 — 수·양·거리로 구체적으로">
               <button class="uc-go" id="ucAdd">추가</button>
             </div>
-            <div class="uc-tips">${UCTRL_TIPS
-              .filter(t => !state.userCtrl.some(u => u.name === t))
-              .map(t => `<button class="uc-chip" data-uctip="${esc(t)}">+ ${t}</button>`).join('')}</div>`}
+`}
         </div>` : ''}
 
-        <p class="su-why">${cfg.name} 말고 다른 것도 함께 바뀌면,
-          결과가 무엇 때문인지 알 수 없습니다.</p>
+        ${p.free ? '' : `<p class="su-why">${cfg.name} 말고 다른 것도 함께 바뀌면,
+          결과가 무엇 때문인지 알 수 없습니다.</p>`}
       </section>
 
       <section class="su-sec" ${p.free ? 'style="order:2"' : ''}>
         <h4>${p.free ? '[문항 1] ② 가설 서술' : '🎯 가설 만들기'}<small>${p.free ? '20점 — 방향까지 드러나게 서술합니다' : '결과를 예상해 보세요'}</small>
           ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
+        ${p.free ? '' : `
         <div class="hyp-line">
           <span class="hyp-fix">${cfg.name}를</span>
           <div class="chips">
@@ -3818,7 +3950,7 @@ function renderSetup(i){
         </div>
         <p class="hyp-said ${hypReady(i) ? 'on' : ''}">
           ${hypReady(i) ? `“${hypText(i)} 것이다!”` : '두 칸을 모두 골라 문장을 완성하세요'}
-        </p>
+        </p>`}
         ${p.free ? assessHyp() : ''}
       </section>
 
@@ -3855,8 +3987,17 @@ function renderSetup(i){
         </div>
       </section>
 
-      <div class="m-btns" ${p.free ? 'style="order:6"' : ''}>
-        <button class="btn-ghost" id="pickAgain">← 다른 탐구</button>
+      ${p.free && state.freeKey && !assessDone() ? (() => {
+        const miss = assessMissing();
+        return `
+      <div class="todo" style="order:6">
+        <b>✍️ 아직 남은 칸 ${miss.length}개 — 누르면 그 칸으로 갑니다</b>
+        <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}">
+          <span class="tq">문항 ${m.q}</span>${m.t}</button></li>`).join('')}</ul>
+      </div>`; })() : ''}
+
+      <div class="m-btns" ${p.free ? 'style="order:7"' : ''}>
+        ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? '실험 시작하기 →'
             : p.free
@@ -3913,6 +4054,7 @@ function renderSetup(i){
             : ({ hyp:'가설 서술', indep:'독립 변인 정의', dep:'종속 변인 정의' })[t.dataset.a];
           logAssess(what, t.value.trim());
           saveSession();
+          refreshTodo();
         }, 700);
       });
     });
@@ -3949,6 +4091,33 @@ function renderSetup(i){
         box.querySelector('#ucHow').focus();
         Sfx.tick();
       }));
+    /* 적어 둔 통제 변인의 '방안' 은 나중에도 고칠 수 있어야 한다 */
+    box.querySelectorAll('[data-uchow]').forEach(inp => {
+      let timer = null;
+      inp.addEventListener('input', () => {
+        const n = Number(inp.dataset.uchow);
+        if (!state.userCtrl[n]) return;
+        state.userCtrl[n].how = inp.value;
+        inp.closest('.uc-item')?.classList.toggle('ok', aLen(inp.value) >= 5);
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          logAssess('통제 방안', `${state.userCtrl[n].name} — ${inp.value.trim() || '(비움)'}`);
+          saveSession();
+          refreshTodo();
+        }, 700);
+      });
+    });
+
+    /* 남은 칸 목록 — 누르면 그 칸으로 데려간다 */
+    box.querySelectorAll('[data-goto]').forEach(b =>
+      b.addEventListener('click', () => {
+        const el = box.querySelector(b.dataset.goto);
+        if (!el) return;
+        el.scrollIntoView({ behavior:'smooth', block:'center' });
+        setTimeout(() => { el.focus(); el.classList.add('flash'); }, 260);
+        setTimeout(() => el.classList.remove('flash'), 1800);
+      }));
+
     box.querySelectorAll('[data-ucdel]').forEach(b =>
       b.addEventListener('click', () => {
         const u = state.userCtrl[Number(b.dataset.ucdel)];
@@ -3981,7 +4150,8 @@ function renderSetup(i){
       const had = Object.keys(state.data.manual[3]).length +
                   Object.keys(state.data.auto[3]).length > 0;
       applyFree(k);
-      state.ctrl[3] = [];
+      // 통제 변인은 학생이 직접 쓰므로, 시뮬레이션 쪽은 저절로 맞춰 둔다
+      state.ctrl[3] = ctrlNeed(3);
       state.hyp[3] = { op:null, dep:null };
       newBlankSet();
       logAssess('조작 변인', `${LABEL[k]}로 정했습니다`);
@@ -4032,7 +4202,7 @@ function renderSetup(i){
       if (what === 'fk'){
         // 조작 변인을 지우면 그에 딸린 설계도 함께 지운다
         state.freeKey = null;
-        state.ctrl[i] = [];
+        state.ctrl[i] = [];   // 요인을 지우면 시뮬레이션 조건도 함께 지운다
         state.hyp[i] = { op:null, dep:null };
         newBlankSet();
       }
@@ -4045,7 +4215,8 @@ function renderSetup(i){
       saveSession(); Sfx.tick(); renderPlan();
     }));
 
-  $('pickAgain').addEventListener('click', () => {
+  const again = $('pickAgain');
+  if (again) again.addEventListener('click', () => {
     state.planPick = null;
     saveSession();
     renderPlan();
@@ -4068,10 +4239,13 @@ function renderSetup(i){
       return;
     }
     if (PLANS[i].free && !assessDone()){
-      const sc = assessScore();
-      toast('📝', '수행평가 문항을 마저 써 주세요',
-        `${!sc.q1 ? '문항 1(가설) ' : ''}${!sc.q2 ? '문항 2(변인) ' : ''}${!sc.q3 ? '문항 3(과정) ' : ''}` +
-        '이(가) 아직 남았습니다. 다 써야 실험을 시작할 수 있어요.');
+      const miss = assessMissing();
+      toast('📝', `아직 ${miss.length}칸이 남았어요`,
+        miss.slice(0, 3).map(m => `문항 ${m.q} · ${m.t}`).join('<br>') +
+        (miss.length > 3 ? `<br>… 그 밖에 ${miss.length - 3}칸` : '') +
+        '<br><span style="color:var(--muted)">아래 <b>남은 칸</b> 목록을 누르면 바로 갑니다.</span>');
+      const el = document.querySelector('.todo');
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
       return;
     }
     if (PLANS[i].free){
@@ -6539,14 +6713,56 @@ function initCloud(){
     renderHeroes();
   });
 
+  /* 수행평가 여닫이를 지켜본다 — 선생님이 켜는 순간 학생 화면이 함께 열린다 */
+  if (window.Cloud.watchAssess) window.Cloud.watchAssess(open => {
+    if (open === null) return;             // 못 읽었으면 알던 값을 그대로 쓴다
+    const was = assessOpen();
+    setAssessOpen(open);
+    renderAssessSwitch();
+    if (was !== open){
+      if (!document.querySelector('main').hidden === false) renderPlan();
+      else renderPlan();
+      toast(open ? '📝' : '🔒', open ? '수행평가가 열렸습니다' : '수행평가가 닫혔습니다',
+        open ? '자유 탐구 카드를 눌러 시작할 수 있어요.' : '선생님이 다시 열 때까지 잠깁니다.');
+    }
+  });
+
   window.Cloud.onAuth(user => {
     $('teacherBtn').textContent = user ? '선생님 모드 종료' : '선생님 모드';
     $('pendingBox').hidden = !user;
+    $('assessBox').hidden   = !user;
     renderHeroes();
     if (user) window.Cloud.watchPending(renderPending);
     else      renderPending([]);
   });
 }
+
+/* 여닫이 단추의 지금 상태를 화면에 맞춘다 */
+function renderAssessSwitch(){
+  const btn = $('assessToggle'), st = $('assessState');
+  if (!btn || !st) return;
+  const open = assessOpen();
+  btn.textContent = open ? '닫기' : '열기';
+  btn.classList.toggle('on', open);
+  st.textContent = open ? '열려 있음 — 학생이 지금 쓸 수 있습니다'
+                        : '닫혀 있음 — 학생 화면에서 잠깁니다';
+}
+$('assessToggle').addEventListener('click', () => {
+  const next = !assessOpen();
+  if (!(window.Cloud && window.Cloud.setAssess)){
+    toast('⚠️', '서버에 연결되지 않았어요', '인터넷에 연결한 뒤 다시 시도해 주세요.');
+    return;
+  }
+  window.Cloud.setAssess(next)
+    .then(() => {
+      setAssessOpen(next); renderAssessSwitch(); renderPlan();
+      toast(next ? '📝' : '🔒', next ? '수행평가를 열었습니다' : '수행평가를 닫았습니다',
+        next ? '학생들이 자유 탐구를 시작할 수 있습니다.' : '학생 화면에서 잠깁니다.');
+    })
+    .catch(() => toast('⚠️', '바꾸지 못했습니다',
+      '선생님 계정으로 로그인했는지, 서버 규칙에 config 가 열려 있는지 확인해 주세요.'));
+});
+renderAssessSwitch();
 
 $('teacherBtn').addEventListener('click', () => {
   if (window.Cloud.signedIn){
