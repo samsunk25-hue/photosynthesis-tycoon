@@ -406,7 +406,7 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .uctrl{padding:11px 13px;border-radius:12px;margin:4px 0 10px;
   background:color-mix(in srgb,var(--series-1) 5%,var(--surface-1));
   border:1.5px solid color-mix(in srgb,var(--series-1) 25%,var(--border))}
-.uc-lead{margin:0 0 9px;font-size:12.5px;line-height:1.6}
+.uc-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:750;margin-bottom:5px}
 .uc-lead small{color:var(--muted)}
 .uc-cnt{margin-left:6px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;
   background:var(--page);border:1px solid var(--border)}
@@ -2539,7 +2539,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 x';
+const BUILD = '2026-07-25 y';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3954,10 +3954,11 @@ function renderSetup(i){
         ${p.free ? `
         <!-- 앱이 흉내 내지 못하는 것까지 스스로 찾아 적는다 -->
         <div class="uctrl">
-          <p class="uc-lead">🔎 실험 내내 <b>같게 유지할 것</b>을 <b>${UCTRL_MIN}가지 이상</b> 적고,
-            <b>어떻게 같게 유지할지</b>도 함께 적으세요.
-            <small>(이름만 적고 방안이 없으면 감점됩니다)</small>
-            <span class="uc-cnt ${state.userCtrl.length >= UCTRL_MIN ? 'full' : ''}">${state.userCtrl.length} / ${UCTRL_MIN}</span></p>
+          <label class="uc-title">통제 변인과 통제 방안
+            <span class="uc-cnt ${state.userCtrl.length >= UCTRL_MIN ? 'full' : ''}">${state.userCtrl.length} / ${UCTRL_MIN}</span></label>
+          <p class="aq-hint">💡 실험 내내 <b>같게 유지할 것</b>을 <b>${UCTRL_MIN}가지 이상</b> 적고,
+            <b>어떻게 같게 유지할지</b>도 함께 적습니다.
+            이름만 적고 방안이 없으면 감점됩니다.</p>
           ${state.userCtrl.length ? `
             <ul class="uc-list">${state.userCtrl.map((u, n) => `
               <li class="uc-item ${aLen(u.how) >= 5 ? 'ok' : ''}">
