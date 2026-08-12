@@ -444,6 +444,18 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .ab-btn{margin-left:auto;padding:8px 18px;border:0;border-radius:9px;cursor:pointer;
   font:inherit;font-size:12.5px;font-weight:750;background:var(--series-1);color:#fff}
 .ab-btn.on{background:#d03b3b}
+.rpt.submit{background:#0ca30c;border-color:#0ca30c;color:#fff}
+.rpt.submit.done{background:var(--surface-1);color:#0a8a0a;border-color:#0ca30c}
+#workBox[hidden]{display:none}
+.work{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+  padding:9px 11px;border-radius:10px;margin-bottom:6px;font:inherit;font-size:12.5px;
+  background:var(--surface-1);border:1px solid var(--border);color:var(--text-primary)}
+.work:hover{border-color:var(--series-1)}
+.work b{font-size:13.5px;min-width:52px}
+.w-f{padding:2px 9px;border-radius:99px;background:var(--page);font-size:11px;font-weight:700}
+.w-t{font-weight:750;color:var(--series-1)}
+.w-d,.w-e{margin-left:auto;font-size:11px;color:var(--muted)}
+.w-e{margin-left:0}
 .uc-howin{
   flex:1;min-width:120px;padding:5px 9px;border-radius:8px;font:inherit;font-size:11.5px;
   border:1.5px dashed var(--baseline);background:var(--page);color:var(--text-primary);
@@ -2231,6 +2243,7 @@ td.pending{color:var(--muted)}
       <!-- 세 줄로 나눈다 — 누구 것인지 / 저장 / 지우기 는 하는 일이 서로 다르다 -->
       <div class="report-btns">
         <div class="rb-row"><button class="rpt" id="whoBtn">📇 학번 입력</button></div>
+        <div class="rb-row"><button class="rpt submit" id="subBtn" hidden>📤 제출하기</button></div>
         <div class="rb-row">
           <button class="rpt" id="pdfBtn">💾 PDF로 저장</button>
           <button class="rpt" id="docBtn">💾 Word로 저장</button>
@@ -2274,6 +2287,14 @@ td.pending{color:var(--muted)}
         </div>
         <button class="ab-btn" id="assessToggle">열기</button>
       </div>
+    </div>
+
+    <!-- 교사 전용: 수행평가 제출물 -->
+    <div id="workBox" hidden>
+      <div class="pending-head">
+        <b>📥 수행평가 제출물</b><span class="cnt" id="workCnt">0</span>
+      </div>
+      <div id="workList"></div>
     </div>
 
     <div id="pendingBox" hidden>
@@ -2393,6 +2414,15 @@ try {
   Cloud.dropProgress = no =>
     db.remove(db.ref(rtdb, `progress/${no}`));
 
+  /* 수행평가 제출물 — 학생은 자기 것을 올리고, 선생님은 모두 본다 */
+  Cloud.submitWork = (no, payload) =>
+    db.set(db.ref(rtdb, `submissions/${no}`), payload);
+  Cloud.watchWorks = cb =>
+    db.onValue(db.ref(rtdb, 'submissions'), snap => {
+      const v = snap.val() || {};
+      cb(Object.entries(v).map(([no, r]) => ({ no, ...r })).sort((a, b) => (b.at||0) - (a.at||0)));
+    }, () => cb([]));
+
   /* 수행평가를 열지 말지 — 선생님이 켜야 학생 화면에서 쓸 수 있다 */
   Cloud.watchAssess = cb =>
     db.onValue(db.ref(rtdb, 'config/assessOpen'), snap => cb(snap.val() === true), () => cb(null));
@@ -2506,7 +2536,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 s';
+const BUILD = '2026-07-25 t';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -2535,6 +2565,10 @@ const A_STEPS = 6;         // 실험 과정은 여섯 단계
 const UCTRL_MIN = 3;       // 통제 변인은 3가지 이상 (채점기준)
 
 state.assess = { hyp:'', indep:'', dep:'', steps:['', '', '', '', '', ''] };
+state.submitted = null;      // 제출한 시각 (안 냈으면 null)
+
+/* 수행평가를 하는 중이고 아직 내지 않았다 — 다른 탐구로 갈 수 없다 */
+const assessLocked = () => inAssessment() && !state.submitted;
 
 /* 문항 3 — 요인별로 제공되는 준비물. 모두 써서 과정을 설계해야 한다. */
 const KITS = {
@@ -2745,6 +2779,7 @@ function sessionPayload(){
       photo:   state.photo,
       userCtrl: state.userCtrl,
       assess:  state.assess,
+      submitted: state.submitted,
       timer:   { accum: timerElapsed(), total: state.timer.total },
       log:     state.log,
       concl:   state.concl,
@@ -2869,6 +2904,7 @@ function loadSession(){
   state.photo   = normPhoto(s.photo);
   state.userCtrl = normUctrl(s.userCtrl);
   state.assess   = normAssess(s.assess);
+  state.submitted = s.submitted || null;
   state.log     = Array.isArray(s.log) ? s.log.slice(-LOG_MAX) : [];
   state.scale   = s.scale;
   // 창을 닫아 둔 시간은 세지 않는다 — 다시 열면 그때부터 이어 잰다
@@ -2908,6 +2944,7 @@ function wipeAssessment(p){
   p.photo     = normPhoto(p.photo);         p.photo[t]     = null;
   p.userCtrl  = [];
   p.assess    = { hyp:'', indep:'', dep:'', steps:['','','','','',''] };
+  p.submitted = null;
   p.freeKey   = null;
   p.blanks    = {};
   p.blankSeed = Math.floor(Math.random() * 100000);
@@ -3333,6 +3370,12 @@ function hypText(i){
    머리말에 늘 같은 자리에 있으므로, 길을 잃을 일이 없다.
 ----------------------------------------------------------------*/
 function goMain(){
+  if (assessLocked()){
+    Sfx.warn();
+    toast('🔒', '제출하기 전에는 나갈 수 없어요',
+      '수행평가를 마치면 <b>📤 제출하기</b> 를 눌러 주세요. 그 뒤에 다른 탐구로 갈 수 있습니다.');
+    return;
+  }
   if (state.isMeasuring){
     toast('⏳', '측정이 끝난 뒤에 옮겨 주세요', '지금 옮기면 세고 있던 기포 수가 사라집니다.');
     return;
@@ -3348,6 +3391,12 @@ function goMain(){
 function renderSaveOpts(){
   const free = PLANS[state.activeTab].free;
   ['docBtn','csvBtn','pngBtn'].forEach(id => { const el = $(id); if (el) el.hidden = free; });
+  const sub = $('subBtn');
+  if (sub){
+    sub.hidden = !free;
+    sub.textContent = state.submitted ? '✅ 제출함 — 다시 내기' : '📤 제출하기';
+    sub.classList.toggle('done', !!state.submitted);
+  }
   $('pdfBtn').textContent = free ? '💾 PDF로 저장 (보고서·수정 기록·시간)' : '💾 PDF로 저장';
   $('pdfBtn').classList.toggle('only', free);
   $('rptHint').innerHTML = free
@@ -4278,6 +4327,13 @@ function openLab(tab){
    아니면 지금 하던 탐구의 설계 화면으로 간다. */
 function backToPlan(toTopics){
   if (state.isMeasuring) return;
+  // 수행평가 중에는 그 탐구의 계획서까지만 오갈 수 있다
+  if (toTopics && assessLocked()){
+    Sfx.warn();
+    toast('🔒', '제출하기 전에는 나갈 수 없어요',
+      '수행평가를 마치면 <b>📤 제출하기</b> 를 눌러 주세요.');
+    return;
+  }
   if (toTopics) state.planPick = null;
   else if (state.planPick === null) state.planPick = state.activeTab;
   document.querySelector('main').hidden = true;
@@ -6731,6 +6787,9 @@ function initCloud(){
     $('teacherBtn').textContent = user ? '선생님 모드 종료' : '선생님 모드';
     $('pendingBox').hidden = !user;
     $('assessBox').hidden   = !user;
+    $('workBox').hidden     = !user;
+    if (user && window.Cloud.watchWorks) window.Cloud.watchWorks(renderWorks);
+    else renderWorks([]);
     renderHeroes();
     if (user) window.Cloud.watchPending(renderPending);
     else      renderPending([]);
@@ -6738,6 +6797,44 @@ function initCloud(){
 }
 
 /* 여닫이 단추의 지금 상태를 화면에 맞춘다 */
+/* 제출물 목록 — 누르면 답안을 통째로 펼쳐 본다 */
+let works = [];
+function renderWorks(list){
+  works = list || [];
+  const box = $('workList'), cnt = $('workCnt');
+  if (!box) return;
+  cnt.textContent = works.length;
+  if (!works.length){ box.innerHTML = '<p class="hint">아직 제출한 학생이 없습니다.</p>'; return; }
+  box.innerHTML = works.map((w, n) => {
+    const d = new Date(w.at || 0), p = x => String(x).padStart(2, '0');
+    return `<button class="work" data-work="${n}">
+      <b>${esc(w.no)}</b>
+      <span class="w-f">${esc(w.factor || '')}</span>
+      <span class="w-t">${clockKo(w.took || 0)}</span>
+      <span class="w-d">${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}</span>
+      <span class="w-e">고침 ${w.edits || 0} · 틀림 ${w.wrong || 0}</span>
+    </button>`;
+  }).join('');
+  box.querySelectorAll('[data-work]').forEach(b =>
+    b.addEventListener('click', () => showWork(works[Number(b.dataset.work)])));
+}
+function showWork(w){
+  if (!w) return;
+  const li = a => (a || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>(없음)</li>';
+  openModal(`📥 학번 ${esc(w.no)} 의 제출물`,
+    `<div style="text-align:left;font-size:13px;line-height:1.7">
+      <p style="color:var(--muted)">환경 요인 <b>${esc(w.factor||'-')}</b> ·
+        소요 시간 <b>${clockKo(w.took||0)}</b> · 고쳐 쓴 횟수 ${w.edits||0}회
+        (틀린 시도 ${w.wrong||0}회)</p>
+      <p><b>[문항 1] 가설</b><br>${esc(w.hyp||'(없음)')}</p>
+      <p><b>[문항 2] 독립 변인</b><br>${esc(w.indep||'(없음)')}</p>
+      <p><b>[문항 2] 종속 변인</b><br>${esc(w.dep||'(없음)')}</p>
+      <p><b>[문항 2] 통제 변인</b></p><ul>${li(w.ctrl)}</ul>
+      <p><b>[문항 3] 실험 과정</b></p><ol>${li(w.steps)}</ol>
+      ${w.concl ? `<p><b>결론</b><br>${esc(w.concl)}</p>` : ''}
+    </div>`, true);
+}
+
 function renderAssessSwitch(){
   const btn = $('assessToggle'), st = $('assessState');
   if (!btn || !st) return;
@@ -6953,6 +7050,52 @@ function stamp(){
   const d = new Date(), p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
 }
+
+/* 제출 — 답안·소요 시간·작성 기록을 선생님에게 보낸다.
+   보고서는 학생이 따로 내려받고, 선생님은 관리 화면에서 바로 본다. */
+function submitWork(){
+  const w = getWho();
+  if (!(w && w.no)){ askWho(submitWork); return; }
+  if (!assessDone()){
+    const miss = assessMissing();
+    toast('📝', `아직 ${miss.length}칸이 남았어요`,
+      miss.slice(0, 3).map(m => `문항 ${m.q} · ${m.t}`).join('<br>'));
+    return;
+  }
+  const took = timerStamp();
+  const at = Date.now();
+  const payload = {
+    at, no: w.no, took,
+    factor: state.freeKey ? LABEL[state.freeKey] : '',
+    hyp: state.assess.hyp.trim(),
+    indep: state.assess.indep.trim(),
+    dep: state.assess.dep.trim(),
+    ctrl: state.userCtrl.map(u => `${u.name} — ${u.how}`),
+    steps: state.assess.steps.map(x => x.trim()),
+    concl: state.concl[ASSESS_TAB] === null ? ''
+         : PLANS[ASSESS_TAB].deps[state.concl[ASSESS_TAB]].t,
+    interp: Object.entries(ipOf(ASSESS_TAB)).map(([k, v]) => `${k}: ${v}`),
+    edits: (state.log || []).length,
+    wrong: (state.log || []).filter(r => r.x).length,
+    build: BUILD,
+  };
+  const finish = () => {
+    state.submitted = at;
+    logAssess('제출', `수행평가를 제출했습니다 (소요 ${clockKo(took)})`);
+    saveSession(); renderSaveOpts(); renderTimer();
+    Sfx.fanfare(); confetti(80);
+    toast('📤', '제출했습니다', `소요 시간 <b>${clockKo(took)}</b>.
+      이제 다른 탐구로 갈 수 있어요. <b>PDF로 저장</b> 도 잊지 마세요.`, true);
+  };
+  if (window.Cloud && window.Cloud.submitWork){
+    window.Cloud.submitWork(w.no, payload).then(finish).catch(() => {
+      finish();
+      toast('⚠️', '서버에 올리지 못했어요',
+        '이 기기에는 저장했습니다. 인터넷을 확인한 뒤 다시 눌러 주세요.');
+    });
+  } else { finish(); toast('⚠️', '서버에 연결되지 않았어요', '이 기기에만 저장했습니다.'); }
+}
+$('subBtn').addEventListener('click', submitWork);
 
 /* 수행평가는 PDF 하나로만 낸다 — 다른 형식에는 수정 기록과 시간이 담기지 않는다 */
 function pdfOnlyGuard(){

@@ -42,6 +42,13 @@
     "config": {
       ".read": true,
       ".write": "auth != null"
+    },
+    "submissions": {
+      ".read": "auth != null",
+      "$no": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['at','no'])"
+      }
     }
   }
 }
