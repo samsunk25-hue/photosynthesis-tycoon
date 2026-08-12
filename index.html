@@ -503,7 +503,8 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 /* 실험 방법 그림 — 글 아래에 붙여, 읽고 나서 장치를 확인하게 한다 */
 .m-steps li.hasfig{margin-bottom:2px}
 /* 빈칸으로 방법을 채운 뒤, 글은 그림을 보이기 위한 자리로만 남긴다 */
-.m-steps.figs-only li{color:var(--muted);font-size:12px}
+.figs{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.mfig figcaption{font-size:11.5px;font-weight:750;color:var(--text-secondary);margin-bottom:4px}
 .mfig{
   margin:8px 0 4px;padding:8px 6px;border-radius:12px;
   background:color-mix(in srgb,var(--series-1) 5%,var(--surface-1));
@@ -2552,7 +2553,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-26 d';
+const BUILD = '2026-07-26 e';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3535,15 +3536,20 @@ function freeSteps(i){
       slots:[{ id:'s2', label:'기체를 받는 관', ans:'시험관',
         pool:['시험관','알코올램프','거름종이'] }] },
 
-    { text:['바꿔 가며 알아볼 것은 ', ' 입니다. (조작 변인)'],
+    { text:['바꿔 가며 알아볼 것은 ',
+            ` 입니다. ${xf(cfg, cfg.min)}${cfg.unit} 부터 ${xf(cfg, cfg.max)}${cfg.unit} 까지
+              <b>5가지 이상</b>으로 바꿔 가며, 조건마다 <b>3번씩</b> 잽니다. (조작 변인)`],
       slots:[{ id:'s3', label:'조작 변인', ans:LABEL[cfg.key],
         pool:all.map(k => LABEL[k]) }] },
 
-    { text:['이 실험에서 ', ' 은(는) 실험 내내 같게 둡니다. (통제 변인)'],
+    { text:['이 실험에서 ',
+            ` 은(는) ${ctrls.map(k => `<b>${LABEL[k]} ${xfk(k, state.ctrlVal[i][k])}${UNIT[k]}</b>`).join(', ')}
+              로 맞춰 두고, 실험 내내 그 값에서 <b>움직이지 않게</b> 합니다. (통제 변인)`],
       slots:[{ id:'s4', label:'통제 변인', ans:ctrlAns,
         pool:[ctrlAns, LABEL[cfg.key], all.map(k => LABEL[k]).join(', ')] }] },
 
-    { text:['각 조건에서 15초 동안 깔때기 목을 지나는 ', ' 를 셉니다. (종속 변인)'],
+    { text:['각 조건에서 <b>15초</b> 동안 깔때기 목을 지나는 ',
+            ` 를 세어 <b>${M().unit}</b> 단위로 적습니다. (종속 변인)`],
       slots:[{ id:'s5', label:'종속 변인', ans:'기포 수',
         pool:['기포 수','물의 온도','잎의 색'] }] },
 
@@ -4037,13 +4043,14 @@ function renderSetup(i){
       <section class="su-sec" ${p.free ? 'style="order:4"' : ''}>
         <h4>${p.free ? '[문항 3] 실험 과정 설계' : '🔬 실험 방법'}${p.free ? '<small>50점 — 준비물을 모두 써서 6단계로</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
-        ${p.free ? assessSteps()
-                 : renderBlanks(i) + `<ol class="m-steps figs-only">${steps.map((t, n) => {
-                      // 앞 세 단계는 그림을 함께 보여 준다
-                      const fig = n === 0 ? figRig() : n === 1 ? figFixed(i) : n === 2 ? figVary(i) : '';
-                      return `<li${fig ? ' class="hasfig"' : ''}>${t}${
-                        fig ? `<figure class="mfig">${fig}</figure>` : ''}</li>`;
-                    }).join('')}</ol>`}
+        ${p.free ? assessSteps() : renderBlanks(i) + `
+        <!-- 빈칸으로 방법을 채운 뒤, 장치가 어떻게 놓이는지 그림으로 확인한다.
+             글은 위 빈칸 목록에 이미 있으므로 되풀이하지 않는다. -->
+        <div class="figs">
+          <figure class="mfig"><figcaption>① 장치 꾸미기</figcaption>${figRig()}</figure>
+          <figure class="mfig"><figcaption>② 통제 변인 고정</figcaption>${figFixed(i)}</figure>
+          <figure class="mfig"><figcaption>③ 조작 변인 바꾸기</figcaption>${figVary(i)}</figure>
+        </div>`}
       </section>
 
       <!-- 실험 장치를 어떻게 꾸몄는지 사진이나 그림으로 남긴다 (선택) -->
