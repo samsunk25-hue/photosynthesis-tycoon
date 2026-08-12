@@ -1983,6 +1983,9 @@ td.pending{color:var(--muted)}
       <button class="sound-btn home-btn" id="homeBtn" hidden>
         <span aria-hidden="true">🏠</span><span>메인 화면</span>
       </button>
+      <button class="sound-btn teach" id="teachTop">
+        <span>👩‍🏫</span><span>선생님</span>
+      </button>
       <button class="sound-btn" id="installBtn" hidden>
         <span>📲</span><span>홈 화면에 추가</span>
       </button>
@@ -2536,7 +2539,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 t';
+const BUILD = '2026-07-25 u';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -6788,6 +6791,8 @@ function initCloud(){
     $('pendingBox').hidden = !user;
     $('assessBox').hidden   = !user;
     $('workBox').hidden     = !user;
+    if (user) $('hall').hidden = false;          // 첫 화면에서도 관리 칸을 보여 준다
+    $('teachTop').textContent = user ? '👩‍🏫 관리' : '👩‍🏫 선생님';
     if (user && window.Cloud.watchWorks) window.Cloud.watchWorks(renderWorks);
     else renderWorks([]);
     renderHeroes();
@@ -6860,6 +6865,13 @@ $('assessToggle').addEventListener('click', () => {
       '선생님 계정으로 로그인했는지, 서버 규칙에 config 가 열려 있는지 확인해 주세요.'));
 });
 renderAssessSwitch();
+
+/* 첫 화면에서도 선생님 모드로 — 관리 칸은 명단 카드 안에 있으므로 함께 펼친다 */
+$('teachTop').addEventListener('click', () => {
+  $('hall').hidden = false;
+  $('teacherBtn').click();
+  setTimeout(() => $('hall').scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+});
 
 $('teacherBtn').addEventListener('click', () => {
   if (window.Cloud.signedIn){
