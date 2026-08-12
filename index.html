@@ -2539,7 +2539,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 u';
+const BUILD = '2026-07-25 v';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -7065,6 +7065,19 @@ function stamp(){
 
 /* 제출 — 답안·소요 시간·작성 기록을 선생님에게 보낸다.
    보고서는 학생이 따로 내려받고, 선생님은 관리 화면에서 바로 본다. */
+/* 선생님 구글 시트로도 보낸다 (Apps Script 웹 앱).
+   no-cors 로 보내므로 답을 읽을 수는 없다 — 서버와 이 기기에 이미 남기므로
+   시트 전송은 덤으로 두고, 실패해도 제출 자체는 성립한다. */
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwtRLuNLiWxY_bKP9fajsBGuA9hh_mSphdoTmjxUKXNCha4kDkBKU7dZuvGPJ1pqI99Cw/exec';
+function sendToSheet(payload){
+  if (!SHEET_URL) return Promise.resolve(false);
+  return fetch(SHEET_URL, {
+    method:'POST', mode:'no-cors', keepalive:true,
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },   // 미리 묻기(preflight) 를 피한다
+    body: JSON.stringify(payload),
+  }).then(() => true).catch(() => false);
+}
+
 function submitWork(){
   const w = getWho();
   if (!(w && w.no)){ askWho(submitWork); return; }
@@ -7091,6 +7104,7 @@ function submitWork(){
     wrong: (state.log || []).filter(r => r.x).length,
     build: BUILD,
   };
+  sendToSheet(payload);        // 선생님 시트로 (덤)
   const finish = () => {
     state.submitted = at;
     logAssess('제출', `수행평가를 제출했습니다 (소요 ${clockKo(took)})`);
