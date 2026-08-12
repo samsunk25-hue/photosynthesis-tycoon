@@ -2544,7 +2544,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 z';
+const BUILD = '2026-07-26 a';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3303,6 +3303,9 @@ function applyFree(k){
   PLANS[3].q = '환경 요인이 광합성량에 미치는 영향은?';
   // 통제값 기본치도 다시 잡는다
   state.ctrlVal[3] = { light:100, co2:CO2_SAT, temp:25, ...TABS[3].fixed };
+  /* 수행평가에는 통제 변인을 고르는 칸이 없다(직접 쓴다). 시뮬레이션 쪽은
+     늘 나머지 두 요인으로 채워 두어야, 고칠 방법 없이 막히는 일이 없다. */
+  state.ctrl[3] = ctrlNeed(3);
 }
 
 state.hyp = [ {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null}, {op:null, dep:null} ];
@@ -4070,7 +4073,7 @@ function renderSetup(i){
       <div class="m-btns" ${p.free ? 'style="order:8"' : ''}>
         ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
-          ${ready ? '실험 시작하기 →'
+          ${ready ? (p.free && !state.submitted ? '설계 제출하고 실험 시작 →' : '실험 시작하기 →')
             : p.free
               ? (!state.freeKey ? '환경 요인을 먼저 고르세요'
                 : !hypReady(i) ? '가설 칩을 골라 주세요'
@@ -4329,6 +4332,25 @@ function renderSetup(i){
         '<br><span style="color:var(--muted)">아래 <b>남은 칸</b> 목록을 누르면 바로 갑니다.</span>');
       const el = document.querySelector('.todo');
       if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+    /* 설계를 낸 뒤에 실험으로 넘어간다 — 실험 결과를 보고 설계를 고쳐 쓰는 것을
+       막고, 선생님이 '무엇을 계획했는지' 를 먼저 받아 둘 수 있게 한다. */
+    if (PLANS[i].free && !state.submitted){
+      openModal('📤 설계를 제출하고 실험을 시작합니다',
+        `문항 1·2·3 을 모두 썼습니다. <b>지금 낸 설계</b>가 선생님께 전달되고,
+         이어서 실험을 시작합니다.<br><br>
+         <span style="color:var(--muted)">실험을 마친 뒤 <b>결과까지 넣어 다시 제출</b>할 수 있습니다.
+         그때는 이번에 낸 것을 덮어씁니다.</span>`);
+      $('modalOk').textContent = '제출하고 시작하기';
+      $('modalCancel').hidden = false;
+      $('modalCancel').textContent = '더 고칠래요';
+      onSubmit = () => {
+        state.activeTab = ASSESS_TAB;
+        submitWork();
+        setTimeout(() => { if (state.submitted) openLab(i); }, 120);
+        return null;
+      };
       return;
     }
     if (PLANS[i].free){
@@ -7106,12 +7128,15 @@ const TEACHER_EMAIL = 'samsunk25@gmail.com';
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwtRLuNLiWxY_bKP9fajsBGuA9hh_mSphdoTmjxUKXNCha4kDkBKU7dZuvGPJ1pqI99Cw/exec';
 function sendToSheet(payload){
-  if (!SHEET_URL) return Promise.resolve(false);
+  // 시트로 보내다 걸리더라도 제출 자체는 성립해야 한다
+  if (!SHEET_URL || typeof fetch !== 'function') return Promise.resolve(false);
+  try {
   return fetch(SHEET_URL, {
     method:'POST', mode:'no-cors', keepalive:true,
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },   // 미리 묻기(preflight) 를 피한다
     body: JSON.stringify(payload),
   }).then(() => true).catch(() => false);
+  } catch (e){ console.warn('시트 전송 실패', e); return Promise.resolve(false); }
 }
 
 function submitWork(){
