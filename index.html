@@ -2539,7 +2539,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-07-25 v';
+const BUILD = '2026-07-25 w';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -6880,10 +6880,10 @@ $('teacherBtn').addEventListener('click', () => {
     return;
   }
   openPrompt('선생님 모드',
-    `승인 대기 중인 별명을 확인하고 공개 여부를 정할 수 있습니다.<br>
-     <span style="color:var(--muted)">Firebase에 등록한 선생님 계정으로 로그인하세요.</span>`,
+    `수행평가를 열고 닫고, 제출물과 승인 대기 별명을 볼 수 있습니다.<br>
+     <span style="color:var(--muted)">이메일은 채워 두었습니다 — 비밀번호만 넣으세요.</span>`,
     { placeholder:'이메일', okText:'로그인', cancelText:'취소',
-      maxlength:80, second:true,
+      maxlength:80, second:true, preset:[TEACHER_EMAIL],
       handler: (email, pw) => {
         email = email.trim();
         if (!email || !pw) return '이메일과 비밀번호를 모두 입력해 주세요.';
@@ -7068,6 +7068,11 @@ function stamp(){
 /* 선생님 구글 시트로도 보낸다 (Apps Script 웹 앱).
    no-cors 로 보내므로 답을 읽을 수는 없다 — 서버와 이 기기에 이미 남기므로
    시트 전송은 덤으로 두고, 실패해도 제출 자체는 성립한다. */
+/* 선생님 계정 — 비밀번호는 앱에 담지 않는다.
+   담아 두면 학생 누구나 소스에서 꺼내 제출물을 지우거나 명단을 건드릴 수 있다.
+   이메일만 미리 채워 두어 비밀번호만 넣으면 되게 한다. */
+const TEACHER_EMAIL = 'samsunk25@gmail.com';
+
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwtRLuNLiWxY_bKP9fajsBGuA9hh_mSphdoTmjxUKXNCha4kDkBKU7dZuvGPJ1pqI99Cw/exec';
 function sendToSheet(payload){
   if (!SHEET_URL) return Promise.resolve(false);
