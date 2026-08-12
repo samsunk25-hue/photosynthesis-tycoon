@@ -24,15 +24,26 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     var sh = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
+    var HEAD = [
+      '제출 시각', '학번', '환경 요인', '소요 시간(분:초)',
+      '문항1 가설', '문항2 독립 변인', '문항2 종속 변인', '문항2 통제 변인',
+      '문항3 실험 과정', '결론', '결과 해석',
+      // 새 칸은 맨 뒤에 붙인다 — 앞에 끼우면 예전에 쌓인 줄들이 한 칸씩 밀린다
+      '고쳐 쓴 횟수', '틀린 시도', '판', '어디를 몇 번 고쳤나'
+    ];
+
+    // 칸이 모자라면 늘린다 (칸 수를 줄여 둔 시트에서도 쓸 수 있게)
+    if (sh.getMaxColumns() < HEAD.length) {
+      sh.insertColumnsAfter(sh.getMaxColumns(), HEAD.length - sh.getMaxColumns());
+    }
+
     // 첫 줄에 제목이 없으면 만들어 둔다
     if (sh.getLastRow() === 0) {
-      sh.appendRow([
-        '제출 시각', '학번', '환경 요인', '소요 시간(분:초)',
-        '문항1 가설', '문항2 독립 변인', '문항2 종속 변인', '문항2 통제 변인',
-        '문항3 실험 과정', '결론', '결과 해석',
-        '고쳐 쓴 횟수', '틀린 시도', '판'
-      ]);
+      sh.appendRow(HEAD);
       sh.setFrozenRows(1);
+    } else if (sh.getRange(1, 1, 1, HEAD.length).getValues()[0].join('') !== HEAD.join('')) {
+      // 예전에 만든 시트에 칸이 늘었으면 제목 줄을 새로 맞춰 준다
+      sh.getRange(1, 1, 1, HEAD.length).setValues([HEAD]);
     }
 
     var sec = Math.round((d.took || 0) / 1000);
@@ -52,7 +63,11 @@ function doPost(e) {
       (d.interp || []).join('\n'),
       d.edits || 0,
       d.wrong || 0,
-      d.build || ''
+      d.build || '',
+      // 어디를 몇 번 고쳤나 — 항목마다 한 줄씩
+      (d.spots || []).map(function (s) {
+        return s.k + ' ' + s.n + '번' + (s.x ? ' (틀린 시도 ' + s.x + '번)' : '');
+      }).join('\n')
     ]);
 
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
