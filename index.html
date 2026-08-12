@@ -2620,7 +2620,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-08-12 g';
+const BUILD = '2026-08-12 h';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3449,14 +3449,25 @@ const AQ_PAGES = [
   { n:'문항 3 · 실험 과정 설계',   done:() => assessScore().q3 },
   { n:'사진과 제출',               done:() => !!state.submitted },
 ];
+/* 탐구 1·2·3 도 같은 방식으로 나눈다. 채점할 문항은 없지만, 설계에서 정할 것은
+   똑같이 넷이다 — 무엇을 같게 둘지, 무엇을 예상할지, 어떻게 할지, 그리고 시작. */
+const SIM_PAGES = [
+  { n:'통제 변인 정하기', done:i => ctrlReady(i) },
+  { n:'가설 만들기',      done:i => hypReady(i) },
+  { n:'실험 방법',        done:i => blanksDone(i) },
+  { n:'사진과 실험 시작', done:i => planReady(i) },
+];
 state.aqPage = 0;
-const clampPage = n => Math.max(0, Math.min(AQ_PAGES.length - 1, Number(n) || 0));
+state.pagedTab = 0;          // 지금 쪽을 나눠 그린 탐구
+const pagesOf = i => PLANS[i].free ? AQ_PAGES : SIM_PAGES;
+const pagesNow = () => pagesOf(state.pagedTab || 0);
+const clampPage = n => Math.max(0, Math.min(pagesNow().length - 1, Number(n) || 0));
 /* 문항 번호(1·2·3)가 어느 쪽에 있는가 — 남은 칸 목록에서 곧장 건너뛸 때 쓴다 */
 const pageOfQ = q => clampPage((Number(q) || 1) - 1);
 
 /* 지금 쪽에서 채워야 할 칸만 골라 준다.
    마지막 쪽(사진·제출)에서는 남은 것을 모두 모아 보여 준다 — 거기서 내기 때문이다. */
-const todoAll = () => !state.paged || state.aqPage === AQ_PAGES.length - 1;
+const todoAll = () => !state.paged || state.aqPage === pagesNow().length - 1;
 const todoHere = () => {
   const miss = assessMissing();
   return todoAll() ? miss : miss.filter(m => pageOfQ(m.q) === state.aqPage);
@@ -4047,10 +4058,16 @@ function renderSetup(i){
 
   /* 수행평가는 문항마다 쪽을 나눠 한 쪽씩 보여 준다.
      환경 요인을 고르기 전에는 나눌 것이 없어 한 쪽으로 둔다. */
-  const paged = p.free && !!state.freeKey;
+  const paged = p.free ? !!state.freeKey : true;
   state.paged = paged;              // 남은 칸 안내가 쪽을 따라가도록 알려 둔다
+  state.pagedTab = i;
+  const PAGES = pagesOf(i);
   const cur = paged ? clampPage(state.aqPage) : 0;
   const pg = n => paged ? ` data-pg="${n}"` : '';
+  /* 같은 칸이라도 놓이는 쪽이 다르다 — 수행평가는 가설이 문항 1 이라 첫 쪽이고,
+     탐구 1·2·3 은 통제 변인부터 정한다. */
+  const P = p.free ? { ctrl:1, hyp:0, method:2, photo:3, end:3 }
+                   : { ctrl:0, hyp:1, method:2, photo:3, end:3 };
 
   $('methodBox').innerHTML = `
     <div class="setup" style="--hue:${p.hue}">
@@ -4083,7 +4100,7 @@ function renderSetup(i){
       ${p.free && !state.freeKey ? `
       <p class="su-why">환경 요인을 고르면 <b>문항 1 · 2 · 3</b> 칸이 이어서 열립니다.</p>
     </div>` : `
-      <section class="su-sec" ${p.free ? 'style="order:3"' : ''}${pg(1)}>
+      <section class="su-sec" ${p.free ? 'style="order:3"' : ''}${pg(P.ctrl)}>
         <h4>${p.free ? '[문항 2] 변인 구분과 통제' : '⚖️ 통제 변인 정하기'}<small>${p.free ? '30점 — 통제 변인 3가지 이상과 그 방안까지' : '같게 둘 것을 고르고, 얼마로 · 어떻게 맞출지 확인하세요'}</small>
           ${p.free && state.ctrl[i].length ? '' : ''}</h4>
         ${p.free ? '' : `<div class="cvars">
@@ -4158,7 +4175,7 @@ function renderSetup(i){
           결과가 무엇 때문인지 알 수 없습니다.</p>`}
       </section>
 
-      <section class="su-sec" ${p.free ? 'style="order:2"' : ''}${pg(0)}>
+      <section class="su-sec" ${p.free ? 'style="order:2"' : ''}${pg(P.hyp)}>
         <h4>${p.free ? '[문항 1] ② 가설 서술' : '🎯 가설 만들기'}<small>${p.free ? '20점 — 방향까지 드러나게 서술합니다' : '결과를 예상해 보세요'}</small>
           ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
         ${p.free ? '' : `
@@ -4188,7 +4205,7 @@ function renderSetup(i){
         ${p.free ? assessHyp() : ''}
       </section>
 
-      <section class="su-sec" ${p.free ? 'style="order:4"' : ''}${pg(2)}>
+      <section class="su-sec" ${p.free ? 'style="order:4"' : ''}${pg(P.method)}>
         <h4>${p.free ? '[문항 3] 실험 과정 설계' : '🔬 실험 방법'}${p.free ? '<small>50점 — 준비물을 모두 써서 6단계로</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
         ${p.free ? assessSteps() : renderBlanks(i) + `
@@ -4202,7 +4219,7 @@ function renderSetup(i){
       </section>
 
       <!-- 실험 장치를 어떻게 꾸몄는지 사진이나 그림으로 남긴다 (선택) -->
-      <section class="su-sec" ${p.free ? 'style="order:5"' : ''}${pg(3)}>
+      <section class="su-sec" ${p.free ? 'style="order:5"' : ''}${pg(P.photo)}>
         <h4>📷 실험 장치 사진·그림<small>선택 — 올리지 않아도 실험을 시작할 수 있어요</small>
           ${state.photo[i] ? '<button class="sec-clr" data-clr="photo">지우기</button>' : ''}</h4>
         <div class="photo">
@@ -4236,7 +4253,7 @@ function renderSetup(i){
       </div>`; })() : ''}
 
       ${p.free && state.freeKey ? `
-      <div class="plan-save" style="order:7"${pg(3)}>
+      <div class="plan-save" style="order:7"${pg(P.end)}>
         <p>실험까지 가지 않아도 <b>설계만 먼저</b> 내거나 저장할 수 있어요.
           ${state.submitted ? '<b class="ps-done">✅ 이미 제출했습니다 — 다시 내면 새로 덮어씁니다.</b>' : ''}</p>
         <p class="pend" hidden></p>
@@ -4247,7 +4264,7 @@ function renderSetup(i){
         </div>
       </div>` : ''}
 
-      <div class="m-btns" ${p.free ? 'style="order:8"' : ''}${pg(3)}>
+      <div class="m-btns" ${p.free ? 'style="order:8"' : ''}${pg(P.end)}>
         ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? (p.free && !state.submitted ? '설계 제출하고 실험 시작 →' : '실험 시작하기 →')
@@ -4262,18 +4279,20 @@ function renderSetup(i){
 
       ${paged ? `
       <!-- 앞뒤로 넘기는 단추. 동그라미를 바로 눌러 건너뛸 수도 있다. -->
-      <nav class="pgnav" style="order:9" aria-label="문항 넘기기">
-        <p class="pg-name">${cur + 1} / ${AQ_PAGES.length} — ${AQ_PAGES[cur].n}</p>
-        <button class="pg-arrow" data-pgo="-1" ${cur === 0 ? 'disabled' : ''}>← 이전</button>
+      <nav class="pgnav" style="order:9" aria-label="설계 쪽 넘기기">
+        <p class="pg-name">${cur + 1} / ${PAGES.length} — ${PAGES[cur].n}</p>
+        ${cur === 0 && !p.free
+          ? '<button class="pg-arrow" id="pgBack">← 다른 탐구</button>'
+          : `<button class="pg-arrow" data-pgo="-1" ${cur === 0 ? 'disabled' : ''}>← 이전</button>`}
         <div class="pg-dots">
-          ${AQ_PAGES.map((q, n) => `
-            <button class="pg-dot ${n === cur ? 'on' : ''} ${q.done() ? 'ok' : ''}"
+          ${PAGES.map((q, n) => { const ok = q.done(i); return `
+            <button class="pg-dot ${n === cur ? 'on' : ''} ${ok ? 'ok' : ''}"
               data-pgn="${n}" aria-current="${n === cur}"
-              aria-label="${q.n}${q.done() ? ' — 다 썼습니다' : ''}">${
-              q.done() ? '✓' : n + 1}</button>`).join('')}
+              aria-label="${q.n}${ok ? ' — 다 했습니다' : ''}">${ok ? '✓' : n + 1}</button>`;
+          }).join('')}
         </div>
         <button class="pg-arrow go" data-pgo="1"
-          ${cur === AQ_PAGES.length - 1 ? 'disabled' : ''}>다음 →</button>
+          ${cur === PAGES.length - 1 ? 'disabled' : ''}>다음 →</button>
       </nav>` : ''}
     </div>`}`;
 
@@ -4508,12 +4527,17 @@ function renderSetup(i){
       saveSession(); Sfx.tick(); renderPlan();
     }));
 
-  const again = $('pickAgain');
-  if (again) again.addEventListener('click', () => {
+  /* 탐구 고르는 화면으로 — 첫 쪽의 '← 다른 탐구' 와 마지막 쪽의 단추가 함께 쓴다 */
+  const backToTopics = () => {
     state.planPick = null;
+    state.aqPage = 0;
     saveSession();
     renderPlan();
     scrollTo({ top:0, behavior:'smooth' });
+  };
+  ['pickAgain', 'pgBack'].forEach(id => {
+    const b = $(id);
+    if (b) b.addEventListener('click', backToTopics);
   });
 
   /* 자유 탐구에서 조작 변인을 고르기 전에는 시작 버튼이 없다
@@ -4522,15 +4546,24 @@ function renderSetup(i){
   if (goBtn) goBtn.addEventListener('click', () => {
     /* 수행평가는 남은 칸 목록이 모든 것을 알고 있다 — 가설도 그 안에 들어 있으므로,
        따로 막지 않고 아래 한곳에서 '어느 문항의 어느 칸' 인지 짚어 데려간다. */
+    /* 탐구 1·2·3 — 덜 된 곳은 다른 쪽에 있다. 알려만 주지 말고 그 쪽으로 데려간다. */
     if (!p.free && !ctrlReady(i)){
       const miss = ctrlNeed(i).filter(k => !state.ctrl[i].includes(k)).map(k => LABEL[k]);
       toast('⚖️', '통제 변인을 모두 골라 주세요',
         `조작 변인인 <b>${cfg.name}</b> 말고 나머지는 실험 내내 같게 두어야 합니다. ` +
         `아직 <b>${miss.join(', ')}</b>을(를) 고르지 않았어요.`);
+      goPage(P.ctrl);
       return;
     }
     if (!p.free && !hypReady(i)){
       toast('🤔', '가설을 완성해 주세요', '결과를 예상해 보는 것도 탐구의 한 단계예요.');
+      goPage(P.hyp);
+      return;
+    }
+    if (!p.free && !blanksDone(i)){
+      toast('🔬', '실험 방법의 빈칸을 채워 주세요',
+        '무엇을 바꾸고 무엇을 같게 둘지가 방법 안에 드러나야 합니다.');
+      goPage(P.method);
       return;
     }
     if (PLANS[i].free && !assessDone()){
