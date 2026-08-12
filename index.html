@@ -336,6 +336,42 @@ h2{font-size:14px;margin:0 0 12px;font-weight:650}
 .su-sec h4{margin:0;font-size:13.5px;font-weight:800}
 .su-sec h4{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .su-sec h4 small{font-weight:500;color:var(--muted);font-size:11.5px}
+/* 제목과 곁말이 붙어 한 덩어리로 읽히던 것 — 가운뎃점으로 떼어 놓는다 */
+.su-sec h4 small::before{content:'·';margin-right:6px;color:var(--baseline)}
+
+/* 📄 문항별 쪽 나눔 — 태블릿에서 세로로 끝없이 이어지면 지금 어느 문항을
+   쓰는 중인지 놓친다. 수행평가는 문항마다 한 쪽씩 보여 주고 앞뒤로 넘긴다. */
+.setup [hidden]{display:none !important}
+.pgnav{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding-top:14px;border-top:1.5px dashed var(--grid);flex-wrap:wrap;
+}
+.pg-arrow{
+  display:inline-flex;align-items:center;gap:7px;min-height:46px;padding:11px 17px;
+  border-radius:13px;border:1.5px solid var(--border);background:var(--surface-1);
+  color:var(--text-primary);font:inherit;font-size:13.5px;font-weight:750;cursor:pointer;
+}
+.pg-arrow:disabled{opacity:.32;cursor:default}
+.pg-arrow.go{
+  background:hsl(var(--hue) 80% 55%);border-color:hsl(var(--hue) 80% 48%);color:#fff;
+  box-shadow:0 3px 0 hsl(var(--hue) 80% 42%);
+}
+.pg-arrow.go:disabled{box-shadow:none}
+.pg-dots{display:flex;gap:7px;align-items:center}
+.pg-dot{
+  width:36px;height:36px;border-radius:50%;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:800;border:1.5px solid var(--border);
+  background:var(--surface-1);color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+/* 다 채운 문항은 초록 테두리로 — 어디가 남았는지 쪽을 넘기지 않고도 보인다 */
+.pg-dot.ok{border-color:#0ca30c;color:#0a8a0a}
+.pg-dot.on{background:hsl(var(--hue) 80% 55%);border-color:hsl(var(--hue) 80% 48%);color:#fff}
+.pg-dot.on.ok{background:#0ca30c;border-color:#0ca30c;color:#fff}
+.pg-name{
+  width:100%;order:-1;margin:0;text-align:center;
+  font-size:12px;font-weight:750;color:var(--muted);
+}
 .sec-clr{
   margin-left:auto;padding:3px 10px;border-radius:7px;cursor:pointer;font:inherit;
   font-size:10.5px;font-weight:650;flex:none;
@@ -2563,7 +2599,7 @@ addEventListener('unhandledrejection', e =>
 
 /* 앱 판 번호 — 학생 기기가 새 화면을 받았는지 눈으로 확인하려고 둔다.
    첫 화면 아래와 보고서 머리말에 함께 찍힌다. 앱을 고칠 때마다 올린다. */
-const BUILD = '2026-08-12 c';
+const BUILD = '2026-08-12 d';
 
 /* 탐구별 실험 장치 사진 (선택 업로드, data URL) */
 state.photo = [null, null, null, null];
@@ -3362,6 +3398,33 @@ const ctrlHow = (i, k) => CTRL_HOW[k](xfk(k, state.ctrlVal[i][k]));
 const hypReady = i => PLANS[i].free
   ? aLen(state.assess.hyp) >= A_MIN
   : (state.hyp[i].op !== null && state.hyp[i].dep !== null);
+
+/* ---------------------------------------------------------------
+   📄 수행평가 쪽 나눔 — 문항마다 한 쪽. 태블릿에서 세로로 끝없이 이어지면
+   지금 어느 문항을 쓰는 중인지 놓치기 때문이다.
+   쪽 번호는 저장하지 않는다 — 다시 들어오면 첫 쪽부터 훑는 편이 낫다.
+----------------------------------------------------------------*/
+const AQ_PAGES = [
+  { n:'문항 1 · 환경 요인과 가설', done:() => !!state.freeKey && assessScore().q1 },
+  { n:'문항 2 · 변인 구분과 통제', done:() => assessScore().q2 },
+  { n:'문항 3 · 실험 과정 설계',   done:() => assessScore().q3 },
+  { n:'사진과 제출',               done:() => !!state.submitted },
+];
+state.aqPage = 0;
+const clampPage = n => Math.max(0, Math.min(AQ_PAGES.length - 1, Number(n) || 0));
+/* 문항 번호(1·2·3)가 어느 쪽에 있는가 — 남은 칸 목록에서 곧장 건너뛸 때 쓴다 */
+const pageOfQ = q => clampPage((Number(q) || 1) - 1);
+
+/* 쪽을 넘긴다 — 다시 그린 뒤 새 쪽의 첫 줄이 보이게 올려 준다 */
+function goPage(n){
+  const to = clampPage(n);
+  if (to === state.aqPage) return;
+  state.aqPage = to;
+  Sfx.tick();
+  renderPlan();
+  const box = $('methodBox');
+  if (box) box.scrollIntoView({ behavior:'smooth', block:'start' });
+}
 const planReady = i => hypReady(i) && ctrlReady(i) &&
   (PLANS[i].free ? (!!state.freeKey && assessDone()) : blanksDone(i));
 
@@ -3529,6 +3592,7 @@ function renderTopics(){
         return;
       }
       state.planPick = pick;
+      state.aqPage = 0;              // 탐구를 새로 고르면 첫 쪽부터
       Sfx.tick();
       // 수행평가를 처음 펼친 순간부터 시간을 잰다
       if (state.planPick === ASSESS_TAB && !state.log.length)
@@ -3897,6 +3961,8 @@ function refreshTodo(){
   const box = $('methodBox');
   const el = box && box.querySelector('.todo');
   if (!el) return;
+  // 쪽을 나눠 놓았으면, 제 쪽이 아닐 때는 계속 접어 둔다
+  const offPage = el.dataset.pg !== undefined && Number(el.dataset.pg) !== state.aqPage;
   const miss = assessMissing();
   const go = box.querySelector('#goLab');
   if (!miss.length){
@@ -3904,25 +3970,39 @@ function refreshTodo(){
     if (go){ go.textContent = '실험 시작하기 →'; go.classList.remove('dim'); }
     return;
   }
-  el.hidden = false;
+  el.hidden = offPage;
   el.innerHTML = `<b>✍️ 아직 남은 칸 ${miss.length}개 — 누르면 그 칸으로 갑니다</b>
-    <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}">
+    <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}" data-q="${m.q}">
       <span class="tq">문항 ${m.q}</span>${m.t}</button></li>`).join('')}</ul>`;
   el.querySelectorAll('[data-goto]').forEach(b =>
-    b.addEventListener('click', () => {
-      const t = box.querySelector(b.dataset.goto);
-      if (!t) return;
-      t.scrollIntoView({ behavior:'smooth', block:'center' });
-      setTimeout(() => { t.focus(); t.classList.add('flash'); }, 260);
-      setTimeout(() => t.classList.remove('flash'), 1800);
-    }));
+    b.addEventListener('click', () => gotoField(b.dataset.goto, b.dataset.q)));
   if (go) go.textContent = `문항 ${assessScore().n} / 3 작성 — 남은 칸 ${miss.length}개`;
+}
+
+/* 남은 칸으로 데려간다 — 그 칸이 다른 쪽에 있으면 쪽부터 넘긴다 */
+function gotoField(sel, q){
+  const want = pageOfQ(q);
+  const jump = $('methodBox').querySelector('.pgnav') && want !== state.aqPage;
+  if (jump) goPage(want);
+  setTimeout(() => {
+    const t = $('methodBox').querySelector(sel);
+    if (!t) return;
+    t.scrollIntoView({ behavior:'smooth', block:'center' });
+    setTimeout(() => { t.focus(); t.classList.add('flash'); }, 260);
+    setTimeout(() => t.classList.remove('flash'), 1800);
+  }, jump ? 90 : 0);
 }
 
 /* --- 2단계: 통제 변인 · 가설 · 실험 방법 --- */
 function renderSetup(i){
   const p = PLANS[i], cfg = TABS[i], h = state.hyp[i];
   const ready = planReady(i);
+
+  /* 수행평가는 문항마다 쪽을 나눠 한 쪽씩 보여 준다.
+     환경 요인을 고르기 전에는 나눌 것이 없어 한 쪽으로 둔다. */
+  const paged = p.free && !!state.freeKey;
+  const cur = paged ? clampPage(state.aqPage) : 0;
+  const pg = n => paged ? ` data-pg="${n}"` : '';
 
   $('methodBox').innerHTML = `
     <div class="setup" style="--hue:${p.hue}">
@@ -3931,7 +4011,7 @@ function renderSetup(i){
         <div><span class="su-no">${tabTitle(i)}</span><b>${p.q}</b></div>
       </div>
       ${p.free ? `
-      <div class="sit" style="order:0">
+      <div class="sit" style="order:0"${pg(0)}>
         <b>🌱 탐구 상황</b>
         <p>스마트팜에서 채소를 기르는데, 흐린 날이나 겨울에도 잘 자라게 하려면
           내부 환경을 어떻게 맞춰 주어야 할까요? <b>빛의 세기 · 이산화 탄소 농도 · 온도</b>
@@ -3940,7 +4020,7 @@ function renderSetup(i){
       </div>` : ''}
 
       ${p.free ? `
-      <section class="su-sec" style="order:1">
+      <section class="su-sec" style="order:1"${pg(0)}>
         <h4>[문항 1] ① 환경 요인 고르기<small>셋 중 하나만 고릅니다</small>
           ${state.freeKey ? '<button class="sec-clr" data-clr="fk">지우기</button>' : ''}</h4>
         <div class="chips">
@@ -3955,7 +4035,7 @@ function renderSetup(i){
       ${p.free && !state.freeKey ? `
       <p class="su-why">환경 요인을 고르면 <b>문항 1 · 2 · 3</b> 칸이 이어서 열립니다.</p>
     </div>` : `
-      <section class="su-sec" ${p.free ? 'style="order:3"' : ''}>
+      <section class="su-sec" ${p.free ? 'style="order:3"' : ''}${pg(1)}>
         <h4>${p.free ? '[문항 2] 변인 구분과 통제' : '⚖️ 통제 변인 정하기'}<small>${p.free ? '30점 — 통제 변인 3가지 이상과 그 방안까지' : '같게 둘 것을 고르고, 얼마로 · 어떻게 맞출지 확인하세요'}</small>
           ${p.free && state.ctrl[i].length ? '' : ''}</h4>
         ${p.free ? '' : `<div class="cvars">
@@ -4030,7 +4110,7 @@ function renderSetup(i){
           결과가 무엇 때문인지 알 수 없습니다.</p>`}
       </section>
 
-      <section class="su-sec" ${p.free ? 'style="order:2"' : ''}>
+      <section class="su-sec" ${p.free ? 'style="order:2"' : ''}${pg(0)}>
         <h4>${p.free ? '[문항 1] ② 가설 서술' : '🎯 가설 만들기'}<small>${p.free ? '20점 — 방향까지 드러나게 서술합니다' : '결과를 예상해 보세요'}</small>
           ${p.free && (h.op !== null || h.dep !== null) ? '<button class="sec-clr" data-clr="hyp">지우기</button>' : ''}</h4>
         ${p.free ? '' : `
@@ -4060,7 +4140,7 @@ function renderSetup(i){
         ${p.free ? assessHyp() : ''}
       </section>
 
-      <section class="su-sec" ${p.free ? 'style="order:4"' : ''}>
+      <section class="su-sec" ${p.free ? 'style="order:4"' : ''}${pg(2)}>
         <h4>${p.free ? '[문항 3] 실험 과정 설계' : '🔬 실험 방법'}${p.free ? '<small>50점 — 준비물을 모두 써서 6단계로</small>' : ''}
           ${p.free && Object.keys(state.blanks).length ? '<button class="sec-clr" data-clr="blank">지우기</button>' : ''}</h4>
         ${p.free ? assessSteps() : renderBlanks(i) + `
@@ -4074,7 +4154,7 @@ function renderSetup(i){
       </section>
 
       <!-- 실험 장치를 어떻게 꾸몄는지 사진이나 그림으로 남긴다 (선택) -->
-      <section class="su-sec" ${p.free ? 'style="order:5"' : ''}>
+      <section class="su-sec" ${p.free ? 'style="order:5"' : ''}${pg(3)}>
         <h4>📷 실험 장치 사진·그림<small>선택 — 올리지 않아도 실험을 시작할 수 있어요</small>
           ${state.photo[i] ? '<button class="sec-clr" data-clr="photo">지우기</button>' : ''}</h4>
         <div class="photo">
@@ -4097,14 +4177,14 @@ function renderSetup(i){
       ${p.free && state.freeKey && !assessDone() ? (() => {
         const miss = assessMissing();
         return `
-      <div class="todo" style="order:6">
+      <div class="todo" style="order:6"${pg(3)}>
         <b>✍️ 아직 남은 칸 ${miss.length}개 — 누르면 그 칸으로 갑니다</b>
-        <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}">
+        <ul>${miss.map(m => `<li><button class="todo-go" data-goto="${esc(m.s)}" data-q="${m.q}">
           <span class="tq">문항 ${m.q}</span>${m.t}</button></li>`).join('')}</ul>
       </div>`; })() : ''}
 
       ${p.free && state.freeKey ? `
-      <div class="plan-save" style="order:7">
+      <div class="plan-save" style="order:7"${pg(3)}>
         <p>실험까지 가지 않아도 <b>설계만 먼저</b> 내거나 저장할 수 있어요.
           ${state.submitted ? '<b class="ps-done">✅ 이미 제출했습니다 — 다시 내면 새로 덮어씁니다.</b>' : ''}</p>
         <p class="pend" hidden></p>
@@ -4115,7 +4195,7 @@ function renderSetup(i){
         </div>
       </div>` : ''}
 
-      <div class="m-btns" ${p.free ? 'style="order:8"' : ''}>
+      <div class="m-btns" ${p.free ? 'style="order:8"' : ''}${pg(3)}>
         ${p.free ? '' : '<button class="btn-ghost" id="pickAgain">← 다른 탐구</button>'}
         <button class="m-go ${ready ? '' : 'dim'}" id="goLab">
           ${ready ? (p.free && !state.submitted ? '설계 제출하고 실험 시작 →' : '실험 시작하기 →')
@@ -4129,7 +4209,37 @@ function renderSetup(i){
                 : !hypReady(i) ? '가설을 완성해 주세요' : '실험 방법을 완성해 주세요')}
         </button>
       </div>
+
+      ${paged ? `
+      <!-- 앞뒤로 넘기는 단추. 동그라미를 바로 눌러 건너뛸 수도 있다. -->
+      <nav class="pgnav" style="order:9" aria-label="문항 넘기기">
+        <p class="pg-name">${cur + 1} / ${AQ_PAGES.length} — ${AQ_PAGES[cur].n}</p>
+        <button class="pg-arrow" data-pgo="-1" ${cur === 0 ? 'disabled' : ''}>← 이전</button>
+        <div class="pg-dots">
+          ${AQ_PAGES.map((q, n) => `
+            <button class="pg-dot ${n === cur ? 'on' : ''} ${q.done() ? 'ok' : ''}"
+              data-pgn="${n}" aria-current="${n === cur}"
+              aria-label="${q.n}${q.done() ? ' — 다 썼습니다' : ''}">${
+              q.done() ? '✓' : n + 1}</button>`).join('')}
+        </div>
+        <button class="pg-arrow go" data-pgo="1"
+          ${cur === AQ_PAGES.length - 1 ? 'disabled' : ''}>다음 →</button>
+      </nav>` : ''}
     </div>`}`;
+
+  /* 지금 쪽에 딸린 것만 남기고 접는다 */
+  if (paged) $('methodBox').querySelectorAll('[data-pg]').forEach(el => {
+    el.hidden = Number(el.dataset.pg) !== cur;
+  });
+
+  /* 쪽 넘기기 — 화살표와 동그라미 모두 한곳에서 받는다 */
+  const nav = $('methodBox').querySelector('.pgnav');
+  if (nav) nav.addEventListener('click', e => {
+    const arrow = e.target.closest('[data-pgo]');
+    const dot   = e.target.closest('[data-pgn]');
+    if (!arrow && !dot) return;
+    goPage(arrow ? cur + Number(arrow.dataset.pgo) : Number(dot.dataset.pgn));
+  });
 
   const bindChip = (sel, field) =>
     $('methodBox').querySelectorAll(sel).forEach(b =>
@@ -4240,15 +4350,9 @@ function renderSetup(i){
       exportPDF();
     });
 
-    /* 남은 칸 목록 — 누르면 그 칸으로 데려간다 */
+    /* 남은 칸 목록 — 누르면 그 칸으로 데려간다 (다른 쪽이면 쪽부터 넘긴다) */
     box.querySelectorAll('[data-goto]').forEach(b =>
-      b.addEventListener('click', () => {
-        const el = box.querySelector(b.dataset.goto);
-        if (!el) return;
-        el.scrollIntoView({ behavior:'smooth', block:'center' });
-        setTimeout(() => { el.focus(); el.classList.add('flash'); }, 260);
-        setTimeout(() => el.classList.remove('flash'), 1800);
-      }));
+      b.addEventListener('click', () => gotoField(b.dataset.goto, b.dataset.q)));
 
     box.querySelectorAll('[data-ucdel]').forEach(b =>
       b.addEventListener('click', () => {
@@ -4285,6 +4389,7 @@ function renderSetup(i){
       // 통제 변인은 학생이 직접 쓰므로, 시뮬레이션 쪽은 저절로 맞춰 둔다
       state.ctrl[3] = ctrlNeed(3);
       state.hyp[3] = { op:null, dep:null };
+      state.aqPage = 0;              // 요인을 정했으니 문항 1 부터 다시
       newBlankSet();
       logAssess('조작 변인', `${LABEL[k]}로 정했습니다`);
       if (had){
@@ -4339,6 +4444,7 @@ function renderSetup(i){
       if (what === 'fk'){
         // 조작 변인을 지우면 그에 딸린 설계도 함께 지운다
         state.freeKey = null;
+        state.aqPage = 0;
         state.ctrl[i] = [];   // 요인을 지우면 시뮬레이션 조건도 함께 지운다
         state.hyp[i] = { op:null, dep:null };
         newBlankSet();
@@ -4380,9 +4486,9 @@ function renderSetup(i){
       toast('📝', `아직 ${miss.length}칸이 남았어요`,
         miss.slice(0, 3).map(m => `문항 ${m.q} · ${m.t}`).join('<br>') +
         (miss.length > 3 ? `<br>… 그 밖에 ${miss.length - 3}칸` : '') +
-        '<br><span style="color:var(--muted)">아래 <b>남은 칸</b> 목록을 누르면 바로 갑니다.</span>');
-      const el = document.querySelector('.todo');
-      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+        '<br><span style="color:var(--muted)">첫 번째 빈칸으로 데려갑니다.</span>');
+      // 빈칸이 다른 쪽에 있어도 그 쪽으로 넘겨서 데려간다
+      gotoField(miss[0].s, miss[0].q);
       return;
     }
     /* 설계를 낸 뒤에 실험으로 넘어간다 — 실험 결과를 보고 설계를 고쳐 쓰는 것을
