@@ -877,10 +877,9 @@ td.fresh.wrong{animation-name:freshFlashBad}
 .ip-item{margin-bottom:14px}
 .ip-item:last-of-type{margin-bottom:10px}
 .ip-item label{
-  display:flex;align-items:flex-start;font-size:13px;font-weight:700;line-height:1.5;margin-bottom:6px;
+  display:block;font-size:13px;font-weight:700;line-height:1.5;margin-bottom:6px;
 }
-.ip-item label .ip-em { margin-right:6px; display:inline-block; flex:none; }
-.ip-item label .ip-text { flex:1; min-width:0; }
+.ip-item label .ip-em { margin-right:6px; display:inline-block; }
 .ip-em{font-size:15px;flex:none}
 .ip-ok{margin-left:auto;padding-left:6px;color:#0ca30c;font-weight:900;flex:none}
 .ip-hint{
@@ -1784,7 +1783,7 @@ td.act{text-align:right;padding-right:0}
   display:inline-block;padding:1px 6px;border-radius:5px;font:inherit;font-size:12px;
   background:var(--page);border:1px solid var(--border);
 }
-.modal-box.wide{max-width:440px}
+.modal-box.wide{max-width:840px !important; width:90vw !important;}
 
 .tank-status{
   position:absolute;left:22px;bottom:34px;z-index:4;font-size:12px;font-weight:600;
@@ -2593,7 +2592,7 @@ const xfk = (k, v)   => safeScale(k, v).toFixed(decOf(RANGE[k][2]));
    상태
 ----------------------------------------------------------------*/
 const MEASURE_MS = 15000;      // 직접 세기 — 실제로 15초를 센다
-const AUTO_MS    = 1000;       // 자동 측정 — 부피 측정을 압축해 보여준다
+const AUTO_MS    = 3000;       // 자동 측정 — 부피 측정을 압축해 보여준다
 
 const state = {
   mode: 'manual',              // 'manual'(직접 세기) | 'auto'(자동 측정)
@@ -3255,7 +3254,7 @@ const fT = t => t <= 35
    - 자동 측정: 모인 산소의 부피(ml/분). 최적 조건에서 2.17 ml/분. */
 const MODES = {
   manual: { k:25.875, unit:'개',  yLabel:'15초간 기포 수 (개)',    yMax:24,  dec:0, ms:15000 },
-  auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:1000  },
+  auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:3000  },
 };
 const M = () => MODES[state.mode];
 
@@ -5774,7 +5773,7 @@ function miniChart(tab){
     if (r.m.length === 3) (byCond[r.cond] = byCond[r.cond] || []).push(r);
   });
   const best = Object.values(byCond).sort((a, b) => b.length - a.length)[0] || [];
-  const pts = best.map(r => ({ x:r.x, avg:r.m.reduce((a,b)=>a+b,0)/3 }))
+  const pts = best.map(r => ({ x:safeScale(cfg.key, r.x), avg:r.m.reduce((a,b)=>a+b,0)/3 }))
                   .sort((a, b) => a.x - b.x);
 
   const sx = v => P2.l + (v - cfg.min) / (cfg.max - cfg.min) * pw;
