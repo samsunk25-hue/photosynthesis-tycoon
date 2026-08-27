@@ -877,10 +877,12 @@ td.fresh.wrong{animation-name:freshFlashBad}
 .ip-item{margin-bottom:14px}
 .ip-item:last-of-type{margin-bottom:10px}
 .ip-item label{
-  display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.5;
+  display:flex;align-items:flex-start;font-size:13px;font-weight:700;line-height:1.5;margin-bottom:6px;
 }
+.ip-item label .ip-em { margin-right:6px; display:inline-block; flex:none; }
+.ip-item label .ip-text { flex:1; min-width:0; }
 .ip-em{font-size:15px;flex:none}
-.ip-ok{margin-left:auto;color:#0ca30c;font-weight:900;flex:none}
+.ip-ok{margin-left:auto;padding-left:6px;color:#0ca30c;font-weight:900;flex:none}
 .ip-hint{
   margin:5px 0 7px 22px;font-size:11.5px;line-height:1.55;color:var(--muted);
 }
@@ -2063,6 +2065,9 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
       <button class="sound-btn home-btn" id="homeBtn" hidden>
         <span aria-hidden="true">🏠</span><span>메인 화면</span>
       </button>
+      <button class="sound-btn" id="watchVideoBtn" hidden>
+        <span aria-hidden="true">▶️</span><span>실험 영상 보기</span>
+      </button>
       <button class="sound-btn teach" id="teachTop">
         <span>👩‍🏫</span><span>선생님</span>
       </button>
@@ -2099,6 +2104,9 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 <!-- ===== 첫 화면: 탐구 실험 계획서 ===== -->
 <section id="plan">
   <div class="plan-intro">
+    <div id="videoLinkArea" hidden style="margin-bottom:12px;text-align:center">
+      <a id="videoLinkBtn" href="#" target="_blank" class="btn" style="background:#2a78d6;color:#fff;text-decoration:none;display:inline-block">🎬 선생님이 올린 실험 영상 보기</a>
+    </div>
     <img class="hero" src="./photosynthesis_og.jpg" width="1200" height="630"
          alt="수조 속 검정말에 전등을 비추면 산소 기포가 발생하는 실험 장치">
     <div class="intro-txt">
@@ -2332,6 +2340,11 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
           <button class="rpt" id="pdfBtn">💾 PDF로 저장</button>
           <button class="rpt" id="docBtn">💾 Word로 저장</button>
         </div>
+        <div class="rb-row">
+          <button class="rpt" id="backupBtn">💾 진행 상태 백업(JSON)</button>
+          <button class="rpt" id="restoreBtn" onclick="document.getElementById('importJson').click()">📂 파일에서 복원</button>
+          <input type="file" id="importJson" accept=".json" hidden>
+        </div>
         <div class="rb-row"><button class="rpt danger" id="wipeBtn">🧹 전체 지우기</button></div>
       </div>
       <p class="hint" id="rptHint">실험 계획(질문·변인·가설·방법)과 결과(표·그래프·결론)를
@@ -2364,12 +2377,17 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
     <!-- 교사 전용: 승인 대기열 -->
     <!-- 교사 전용: 수행평가 여닫기 -->
     <div id="assessBox" hidden>
-      <div class="ab-row">
+      <div class="ab-row" style="margin-bottom:12px">
         <div>
           <b>📝 수행평가(자유 탐구)</b>
           <small id="assessState">닫혀 있음 — 학생 화면에서 잠깁니다</small>
         </div>
         <button class="ab-btn" id="assessToggle">열기</button>
+      </div>
+      <div class="ab-row" style="padding-top:12px;border-top:1px solid var(--border)">
+        <div><b>🎬 실험 영상 링크</b></div>
+        <input type="text" id="videoUrlInput" placeholder="유튜브 링크 등" style="flex:1;min-width:0;padding:6px;border:1px solid var(--border);border-radius:6px;font:inherit;font-size:13px;">
+        <button class="ab-btn" id="videoUrlSave">저장</button>
       </div>
     </div>
 
@@ -2513,6 +2531,11 @@ try {
   Cloud.setAssess = open =>
     db.set(db.ref(rtdb, 'config/assessOpen'), open === true);
 
+  Cloud.watchVideoUrl = cb =>
+    db.onValue(db.ref(rtdb, 'config/videoUrl'), snap => cb(snap.val() || ''));
+  Cloud.setVideoUrl = url =>
+    db.set(db.ref(rtdb, 'config/videoUrl'), url);
+
   Cloud.signIn  = (email, pw) => auth.signInWithEmailAndPassword(au, email, pw);
   Cloud.signOut = () => auth.signOut(au);
   Cloud.onAuth  = cb => auth.onAuthStateChanged(au, u => {
@@ -2557,17 +2580,20 @@ const RANGE = { light:[0,100,10], co2:[0,CO2_MAX,0.01], temp:[0,50,1] };
 
 /* 값 표기 — CO₂ 는 0.01% 단위라 소수 두 자리로 적어야 눈금이 구분된다 */
 const decOf = st => (st < 1 ? 2 : 0);
-const xf  = (cfg, v) => Number(v).toFixed(decOf(cfg.step));
-const xfk = (k, v)   => Number(v).toFixed(decOf(RANGE[k][2]));
+// 1 이상인 과거 CO2 눈금값(예: 40)이 들어오면 강제로 co2Conv()를 적용해 스케일을 맞춥니다
+const safeScale = (k, v) => (k === 'co2' && Number(v) >= 1) ? co2Conv(v) : Number(v);
+const xf  = (cfg, v) => safeScale(cfg.key, v).toFixed(decOf(cfg.step));
+const xfk = (k, v)   => safeScale(k, v).toFixed(decOf(RANGE[k][2]));
 
 /* ---------------------------------------------------------------
    상태
 ----------------------------------------------------------------*/
 const MEASURE_MS = 15000;      // 직접 세기 — 실제로 15초를 센다
-const AUTO_MS    = 5000;       // 자동 측정 — 부피 측정을 압축해 보여준다
+const AUTO_MS    = 1000;       // 자동 측정 — 부피 측정을 압축해 보여준다
 
 const state = {
   mode: 'manual',              // 'manual'(직접 세기) | 'auto'(자동 측정)
+  useAltMethod: false,
   activeTab: 0,
   light: 100, co2: CO2_SAT, temp: 25,
   // 측정 방식마다 데이터를 따로 보관한다 (세는 방법이 다르므로 섞으면 안 된다)
@@ -2656,15 +2682,13 @@ const assessLocked = () => inAssessment() && !state.submitted;
 
 /* 문항 3 — 요인별로 제공되는 준비물. 모두 써서 과정을 설계해야 한다. */
 const KITS = {
-  light:['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(100mL) 3개',
-         'LED 전등 3개', '30cm 자', '초시계', '펀치(지름 5mm 조각용)', '온도계',
-         '물이 담긴 수조(열 차단용)'],
-  co2:  ['시금치 잎', '밀폐 용기 3개', '디지털 산소 센서 3개', '스마트 기기(MBL 앱)',
-         'LED 전등 3개', '어둠상자', '탄산수소 나트륨 수용액(0.5%·1.5%·3.0%)',
-         '거름종이', '핀셋', '전자저울'],
-  temp: ['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(250mL) 3개',
-         'LED 전등 3개', '얼음물', '실온의 물', '따뜻한 물(50℃)', '온도계 3개',
-         '초시계', '펀치(지름 5mm 조각용)'],
+  light:['시금치 잎', '산소 센서', '스마트 기기(산소 측정 앱)', '어둠상자', '밀폐 용기 3개', 'LED 전등 3개', '30cm 자', '실험용 장갑', '실험복'],
+  co2:  ['시금치 잎', '산소 센서 3개', '스마트 기기(산소 측정 앱)', '어둠상자', '밀폐 용기 3개', 'LED 전등 3개', '탄산수소 나트륨 수용액(0.5%·1.5%·3.0%)', '거름종이', '전자저울'],
+  temp: ['시금치 잎', '산소 센서 3개', '스마트 기기(산소 측정 앱)', '어둠상자', '밀폐 용기 3개', 'LED 전등 3개', '얼음물', '실온의 물', '따뜻한 물(50℃)', '큰 수조(물 중탕용)', '온도계 3개'],
+  
+  light_alt:['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(100mL) 3개', 'LED 전등 3개', '30cm 자', '초시계', '펀치(지름 5mm 조각용)', '온도계', '물이 담긴 수조(열 차단용)'],
+  co2_alt:  ['시금치 잎', '밀폐 용기 3개', '디지털 산소 센서 3개', '스마트 기기(MBL 앱)', 'LED 전등 3개', '어둠상자', '탄산수소 나트륨 수용액(0.5%·1.5%·3.0%)', '거름종이', '핀셋', '전자저울'],
+  temp_alt: ['시금치 잎', '1% 탄산수소 나트륨 수용액', '주사기(20mL)', '비커(250mL) 3개', 'LED 전등 3개', '얼음물', '실온의 물', '따뜻한 물(50℃)', '온도계 3개', '초시계', '펀치(지름 5mm 조각용)'],
 };
 
 /* 문항별로 다 썼는지 — 채점기준의 요구를 그대로 옮긴다 */
@@ -3227,7 +3251,7 @@ const fT = t => t <= 35
    - 자동 측정: 모인 산소의 부피(ml/분). 최적 조건에서 2.17 ml/분. */
 const MODES = {
   manual: { k:25.875, unit:'개',  yLabel:'15초간 기포 수 (개)',    yMax:24,  dec:0, ms:15000 },
-  auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:5000  },
+  auto:   { k:2.5,  unit:'ml/분', yLabel:'산소 발생량 (ml/분)',    yMax:2.4, dec:2, ms:1000  },
 };
 const M = () => MODES[state.mode];
 
@@ -3989,15 +4013,9 @@ function assessVars(){
 
 /* 문항 3 — 준비물 + 여섯 단계 과정 (50점) */
 function assessSteps(){
-  const a = state.assess, kit = KITS[state.freeKey] || [];
+  const a = state.assess;
   const done = a.steps.filter(x => aLen(x) >= A_MIN).length;
   return `
-    <div class="kit">
-      <b>🧰 제공된 준비물 — 아래 것을 <u>모두</u> 써서 과정을 설계합니다</b>
-      <div class="kit-list">${kit.map(x => `<span>${x}</span>`).join('')}</div>
-      <p class="kit-note">빠뜨리거나 없는 물건을 새로 들여오면 감점됩니다.
-        특히 <b>통제 변인을 맞추려고 준 물건</b>(예: 열을 막는 물 수조)을 꼭 쓰세요.</p>
-    </div>
     <div class="aq-head">실험 과정을 <b>순서대로 ${A_STEPS}단계</b> 서술하세요
       ${scoreTag(50, done >= A_STEPS)}
       <span class="aq-cnt ${done >= A_STEPS ? 'full' : ''}">${done} / ${A_STEPS}</span></div>
@@ -4082,6 +4100,23 @@ function renderSetup(i){
           내부 환경을 어떻게 맞춰 주어야 할까요? <b>빛의 세기 · 이산화 탄소 농도 · 온도</b>
           가운데 <b>하나만</b> 골라, 그 요인과 광합성량의 관계를 알아볼 실험을 설계해 봅시다.</p>
         <p class="sit-pt">가설 <b>20점</b> · 변인 <b>30점</b> · 과정 <b>50점</b> = 100점</p>
+        ${state.freeKey ? (() => {
+          const kitKey = state.useAltMethod ? state.freeKey + '_alt' : state.freeKey;
+          const kit = KITS[kitKey] || [];
+          return `
+          <div class="kit" style="margin-top:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <b>🧰 제공된 준비물 — 아래 것을 <u>모두</u> 써서 과정을 설계합니다</b>
+              <label style="font-size:14px; cursor:pointer; font-weight:normal; color:#d97706; border:1px solid #d97706; padding:4px 8px; border-radius:4px; display:flex; align-items:center; gap:6px;">
+                <input type="checkbox" ${state.useAltMethod ? 'checked' : ''} onchange="state.useAltMethod=this.checked; saveSession(); renderPlan()">
+                <span>선택 과제 (잎 조각)</span>
+              </label>
+            </div>
+            <div class="kit-list">${kit.map(x => '<span>' + x + '</span>').join('')}</div>
+            <p class="kit-note">빠뜨리거나 없는 물건을 새로 들여오면 감점됩니다.
+              특히 <b>통제 변인을 맞추려고 준 물건</b>(예: 열을 막는 물 수조)을 꼭 쓰세요.</p>
+          </div>`;
+        })() : ''}
       </div>` : ''}
 
       ${p.free ? `
@@ -5645,7 +5680,7 @@ const REVIEWS = [
 
   { who:'지현', em:'🙋‍♀️',
     plan:'CO₂ 농도를 0.04%, 0.08%, 0.12%로 바꾸며 각각 <b>한 번씩만</b> 측정했다.',
-    result:'40%일 때가 60%보다 높게 나왔다.',
+    result:'0.08%일 때가 0.12%일 때보다 높게 나왔다.',
     claim:'그래서 <b>“CO₂는 0.08%가 가장 좋다”</b>고 결론지었다.',
     opts:['맞는 결론이다', '틀렸다 — 통제 변인을 정하지 않았다',
           '틀렸다 — 한 번만 재서 오차일 수 있다', '틀렸다 — 온도를 재지 않았다'],
@@ -6069,153 +6104,39 @@ function errStat(i){
 
 function interpretQs(hit, i = state.activeTab){
   const cfg = TABS[i];
-  /* 예측 질문 — 잰 구간 밖에서는 어떻게 될지 미리 말해 보게 한다.
-     측정한 것을 설명하는 것과, 재지 않은 곳을 근거로 내다보는 것은 다른 일이다.
-     조작 변인마다 물어볼 자리가 달라 문장을 따로 둔다. */
-  const AHEAD = {
-    light: { q:`빛의 세기를 ${cfg.max}${cfg.unit} 보다 더 세게 한다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
-             hint:'그래프의 오른쪽 끝 기울기를 보세요. 빛이 아니라 <b>다른 것</b>이 한계가 되지는 않을까요?' },
-    co2:   { q:`CO₂ 농도를 ${cfg.max}${cfg.unit} 보다 더 높인다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
-             hint:'그래프의 오른쪽 끝 기울기를 보세요. CO₂가 충분해지면 무엇이 한계가 될까요?' },
-    temp:  { q:`온도를 ${cfg.max}${cfg.unit} 보다 더 높인다면 산소 발생량은 어떻게 될까요? 먼저 예측해 보세요.`,
-             hint:'광합성은 효소가 하는 일입니다. 효소는 뜨거워지면 어떻게 될까요?' },
-  }[cfg.key];
-
-  /* 왜 그런 모양이 나왔는지 — 광합성 반응식과 이어 묻는다.
-     조작 변인이 반응식에서 맡은 자리가 달라( 빛=에너지, CO₂=재료, 온도=효소 조건 )
-     짚어 줄 곳도 달라진다. */
   const RX = '물 + 이산화 탄소 —<b>빛 에너지</b>→ 포도당 + <b>산소</b>';
   const WHY = {
     light: {
       q:'광합성 반응과 이어서 설명해 보세요 — 빛의 세기를 바꾸자 산소 발생량이 달라진 까닭은 무엇일까요?',
-      hint:`광합성: ${RX}<br>
-            빛은 이 반응을 일으키는 <b>에너지</b>입니다.
-            ① 빛이 약할 때는 무엇이 부족해서 산소가 적게 나왔을까요?
-            ② 빛을 더 세게 해도 더 늘지 않은 구간에서는, 빛 대신
-            <b>어느 재료</b>가 모자라 한계가 되었을까요?` },
+      hint:`광합성: ${RX}<br>빛은 이 반응을 일으키는 <b>에너지</b>입니다. 빛이 부족할 때와 충분할 때를 나누어 설명해 보세요.` },
     co2: {
       q:'광합성 반응과 이어서 설명해 보세요 — CO₂ 농도를 바꾸자 산소 발생량이 달라진 까닭은 무엇일까요?',
-      hint:`광합성: ${RX}<br>
-            이산화 탄소는 포도당과 산소를 만드는 <b>재료</b>입니다.
-            ① CO₂가 적을 때는 왜 산소가 적게 나왔을까요?
-            ② CO₂를 더 넣어도 더 늘지 않은 구간에서는, CO₂ 대신
-            <b>무엇</b>이 반응 속도를 정하고 있을까요?` },
+      hint:`광합성: ${RX}<br>이산화 탄소는 포도당과 산소를 만드는 <b>재료</b>입니다. 재료가 부족할 때와 충분할 때를 나누어 설명해 보세요.` },
     temp: {
       q:'광합성 반응과 이어서 설명해 보세요 — 온도를 바꾸자 산소 발생량이 달라진 까닭은 무엇일까요?',
-      hint:`광합성: ${RX} — 이 반응은 <b>효소</b>가 이끕니다.
-            ① 온도가 올라갈 때 효소는 어떻게 되어 산소가 늘었을까요?
-            ② 어느 온도를 넘어서자 급히 떨어진 것은, 효소에
-            <b>무슨 일</b>이 생겼기 때문일까요?` },
+      hint:`광합성: ${RX} — 이 반응은 <b>효소</b>가 이끕니다.<br>효소는 적정 온도까지는 활발하지만, 너무 뜨거워지면 변성되어 기능을 잃습니다.` },
   }[cfg.key];
 
-  /* 오차 되짚기 — 잰 값이 서로 달랐다는 사실은 실패가 아니라 다룰 거리다.
-     실제로 어긋난 값을 그대로 들어 주고, 원인과 줄일 방법을 적게 한다. */
   const e = errStat(i);
-  const u = M().unit;
   const ERR = { has: e.has };
   if (e.has){
-    const parts = [];
-    if (e.spread > 0)
-      parts.push(`<b>${e.at}${cfg.unit}</b> 조건에서 세 번 잰 값이
-        <b>${e.vals.map(v => fmt(v)).join(' · ')}${u}</b> 로 달랐습니다
-        (차이 ${fmt(e.spread)}${u})`);
-    if (e.miss > 0)
-      parts.push(`직접 센 값이 실제와 <b>${e.miss}번</b> 어긋났습니다
-        (가장 큰 차이 ${e.missMax}${u})`);
-    ERR.q = `${parts.join(', 그리고 ')}. 왜 이런 차이가 생겼을까요? ` +
-      `<b>재는 과정</b>과 <b>광합성 과정</b> 양쪽에서 까닭을 찾아 적어 보세요.`;
-
-    /* 오차를 '잘못 쟀다' 로만 몰면 실험이 사람 탓으로 끝난다.
-       살아 있는 검정말이 하는 일에서도 차이가 생긴다 — 호흡으로 산소를 도로 쓰고,
-       산소가 물에 녹았다가 나중에 나오고, 잎마다 엽록체 양이 다르다.
-       그래서 재는 쪽과 광합성 쪽을 나누어 짚어 준다. */
-    const BIO = {
-      light:'전등이 물을 조금 데워 온도가 올라갔을 수도 있어요.',
-      co2:  '재는 동안 검정말이 물속 CO₂를 써서 농도가 조금씩 줄었을 수도 있어요.',
-      temp: '물 전체가 정한 온도로 고르게 데워지기까지는 시간이 걸립니다.',
-    }[cfg.key];
-
-    ERR.hint =
-      `<b>① 재는 과정에서</b> — ` + (isManual()
-        ? `기포를 세는 사이에 놓쳤거나, 15초를 재는 시작과 끝이 조금씩 어긋났을 수 있어요.
-           ${e.miss > 0 ? '내가 센 값과 실제가 달랐던 까닭도 함께 적어 보세요.' : ''}`
-        : `장치가 세어 주더라도 기포가 늘 같은 크기로 나오지는 않습니다.`) +
-      `<br><b>② 광합성 과정에서</b> — 검정말은 광합성을 하면서 <b>호흡</b>도 해
-       만든 산소의 일부를 스스로 씁니다. 산소가 물에 녹아 있다가 나중에 기포로 나오기도 하고,
-       잎마다 엽록체 양이 달라 서로 그늘을 지기도 합니다.
-       빛을 비춘 뒤 광합성이 일정해지기까지도 잠시 걸립니다. ${BIO}
-       <br>이 가운데 <b>무엇이 이번 차이를 만들었을지</b> 골라, 줄일 방법과 함께 적어 보세요.`;
+    ERR.q = `측정 과정에서 값의 차이(오차)가 생겼습니다. 왜 이런 차이가 생겼을까요?`;
+    ERR.hint = `<b>재는 과정</b>(기포 세기, 시간 재기)이나 <b>광합성 과정</b>(검정말의 호흡, 잎의 그늘) 중 어디에서 차이가 났을지 적어 보세요.`;
   }
-
-  /* 실험에서 본 것을 교실 밖 현상과 이어 보는 칸.
-     조작 변인에 따라 이을 곳이 다르므로, 그 변인일 때만 나타난다
-     (탐구 2·3, 그리고 자유 탐구에서 그 변인을 고른 경우). */
-  const REAL = {
-    /* 실험에서는 0~100%로 크게 바꾸지만 공기 중 이산화 탄소는 0.04% 뿐이다.
-       그 값이 그래프의 어디에 놓이는지 짚어 보면, 자연에서 무엇이 광합성을
-       제한하고 있는지가 스스로 드러난다. */
-    co2: {
-      id:'q7', icon:'🌍',
-      q:'공기 중 이산화 탄소는 <b>0.04%</b> 정도밖에 되지 않습니다. ' +
-        '이 값을 그래프에 놓아 보면 어디쯤일까요? 그렇다면 공기 중에서 자라는 ' +
-        '식물의 광합성은 무엇 때문에 제한되고 있을까요?',
-      hint:`0.04% 는 <b>슬라이더에 표시된 자리</b>이니 직접 재어 보고, 그 값을 함께 적어도 좋습니다.
-        그래프에서 0.04% 쯤의 기울기를 보세요.
-        그 구간의 기울기를 보세요 — 농도가 조금만 올라도 산소 발생량이 크게 늘었나요?
-        그렇다면 자연에서는 이산화 탄소가 <b>부족해서</b> 광합성이 느려지고 있다는 뜻입니다.
-        농부들이 비닐하우스에 이산화 탄소를 더 넣어 주는 까닭과 이어서 적어 보세요.`,
-    },
-    /* 온도는 계절과 곧바로 이어진다. 여름·겨울의 기온을 그래프에 놓아 보면
-       나무가 계절마다 다르게 자라 나이테가 생기는 까닭에 닿는다. */
-    temp: {
-      id:'q8', icon:'🌳',
-      q:'여름과 겨울의 <b>평균 기온</b>은 크게 다릅니다. 두 기온을 그래프에 놓아 보면 ' +
-        '광합성은 계절에 따라 어떻게 달라질까요? 그리고 그것이 나무의 ' +
-        '<b>나이테 두께</b>와 어떻게 이어질까요?',
-      hint:`겨울 기온(0~5°C쯤)과 여름 기온(25~30°C쯤)에 해당하는 곳을 그래프에서 짚어 보세요.
-        광합성은 <b>효소</b>가 하는 일이라 온도에 따라 속도가 달라집니다.
-        광합성이 활발한 철에는 나무가 빠르게 자라 세포가 크고 연한 부분이 넓게 생기고,
-        더딘 철에는 좁고 단단한 부분이 생겨 <b>나이테</b>로 남습니다.
-        한여름에 35°C를 크게 넘으면 어떻게 될지도 함께 생각해 보세요.`,
-    },
-  }[cfg.key] || null;
 
   return [
     { id:'q1', icon:'📈',
-      q:'그래프의 모양을 말로 설명해 보세요.',
-      hint:'어디서 늘고, 어디서 멈추거나 줄었나요? 가장 높은 곳은 어디였나요?' },
-    /* '왜 그런 모양이 나왔을까요?' 만으로는 무엇을 근거로 삼아야 할지 알 수 없어
-       느낌만 적게 된다. 광합성 반응식의 어느 자리에서 그 요인이 일하는지
-       (에너지인가, 재료인가, 효소인가) 짚어 묻는다. */
+      q:'그래프의 모양을 설명하고, 그것을 바탕으로 결론을 내려보세요.',
+      hint:`“${cfg.name}를 ~하면 산소 발생량은 ~한다” 처럼 적고, 그래프의 <b>어느 구간(값)</b>에서 그렇게 나타나는지 근거를 함께 적어 보세요.` },
     { id:'q2', icon:'❓', q:WHY.q, hint:WHY.hint },
-    // 오차가 실제로 있었을 때만 그 숫자를 들어 원인을 묻는다
-    ...(ERR.has ? [{ id:'q6', icon:'📏', q:ERR.q, hint:ERR.hint }] : []),
-    /* 그래프에서 읽은 것을 스스로 결론 문장으로 맺는 칸.
-       고르기(4지선다)는 읽었는지 확인할 뿐이고, 근거를 들어 한 문장으로 맺는 것은
-       또 다른 일이다. 가설이 맞았든 틀렸든 반드시 쓰게 한다 —
-       예전에는 가설이 틀리면 결론을 쓸 칸이 아예 없었다. */
-    { id:'q9', icon:'🧾',
-      q:`그래프에서 읽은 것을 바탕으로 <b>결론을 한 문장</b>으로 쓰고, ` +
-        `그렇게 판단한 <b>근거</b>를 그래프에서 찾아 함께 적어 보세요.`,
-      hint:`“${cfg.name}를 ~하면 산소 발생량은 ~한다” 처럼 <b>“~한다”</b>로 단정해 적습니다.` +
-        ` 그다음 “왜냐하면 그래프에서 ○○${cfg.unit} 부터 ○○${cfg.unit} 까지는 ~하고,` +
-        ` 그 뒤로는 ~했기 때문이다” 처럼 <b>구간과 값</b>을 들어 근거를 적어 보세요.` },
     hit
       ? { id:'q3', icon:'✅',
-          q:'가설이 맞았습니다. 이제 확인된 사실로 결론을 써 보세요.',
-          hint:'“~할 것이다”가 아니라 <b>“~한다”</b>로 단정해 적습니다. ' +
-               '예) “빛의 세기를 세게 하면 산소 발생량은 늘다가 일정해진다.” ' +
-               '그리고 그래프의 어느 부분이 그 근거인지 함께 적어 보세요.' }
+          q:'가설이 맞았습니다. 새롭게 알게 된 점을 적어 보세요.',
+          hint:'예상했던 것과 결과가 정확히 일치했나요? 더 궁금해진 점이나 실험을 통해 배우게 된 점을 자유롭게 적어 보세요.' }
       : { id:'q3', icon:'🔁',
-          q:'가설이 결과와 달랐습니다. 결과에 맞게 가설을 다시 세워 보세요.',
-          hint:'“○○를 ~하면 산소 발생량은 ~할 것이다” 처럼 문장으로 적고, ' +
-               '처음 예상이 왜 빗나갔는지도 함께 적어 보세요.' },
-    { id:'q5', icon:'🔮', predict:true, q:AHEAD.q, hint:AHEAD.hint },
-    // 실험에서 본 것을 공기 중 이산화 탄소 양과 이어 본다
-    ...(REAL ? [REAL] : []),
-    { id:'q4', icon:'🔬',
-      q:'이 실험에서 아쉬웠던 점이나, 더 알아보고 싶은 것은?',
-      hint:'측정 범위가 좁지는 않았나요? 다음에는 무엇을 바꿔 보고 싶나요?' },
+          q:'가설이 결과와 달랐습니다. 예상과 왜 달랐는지 적어 보세요.',
+          hint:'예상과 다른 결과에서 더 많이 배웁니다. 처음 예상이 왜 빗나갔는지, 실제로는 어떤 관계가 있는지 적어 보세요.' },
+    ...(ERR.has ? [{ id:'q6', icon:'📏', q:ERR.q, hint:ERR.hint }] : [])
   ];
 }
 
@@ -6276,8 +6197,11 @@ function interpretHTML(i){
         const ok = v.trim().length >= MIN_CHARS;
         return `
         <div class="ip-item ${ok ? 'ok' : ''}">
-          <label for="ip-${q.id}"><span class="ip-em">${q.icon}</span>${q.q}
-            ${ok ? '<span class="ip-ok">✓</span>' : ''}</label>
+          <label for="ip-${q.id}">
+            <span class="ip-em">${q.icon}</span>
+            <span class="ip-text">${q.q}</span>
+            ${ok ? '<span class="ip-ok">✓</span>' : ''}
+          </label>
           <p class="ip-hint">💡 ${q.hint}${q.predict
             ? ' <b>재지 않은 곳</b>이므로 정답을 맞히는 것이 아니라, 근거를 들어 내다보는 것이 중요합니다.'
             : ''}</p>
@@ -7092,6 +7016,14 @@ function initCloud(){
     renderHeroes();
   });
 
+  if (window.Cloud.watchVideoUrl) {
+    window.Cloud.watchVideoUrl(url => {
+      currentVideoUrl = url;
+      $('videoUrlInput').value = url;
+      $('watchVideoBtn').hidden = !url;
+    });
+  }
+
   /* 수행평가 여닫이를 지켜본다 — 선생님이 켜는 순간 학생 화면이 함께 열린다 */
   if (window.Cloud.watchAssess) window.Cloud.watchAssess(open => {
     if (open === null) return;             // 못 읽었으면 알던 값을 그대로 쓴다
@@ -7344,10 +7276,13 @@ function switchToId(no){
     .then(() => pullProgress(no))          // ② 새 학번의 기록을 서버에서 찾는다
     .then(p => {
       setWho(no);
-      // ③ 탐구 1·2·3 은 그대로 두고 수행평가만 비운다
+      // ③ 다른 학생의 기록이거나 클라우드 기록을 불러올 때는 수행평가를 비운다.
+      // (단, 주인이 없던 현재 기기 기록(local)을 새 주인이 그대로 이어받을 때는 비우지 않는다)
       const base = (p && p.v === 1) ? p : local;
       if (base){
-        try { localStorage.setItem(SAVE_KEY, JSON.stringify(wipeAssessment(base))); } catch {}
+        const shouldWipe = (base !== local) || !keepLocal;
+        const payload = shouldWipe ? wipeAssessment(base) : base;
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(payload)); } catch {}
       } else {
         clearSession();                    // 남길 것이 없다 — 깨끗하게 시작
       }
@@ -7689,7 +7624,7 @@ ${state.userCtrl.length ? `<table class="data">
 <p class="sub2">시뮬레이션에서 고정한 값: ${ctrlTxt || '(정하지 않음)'}</p>
 
 <h2>${no()}. [문항 3] 실험 과정 설계 <span class="pts">50점</span></h2>
-<p class="sub2">제공된 준비물: ${(KITS[state.freeKey] || []).join(', ')}</p>
+<p class="sub2">제공된 준비물: ${(KITS[state.useAltMethod ? state.freeKey + '_alt' : state.freeKey] || []).join(', ')}${state.useAltMethod ? ' (선택 과제)' : ''}</p>
 <ol>${state.assess.steps.map(v => `<li>${esc(v.trim() || '(적지 않음)')}</li>`).join('')}</ol>
 ` : `
 <h2>${no()}. 변인</h2>
@@ -8120,9 +8055,24 @@ function askWipe(){
         return null;
       } });
 }
+let currentVideoUrl = '';
+
 $('wipeBtn').addEventListener('click', askWipe);
 $('wipeBtn2').addEventListener('click', askWipe);
 $('homeBtn').addEventListener('click', goMain);
+
+$('watchVideoBtn').addEventListener('click', () => {
+  if (currentVideoUrl) window.open(currentVideoUrl, '_blank');
+});
+
+$('videoUrlSave').addEventListener('click', () => {
+  const url = $('videoUrlInput').value.trim();
+  if (window.Cloud && window.Cloud.setVideoUrl) {
+    window.Cloud.setVideoUrl(url)
+      .then(() => toast('✅', '저장 완료', '실험 영상 링크가 저장되었습니다.'))
+      .catch(e => toast('⚠️', '저장 실패', e.message));
+  }
+});
 
 $('whoBtn').addEventListener('click', () => askWho(() => {
   const w = getWho();

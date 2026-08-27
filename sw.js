@@ -7,7 +7,7 @@
  *
  * 앱을 고칠 때마다 CACHE 뒤 번호를 올리면 옛 캐시가 정리된다.
  */
-const CACHE = 'photosynthesis-v4';
+const CACHE = 'photosynthesis-v5';
 
 const ASSETS = [
   './',
